@@ -82,6 +82,9 @@
         }
     </style>
 
+    <!-- Cấu hình Vite cho Custom CSS -->
+    @vite(['resources/css/custom.css'])
+
     <!-- Nơi các trang con có thể nhúng thêm CSS riêng nếu cần -->
     @yield('styles')
 </head>
