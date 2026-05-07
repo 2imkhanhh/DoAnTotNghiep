@@ -5,7 +5,8 @@
 @section('content')
     <div class="bg-surface-container-low rounded-xl p-8 sm:p-12 relative shadow-[0_32px_64px_rgba(28,27,31,0.06)]">
         <div class="mb-10">
-            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Tạo mật khẩu mới</h1>
+            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Tạo mật khẩu
+                mới</h1>
             <p id="email-display" class="text-body-lg text-on-surface-variant">Đang tải thông tin...</p>
         </div>
 
@@ -13,17 +14,24 @@
             <div class="flex flex-col gap-4">
                 <label class="flex flex-col relative">
                     <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Mật khẩu mới</span>
-                    <input id="new-password" class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none" placeholder="Nhập mật khẩu mới" required="" type="password"/>
+                    <input id="new-password"
+                        class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
+                        placeholder="Nhập mật khẩu mới" required="" type="password" />
                 </label>
                 <label class="flex flex-col relative">
-                    <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Xác nhận mật khẩu mới</span>
-                    <input id="confirm-password" class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none" placeholder="Nhập lại mật khẩu mới" required="" type="password"/>
+                    <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Xác nhận mật khẩu
+                        mới</span>
+                    <input id="confirm-password"
+                        class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
+                        placeholder="Nhập lại mật khẩu mới" required="" type="password" />
                 </label>
             </div>
-            
+
             <div id="reset-error" class="text-error text-sm hidden font-bold"></div>
 
-            <button class="w-full h-14 mt-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm flex items-center justify-center gap-2" type="submit">
+            <button
+                class="w-full h-14 mt-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm flex items-center justify-center gap-2"
+                type="submit">
                 <span>Cập nhật mật khẩu</span>
                 <span class="material-symbols-outlined">lock_reset</span>
             </button>
@@ -64,11 +72,14 @@
             try {
                 const response = await fetch('/api/reset-password', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({
-                        email: email,             
-                        token: token,             
-                        password: password,       
+                        email: email,
+                        token: token,
+                        password: password,
                         password_confirmation: password_confirmation
                     })
                 });
@@ -77,10 +88,11 @@
 
                 if (response.ok) {
                     alert('Đổi mật khẩu thành công! Bạn sẽ được chuyển hướng về trang Đăng nhập.');
-                    window.location.href = '/login'; 
+                    window.location.href = '/login';
                 } else {
                     errorDiv.classList.remove('hidden');
-                    errorDiv.innerText = data.errors ? Object.values(data.errors)[0][0] : (data.error || 'Đổi mật khẩu thất bại.');
+                    errorDiv.innerText = data.errors ? Object.values(data.errors)[0][0] : (data.error ||
+                        'Đổi mật khẩu thất bại.');
                 }
             } catch (error) {
                 errorDiv.classList.remove('hidden');
