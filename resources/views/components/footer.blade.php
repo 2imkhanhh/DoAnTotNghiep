@@ -41,20 +41,12 @@
             <!-- Col 4 -->
             <div>
                 <h4 class="font-bold text-on-surface mb-4">Tải ứng dụng</h4>
-                <div class="flex flex-col gap-2">
-                    <a href="#" class="bg-surface-container border border-outline-variant px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors">
-                        <span class="material-symbols-outlined text-xl">shop</span>
-                        <div class="text-left">
-                            <div class="text-[10px] uppercase leading-none">Tải trên</div>
-                            <div class="font-bold text-sm leading-none">Google Play</div>
-                        </div>
+                <div class="flex flex-col gap-3">
+                    <a href="#" class="hover:opacity-80 transition-opacity">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" class="h-10">
                     </a>
-                    <a href="#" class="bg-surface-container border border-outline-variant px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors">
-                        <span class="material-symbols-outlined text-xl">apple</span>
-                        <div class="text-left">
-                            <div class="text-[10px] uppercase leading-none">Tải trên</div>
-                            <div class="font-bold text-sm leading-none">App Store</div>
-                        </div>
+                    <a href="#" class="hover:opacity-80 transition-opacity">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="h-10">
                     </a>
                 </div>
             </div>
