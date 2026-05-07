@@ -74,6 +74,7 @@
 
                 if (response.ok) {
                     localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
                     alert('Đăng nhập thành công!');
                     window.location.href = '/';
                 } else {

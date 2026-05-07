@@ -86,13 +86,75 @@
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         const token = localStorage.getItem('access_token');
+        
+        if (token) {
+            // Kiểm tra token xem còn sống không
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Token còn sống
+                    const user = await response.json();
+                    updateUI(true, user);
+                } else if (response.status === 401) {
+                    // Token hết hạn, thử refresh
+                    await tryRefreshToken();
+                } else {
+                    updateUI(false);
+                }
+            } catch (error) {
+                console.error("Lỗi xác thực:", error);
+                updateUI(false);
+            }
+        } else {
+            updateUI(false);
+        }
+    });
+
+    async function tryRefreshToken() {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) {
+            forceLogout();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                updateUI(true, data.user);
+            } else {
+                // Refresh token cũng đã hết hạn hoặc không hợp lệ
+                forceLogout();
+            }
+        } catch (error) {
+            console.error("Lỗi refresh token:", error);
+            forceLogout();
+        }
+    }
+
+    function updateUI(isLoggedIn, user = null) {
         const authButtons = document.getElementById('auth-buttons');
         const userProfile = document.getElementById('user-profile');
 
-        if (token) {
-            // Logged in
+        if (isLoggedIn) {
             if (authButtons) {
                 authButtons.classList.add('hidden');
                 authButtons.classList.remove('flex');
@@ -100,9 +162,16 @@
             if (userProfile) {
                 userProfile.classList.remove('hidden');
                 userProfile.classList.add('flex');
+                
+                // Cập nhật tên user lên Header nếu có
+                if (user && user.name) {
+                    const userNameSpan = userProfile.querySelector('.font-bold.text-sm');
+                    if (userNameSpan) {
+                        userNameSpan.innerText = user.name;
+                    }
+                }
             }
         } else {
-            // Guest
             if (authButtons) {
                 authButtons.classList.remove('hidden');
                 authButtons.classList.add('flex');
@@ -112,10 +181,32 @@
                 userProfile.classList.remove('flex');
             }
         }
-    });
+    }
 
     function logout() {
+        const token = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        
+        if (token) {
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            }).finally(() => {
+                forceLogout();
+            });
+        } else {
+            forceLogout();
+        }
+    }
+
+    function forceLogout() {
         localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         window.location.href = '/login';
     }
 </script>
