@@ -2,22 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('pages.home');
-});
-
-Route::get('/register', function () {
-    return view('pages.register');
-});
-
-Route::get('/login', function () {
-    return view('pages.login');
-});
-
-Route::get('/forgot-password', function () {
-    return view('pages.forgot-password');
-});
-
-Route::get('/reset-password', function () {
-    return view('pages.reset-password');
-});
+// Bắt tất cả các route (trừ API) và trả về vỏ bọc SPA (app.blade.php)
+// Frontend (Vue Router) sẽ tự động xử lý các đường dẫn này
+Route::get('/{any}', function () {
+    return view('app');
+})->where('any', '.*');

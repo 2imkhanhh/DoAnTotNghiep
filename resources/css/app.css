@@ -3,9 +3,60 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
+@source '../**/*.vue';
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-headline: 'Manrope', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-label: 'Manrope', sans-serif;
+
+  --color-surface-variant: #e5e1e7;
+  --color-primary-fixed: #e1dfff;
+  --color-on-secondary: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-primary: #020037;
+  --color-error: #ba1a1a;
+  --color-primary-fixed-dim: #c1c1ff;
+  --color-on-surface-variant: #47464f;
+  --color-on-error: #ffffff;
+  --color-on-secondary-fixed: #2f1400;
+  --color-on-error-container: #93000a;
+  --color-secondary-container: #ffab69;
+  --color-surface-container-lowest: #ffffff;
+  --color-outline: #777680;
+  --color-surface-container-low: #f6f2f8;
+  --color-on-tertiary-container: #b37c59;
+  --color-outline-variant: #c8c5d0;
+  --color-on-tertiary-fixed: #311300;
+  --color-surface-dim: #dcd9de;
+  --color-on-primary: #ffffff;
+  --color-secondary: #8e4e14;
+  --color-tertiary-fixed: #ffdbc7;
+  --color-on-primary-fixed: #141448;
+  --color-surface-container-highest: #e5e1e7;
+  --color-on-tertiary: #ffffff;
+  --color-surface-tint: #585990;
+  --color-on-secondary-container: #783d01;
+  --color-secondary-fixed-dim: #ffb780;
+  --color-inverse-primary: #c1c1ff;
+  --color-primary-container: #1a1a4e;
+  --color-surface-bright: #fcf8fd;
+  --color-surface-container-high: #eae7ec;
+  --color-surface-container: #f0edf2;
+  --color-background: #fcf8fd;
+  --color-on-tertiary-fixed-variant: #673c1e;
+  --color-tertiary-container: #391700;
+  --color-secondary-fixed: #ffdcc4;
+  --color-inverse-on-surface: #f3eff5;
+  --color-tertiary: #150500;
+  --color-on-secondary-fixed-variant: #6f3800;
+  --color-on-background: #1c1b1f;
+  --color-inverse-surface: #313034;
+  --color-tertiary-fixed-dim: #f8b992;
+  --color-on-primary-container: #8383bd;
+  --color-on-primary-fixed-variant: #414176;
+  --color-on-surface: #1c1b1f;
+  --color-surface: #fcf8fd;
 }
