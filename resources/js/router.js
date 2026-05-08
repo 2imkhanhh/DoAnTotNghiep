@@ -9,7 +9,7 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: () => import('./pages/Home.vue'), // Lazy load
+        component: () => import('./pages/Home.vue'), 
     },
     {
         path: '/login',
@@ -30,6 +30,11 @@ const routes = [
         path: '/reset-password',
         name: 'ResetPassword',
         component: () => import('./pages/ResetPassword.vue'),
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('./pages/Profile.vue'),
     }
 ];
 

@@ -14,7 +14,7 @@ use App\Http\Requests\Api\Auth\LoginRequest;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request) 
+    public function register(RegisterRequest $request)
     {
         $user = User::create([
             'name' => $request->name,
@@ -34,7 +34,7 @@ class AuthController extends Controller
         /** @var \Tymon\JWTAuth\JWTGuard $auth */
         $auth = auth('api');
 
-        // 1. Kiểm tra tài khoản và lấy Access Token (sống 60 phút)
+        // 1. Kiểm tra tài khoản và lấy Access Token(access token trong 60p)
         if (!$accessToken = $auth->attempt($credentials)) {
             return response()->json([
                 'success' => false,
@@ -69,7 +69,7 @@ class AuthController extends Controller
     {
         /** @var \Tymon\JWTAuth\JWTGuard $auth */
         $auth = auth('api');
-        
+
         // 1. Đưa Access Token hiện tại vào Blacklist của Tymon
         $auth->logout();
 
@@ -96,7 +96,7 @@ class AuthController extends Controller
         // 2. Kiểm tra xem Token có tồn tại và còn hạn không
         if (!$refreshToken || $refreshToken->expires_at < Carbon::now()) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'error' => 'Refresh token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.'
             ], 401);
         }
