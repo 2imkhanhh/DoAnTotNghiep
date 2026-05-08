@@ -55,7 +55,8 @@
                 <div v-if="isLoggedIn" class="flex items-center gap-2">
                     <div class="relative group cursor-pointer">
                         <div class="flex items-center gap-2 p-1 pr-3 rounded-full border border-outline-variant hover:bg-surface-container-low transition-colors">
-                            <img src="https://ui-avatars.com/api/?name=User&background=020037&color=fff" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            <img :src="user?.avatar || 'https://ui-avatars.com/api/?name=' + (user?.name || 'User') + '&background=020037&color=fff'" 
+                                 alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                             <span class="font-bold text-sm hidden sm:block text-on-surface">{{ user?.name || 'Tài khoản' }}</span>
                             <span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
                         </div>
@@ -97,61 +98,26 @@ const checkAuth = async () => {
     
     if (token) {
         try {
-            const response = await axios.get('/api/auth/me', {
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                }
-            });
+            const response = await axios.get('/api/auth/me');
             isLoggedIn.value = true;
             user.value = response.data;
         } catch (error) {
-            if (error.response && error.response.status === 401) {
-                await tryRefreshToken();
-            } else {
-                isLoggedIn.value = false;
-            }
+            isLoggedIn.value = false;
+            user.value = null;
         }
     } else {
         isLoggedIn.value = false;
     }
 };
 
-const tryRefreshToken = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-        forceLogout();
-        return;
-    }
-
-    try {
-        const response = await axios.post('/api/auth/refresh', { refresh_token: refreshToken });
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-        isLoggedIn.value = true;
-        user.value = response.data.user;
-    } catch (error) {
-        forceLogout();
-    }
-};
-
 const logout = async () => {
-    const token = localStorage.getItem('access_token');
     const refreshToken = localStorage.getItem('refresh_token');
     
-    if (token) {
-        try {
-            await axios.post('/api/auth/logout', 
-                { refresh_token: refreshToken },
-                {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                }
-            );
-        } catch (e) {
-            // Ignore error
-        } finally {
-            forceLogout();
-        }
-    } else {
+    try {
+        await axios.post('/api/auth/logout', { refresh_token: refreshToken });
+    } catch (e) {
+        // Ignore error
+    } finally {
         forceLogout();
     }
 };

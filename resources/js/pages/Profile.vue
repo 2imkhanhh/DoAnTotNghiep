@@ -11,10 +11,11 @@
                 <img
                   :src="profileData.avatar || 'https://ui-avatars.com/api/?name=' + (profileData.name || 'User') + '&background=020037&color=fff'"
                   alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-primary-fixed">
-                <div
+                <div @click="$refs.fileInput.click()"
                   class="absolute inset-0 bg-black/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                   <span class="material-symbols-outlined text-white text-sm">edit</span>
                 </div>
+                <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileUpload">
               </div>
               <div class="overflow-hidden">
                 <h2 class="font-bold text-on-surface truncate">{{ profileData.name || 'Người dùng' }}</h2>
@@ -24,13 +25,13 @@
           </div>
           <nav class="p-2">
             <button @click="activeTab = 'info'"
-              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer',
                 activeTab === 'info' ? 'bg-primary text-on-primary font-bold shadow-md' : 'text-on-surface hover:bg-surface-container-low']">
               <span class="material-symbols-outlined">person</span>
               <span>Thông tin cá nhân</span>
             </button>
             <button @click="activeTab = 'password'"
-              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-1',
+              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-1 cursor-pointer',
                 activeTab === 'password' ? 'bg-primary text-on-primary font-bold shadow-md' : 'text-on-surface hover:bg-surface-container-low']">
               <span class="material-symbols-outlined">lock</span>
               <span>Đổi mật khẩu</span>
@@ -47,7 +48,7 @@
             </router-link>
             <div class="border-t border-outline-variant my-2"></div>
             <button @click="logout"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error-container transition-all duration-200">
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error-container transition-all duration-200 cursor-pointer">
               <span class="material-symbols-outlined font-bold">logout</span>
               <span class="font-bold">Đăng xuất</span>
             </button>
@@ -120,15 +121,19 @@
                   <p v-if="errors.address" class="text-xs text-error mt-1 px-1">{{ errors.address[0] }}</p>
                 </div>
 
-                <!-- Avatar URL (Simple for now) -->
+                <!-- Avatar (File Upload) -->
                 <div class="space-y-2 sm:col-span-2">
-                  <label class="text-sm font-bold text-on-surface-variant px-1">Link ảnh đại diện</label>
-                  <div class="relative">
-                    <span
-                      class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">image</span>
-                    <input v-model="profileData.avatar" type="text"
-                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="https://example.com/avatar.jpg">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Ảnh đại diện</label>
+                  <div class="flex items-center gap-4 p-4 bg-surface-container border border-outline-variant rounded-xl">
+                    <img :src="profileData.avatar || 'https://ui-avatars.com/api/?name=' + (profileData.name || 'User') + '&background=020037&color=fff'" 
+                         class="w-16 h-16 rounded-full object-cover border-2 border-primary-fixed">
+                    <div class="flex-grow">
+                      <p class="text-xs text-on-surface-variant mb-2">Dung lượng file tối đa 2MB. Định dạng: .JPEG, .PNG</p>
+                      <button type="button" @click="$refs.fileInput.click()" 
+                              class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
+                        Chọn ảnh mới
+                      </button>
+                    </div>
                   </div>
                   <p v-if="errors.avatar" class="text-xs text-error mt-1 px-1">{{ errors.avatar[0] }}</p>
                 </div>
@@ -136,7 +141,7 @@
 
               <div class="pt-4 border-t border-outline-variant flex justify-end">
                 <button type="submit" :disabled="loading"
-                  class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center gap-2">
+                  class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center gap-2 cursor-pointer">
                   <span v-if="loading"
                     class="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
                   Lưu thay đổi
@@ -198,7 +203,7 @@
 
               <div class="pt-4 flex justify-end">
                 <button type="submit" :disabled="passwordLoading"
-                  class="w-full sm:w-auto px-8 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2">
+                  class="w-full sm:w-auto px-8 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2 cursor-pointer">
                   <span v-if="passwordLoading"
                     class="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
                   Đổi mật khẩu
@@ -226,6 +231,7 @@ import axios from 'axios';
 
 const router = useRouter();
 const activeTab = ref('info');
+const fileInput = ref(null);
 const loading = ref(false);
 const passwordLoading = ref(false);
 const errors = ref({});
@@ -259,33 +265,36 @@ const showToast = (message) => {
 };
 
 const fetchProfile = async () => {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    router.push('/login');
+  try {
+    const response = await axios.get('/api/auth/profile');
+    profileData.value = response.data.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin cá nhân:', error);
+  }
+};
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    errors.value.avatar = ['Dung lượng file không được vượt quá 2MB'];
     return;
   }
 
-  try {
-    const response = await axios.get('/api/auth/profile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    profileData.value = response.data.data;
-  } catch (error) {
-    if (error.response?.status === 401) {
-      router.push('/login');
-    }
-  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    profileData.value.avatar = e.target.result; // Base64 string
+  };
+  reader.readAsDataURL(file);
 };
 
 const updateProfile = async () => {
   loading.value = true;
   errors.value = {};
-  const token = localStorage.getItem('access_token');
 
   try {
-    const response = await axios.put('/api/auth/profile', profileData.value, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await axios.put('/api/auth/profile', profileData.value);
     profileData.value = response.data.data;
     showToast('Cập nhật hồ sơ thành công!');
   } catch (error) {
@@ -300,12 +309,9 @@ const updateProfile = async () => {
 const changePassword = async () => {
   passwordLoading.value = true;
   passwordErrors.value = {};
-  const token = localStorage.getItem('access_token');
 
   try {
-    await axios.put('/api/auth/profile/password', passwordData.value, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    await axios.put('/api/auth/profile/password', passwordData.value);
     passwordData.value = {
       current_password: '',
       new_password: '',
@@ -322,18 +328,12 @@ const changePassword = async () => {
 };
 
 const logout = async () => {
-  const token = localStorage.getItem('access_token');
   const refreshToken = localStorage.getItem('refresh_token');
 
-  if (token) {
-    try {
-      await axios.post('/api/auth/logout',
-        { refresh_token: refreshToken },
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-    } catch (e) {
-      // Ignore
-    }
+  try {
+    await axios.post('/api/auth/logout', { refresh_token: refreshToken });
+  } catch (e) {
+    // Ignore
   }
 
   localStorage.removeItem('access_token');
