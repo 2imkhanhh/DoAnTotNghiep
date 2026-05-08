@@ -11,18 +11,14 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Mail\ResetPassword;
+use App\Http\Requests\Api\Auth\SendResetLinkRequest;
+use App\Http\Requests\Api\Auth\ResetPasswordRequest;
 
 class ResetPasswordController extends Controller
 {
     // 1. Hàm nhận Email và gửi link
-    public function sendResetLink(Request $request)
+    public function sendResetLink(SendResetLinkRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email'
-        ], [
-            'email.exists' => 'Email này chưa được đăng ký trong hệ thống.'
-        ]);
-
         // Tạo token ngẫu nhiên
         $token = Str::random(60);
 
@@ -45,14 +41,8 @@ class ResetPasswordController extends Controller
     }
 
     // 2. Hàm nhận thông tin từ Frontend để cập nhật mật khẩu mới
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        // Validatior: Xác nhận mật khẩu mới phải khớp nhau
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'token' => 'required|string',
-            'password' => 'required|string|min:6|confirmed', // Cần truyền lên password và password_confirmation
-        ]);
 
         // Kiểm tra xem token và email có khớp trong DB không
         $resetRecord = DB::table('password_reset_tokens')
