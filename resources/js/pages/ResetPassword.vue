@@ -1,8 +1,10 @@
 <template>
     <div class="bg-surface-container-low rounded-xl p-8 sm:p-12 relative shadow-[0_32px_64px_rgba(28,27,31,0.06)]">
         <div class="mb-10">
-            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Tạo mật khẩu mới</h1>
-            <p v-if="isValidLink" class="text-body-lg text-on-surface-variant">Cho tài khoản: <b class="text-primary">{{ email }}</b></p>
+            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Tạo mật
+                khẩu mới</h1>
+            <p v-if="isValidLink" class="text-body-lg text-on-surface-variant">Cho tài khoản: <b class="text-primary">{{
+                    email }}</b></p>
             <p v-else class="text-body-lg text-on-surface-variant">Đang tải thông tin...</p>
         </div>
 
@@ -15,7 +17,8 @@
                         placeholder="Nhập mật khẩu mới" required type="password" />
                 </label>
                 <label class="flex flex-col relative">
-                    <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Xác nhận mật khẩu mới</span>
+                    <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Xác nhận mật khẩu
+                        mới</span>
                     <input v-model="form.password_confirmation"
                         class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
                         placeholder="Nhập lại mật khẩu mới" required type="password" />
@@ -26,9 +29,8 @@
                 {{ errorMessage }}
             </div>
 
-            <button
-                :disabled="isLoading"
-                class="w-full h-14 mt-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            <button :disabled="isLoading"
+                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 type="submit">
                 <span>{{ isLoading ? 'Đang xử lý...' : 'Cập nhật mật khẩu' }}</span>
                 <span v-if="!isLoading" class="material-symbols-outlined">lock_reset</span>
@@ -94,8 +96,8 @@ const handleResetPassword = async () => {
     } catch (error) {
         if (error.response && error.response.data) {
             const data = error.response.data;
-            errorMessage.value = data.errors 
-                ? Object.values(data.errors)[0][0] 
+            errorMessage.value = data.errors
+                ? Object.values(data.errors)[0][0]
                 : (data.error || 'Đổi mật khẩu thất bại.');
         } else {
             errorMessage.value = 'Không thể kết nối đến máy chủ.';

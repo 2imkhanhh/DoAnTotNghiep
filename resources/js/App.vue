@@ -15,7 +15,7 @@
     <!-- Nội dung chính của trang -->
     <main :class="isAuthRoute
       ? 'w-full max-w-[480px] mt-16 relative'
-      : 'flex-grow w-full'
+      : 'grow w-full'
       ">
       <router-view></router-view>
     </main>

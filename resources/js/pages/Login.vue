@@ -1,7 +1,8 @@
 <template>
     <div class="bg-surface-container-low rounded-xl p-8 sm:p-12 relative shadow-[0_32px_64px_rgba(28,27,31,0.06)]">
         <div class="mb-10">
-            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Đăng nhập</h1>
+            <h1 class="text-3xl font-headline text-primary font-extrabold tracking-[-0.02em] leading-tight mb-2">Đăng
+                nhập</h1>
             <p class="text-body-lg text-on-surface-variant">Chào mừng bạn quay trở lại.</p>
         </div>
 
@@ -31,9 +32,8 @@
                 {{ errorMessage }}
             </div>
 
-            <button
-                :disabled="isLoading"
-                class="w-full h-14 mt-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            <button :disabled="isLoading"
+                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 type="submit">
                 <span>{{ isLoading ? 'Đang xử lý...' : 'Đăng nhập' }}</span>
                 <span v-if="!isLoading" class="material-symbols-outlined">arrow_forward</span>
@@ -41,8 +41,9 @@
         </form>
 
         <p class="mt-10 text-center text-body-md text-on-surface-variant">
-            Chưa có tài khoản? <router-link class="font-bold text-primary hover:text-secondary transition-colors underline"
-                to="/register">Đăng ký ngay</router-link>
+            Chưa có tài khoản? <router-link
+                class="font-bold text-primary hover:text-secondary transition-colors underline" to="/register">Đăng ký
+                ngay</router-link>
         </p>
     </div>
 </template>
@@ -76,7 +77,7 @@ const handleLogin = async () => {
     } else {
         errorMessage.value = result.message;
     }
-    
+
     isLoading.value = false;
 };
 </script>

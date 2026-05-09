@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex flex-col md:flex-row gap-8">
       <!-- Sidebar -->
-      <aside class="w-full md:w-64 flex-shrink-0">
+      <aside class="w-full md:w-64 shrink-0">
         <div
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant overflow-hidden shadow-sm sticky top-24">
           <div class="p-6 border-b border-outline-variant">
@@ -57,7 +57,7 @@
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-grow">
+      <main class="grow">
         <!-- Info Tab -->
         <div v-if="activeTab === 'info'"
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -124,13 +124,16 @@
                 <!-- Avatar (File Upload) -->
                 <div class="space-y-2 sm:col-span-2">
                   <label class="text-sm font-bold text-on-surface-variant px-1">Ảnh đại diện</label>
-                  <div class="flex items-center gap-4 p-4 bg-surface-container border border-outline-variant rounded-xl">
-                    <img :src="profileData.avatar || 'https://ui-avatars.com/api/?name=' + (profileData.name || 'User') + '&background=020037&color=fff'" 
-                         class="w-16 h-16 rounded-full object-cover border-2 border-primary-fixed">
-                    <div class="flex-grow">
-                      <p class="text-xs text-on-surface-variant mb-2">Dung lượng file tối đa 2MB. Định dạng: .JPEG, .PNG</p>
-                      <button type="button" @click="$refs.fileInput.click()" 
-                               class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
+                  <div
+                    class="flex items-center gap-4 p-4 bg-surface-container border border-outline-variant rounded-xl">
+                    <img
+                      :src="profileData.avatar || 'https://ui-avatars.com/api/?name=' + (profileData.name || 'User') + '&background=020037&color=fff'"
+                      class="w-16 h-16 rounded-full object-cover border-2 border-primary-fixed">
+                    <div class="grow">
+                      <p class="text-xs text-on-surface-variant mb-2">Dung lượng file tối đa 2MB. Định dạng: .JPEG, .PNG
+                      </p>
+                      <button type="button" @click="$refs.fileInput.click()"
+                        class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
                         Chọn ảnh mới
                       </button>
                     </div>
@@ -317,10 +320,10 @@ const updateProfile = async () => {
     const response = await axios.put('/api/auth/profile', profileData.value);
     const updatedUser = response.data.data;
     profileData.value = updatedUser;
-    
+
     // QUAN TRỌNG: Cập nhật Store để Header thay đổi ngay lập tức
     authStore.setUser(updatedUser);
-    
+
     showToast('Cập nhật hồ sơ thành công!');
   } catch (error) {
     if (error.response?.status === 422) {
