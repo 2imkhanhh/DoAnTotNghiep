@@ -41,7 +41,7 @@
                 <div class="h-6 w-px bg-outline-variant hidden sm:block mx-2"></div>
 
                 <!-- Auth Buttons (Guest) -->
-                <div v-if="!isLoggedIn" class="flex items-center gap-2">
+                <div v-if="!authStore.isLoggedIn" class="flex items-center gap-2">
                     <router-link v-if="$route.path !== '/login'" to="/login" class="hidden sm:block px-4 py-2 text-primary font-bold hover:bg-surface-container-low rounded-full transition-colors">
                         Đăng nhập
                     </router-link>
@@ -52,12 +52,11 @@
                 </div>
 
                 <!-- User Profile (Logged in) -->
-                <div v-if="isLoggedIn" class="flex items-center gap-2">
+                <div v-if="authStore.isLoggedIn" class="flex items-center gap-2">
                     <div class="relative group cursor-pointer">
                         <div class="flex items-center gap-2 p-1 pr-3 rounded-full border border-outline-variant hover:bg-surface-container-low transition-colors">
-                            <img :src="user?.avatar || 'https://ui-avatars.com/api/?name=' + (user?.name || 'User') + '&background=020037&color=fff'" 
-                                 alt="Avatar" class="w-8 h-8 rounded-full object-cover">
-                            <span class="font-bold text-sm hidden sm:block text-on-surface">{{ user?.name || 'Tài khoản' }}</span>
+                            <img :src="authStore.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            <span class="font-bold text-sm hidden sm:block text-on-surface">{{ authStore.user?.name || 'Tài khoản' }}</span>
                             <span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
                         </div>
                         
@@ -68,7 +67,7 @@
                                 <router-link to="/my-ads" class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Quản lý tin đăng</router-link>
                                 <router-link to="/settings" class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Cài đặt</router-link>
                                 <div class="border-t border-outline-variant my-1"></div>
-                                <a href="#" @click.prevent="logout" class="block px-4 py-2 text-sm text-error hover:bg-error-container font-bold">Đăng xuất</a>
+                                <button @click="authStore.logout()" class="w-full text-left block px-4 py-2 text-sm text-error hover:bg-error-container font-bold">Đăng xuất</button>
                             </div>
                         </div>
                     </div>
@@ -85,52 +84,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { onMounted } from 'vue';
+import { useAuthStore } from '../stores/auth';
 
-const router = useRouter();
-const isLoggedIn = ref(false);
-const user = ref(null);
-
-const checkAuth = async () => {
-    const token = localStorage.getItem('access_token');
-    
-    if (token) {
-        try {
-            const response = await axios.get('/api/auth/me');
-            isLoggedIn.value = true;
-            user.value = response.data;
-        } catch (error) {
-            isLoggedIn.value = false;
-            user.value = null;
-        }
-    } else {
-        isLoggedIn.value = false;
-    }
-};
-
-const logout = async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    
-    try {
-        await axios.post('/api/auth/logout', { refresh_token: refreshToken });
-    } catch (e) {
-        // Ignore error
-    } finally {
-        forceLogout();
-    }
-};
-
-const forceLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    isLoggedIn.value = false;
-    user.value = null;
-    router.push('/login');
-};
+const authStore = useAuthStore();
 
 onMounted(() => {
-    checkAuth();
+    authStore.fetchUser();
 });
 </script>

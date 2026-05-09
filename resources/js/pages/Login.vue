@@ -50,9 +50,10 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const email = ref('');
 const password = ref('');
@@ -63,31 +64,19 @@ const handleLogin = async () => {
     errorMessage.value = '';
     isLoading.value = true;
 
-    try {
-        const response = await axios.post('/api/auth/login', {
-            email: email.value,
-            password: password.value
-        });
+    const result = await authStore.login({
+        email: email.value,
+        password: password.value
+    });
 
-        if (response.data.success) {
-            localStorage.setItem('access_token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
-            alert('Đăng nhập thành công!');
-            // Redirect to home and reload to let App.vue and Header.vue catch the new token
-            // In a real app we would use Pinia to update the global state without reloading
-            window.location.href = '/';
-        }
-    } catch (error) {
-        if (error.response && error.response.data) {
-            const data = error.response.data;
-            errorMessage.value = data.errors 
-                ? Object.values(data.errors)[0][0] 
-                : (data.error || 'Đăng nhập thất bại.');
-        } else {
-            errorMessage.value = 'Lỗi kết nối máy chủ.';
-        }
-    } finally {
-        isLoading.value = false;
+    if (result.success) {
+        alert('Đăng nhập thành công!');
+        // Thay vì dùng window.location.href, chúng ta dùng router.push để trải nghiệm mượt hơn
+        router.push('/');
+    } else {
+        errorMessage.value = result.message;
     }
+    
+    isLoading.value = false;
 };
 </script>

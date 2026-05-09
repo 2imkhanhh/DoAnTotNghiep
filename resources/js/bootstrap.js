@@ -39,31 +39,31 @@ window.axios.interceptors.response.use(
         const originalRequest = error.config;
 
         // Nếu lỗi 401 và không phải là lỗi từ các API auth cơ bản (login, refresh, ...)
-        const isAuthRoute = originalRequest.url.includes('/api/auth/login') || 
-                            originalRequest.url.includes('/api/auth/refresh') ||
-                            originalRequest.url.includes('/api/auth/register') ||
-                            originalRequest.url.includes('/api/forgot-password');
+        const isAuthRoute = originalRequest.url.includes('/api/auth/login') ||
+            originalRequest.url.includes('/api/auth/refresh') ||
+            originalRequest.url.includes('/api/auth/register') ||
+            originalRequest.url.includes('/api/forgot-password');
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
             if (isRefreshing) {
                 // Đợi cho đến khi token được làm mới
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });
                 })
-                .then(token => {
-                    originalRequest.headers['Authorization'] = 'Bearer ' + token;
-                    return window.axios(originalRequest);
-                })
-                .catch(err => {
-                    return Promise.reject(err);
-                });
+                    .then(token => {
+                        originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                        return window.axios(originalRequest);
+                    })
+                    .catch(err => {
+                        return Promise.reject(err);
+                    });
             }
 
             originalRequest._retry = true;
             isRefreshing = true;
 
             const refreshToken = localStorage.getItem('refresh_token');
-            
+
             if (!refreshToken) {
                 isRefreshing = false;
                 if (window.location.pathname !== '/login') {
@@ -82,10 +82,10 @@ window.axios.interceptors.response.use(
                     const { access_token, refresh_token } = res.data;
                     localStorage.setItem('access_token', access_token);
                     localStorage.setItem('refresh_token', refresh_token);
-                    
+
                     window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + access_token;
                     processQueue(null, access_token);
-                    
+
                     // Thực hiện lại request ban đầu với token mới
                     originalRequest.headers['Authorization'] = 'Bearer ' + access_token;
                     return window.axios(originalRequest);

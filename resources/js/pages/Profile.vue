@@ -47,7 +47,7 @@
               <span>Lịch sử mua hàng</span>
             </router-link>
             <div class="border-t border-outline-variant my-2"></div>
-            <button @click="logout"
+            <button @click="authStore.logout()"
               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error-container transition-all duration-200 cursor-pointer">
               <span class="material-symbols-outlined font-bold">logout</span>
               <span class="font-bold">Đăng xuất</span>
@@ -130,7 +130,7 @@
                     <div class="flex-grow">
                       <p class="text-xs text-on-surface-variant mb-2">Dung lượng file tối đa 2MB. Định dạng: .JPEG, .PNG</p>
                       <button type="button" @click="$refs.fileInput.click()" 
-                              class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
+                               class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
                         Chọn ảnh mới
                       </button>
                     </div>
@@ -225,11 +225,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
+
 const activeTab = ref('info');
 const fileInput = ref(null);
 const loading = ref(false);
@@ -237,13 +240,27 @@ const passwordLoading = ref(false);
 const errors = ref({});
 const passwordErrors = ref({});
 
+// Khởi tạo dữ liệu từ Store ngay lập tức để tránh nhấp nháy UI
 const profileData = ref({
-  name: '',
-  email: '',
-  phone: '',
-  address: '',
-  avatar: ''
+  name: authStore.user?.name || '',
+  email: authStore.user?.email || '',
+  phone: authStore.user?.phone || '',
+  address: authStore.user?.address || '',
+  avatar: authStore.user?.avatar || ''
 });
+
+// Đồng bộ lại nếu Store thay đổi (ví dụ khi Header nạp xong dữ liệu muộn hơn)
+watch(() => authStore.user, (newUser) => {
+  if (newUser) {
+    profileData.value = {
+      name: newUser.name,
+      email: newUser.email,
+      phone: newUser.phone,
+      address: newUser.address,
+      avatar: newUser.avatar
+    };
+  }
+}, { deep: true });
 
 const passwordData = ref({
   current_password: '',
@@ -267,7 +284,10 @@ const showToast = (message) => {
 const fetchProfile = async () => {
   try {
     const response = await axios.get('/api/auth/profile');
-    profileData.value = response.data.data;
+    const userData = response.data.data;
+    profileData.value = userData;
+    // Cập nhật lại Store để Header đồng bộ theo
+    authStore.setUser(userData);
   } catch (error) {
     console.error('Lỗi khi lấy thông tin cá nhân:', error);
   }
@@ -295,7 +315,12 @@ const updateProfile = async () => {
 
   try {
     const response = await axios.put('/api/auth/profile', profileData.value);
-    profileData.value = response.data.data;
+    const updatedUser = response.data.data;
+    profileData.value = updatedUser;
+    
+    // QUAN TRỌNG: Cập nhật Store để Header thay đổi ngay lập tức
+    authStore.setUser(updatedUser);
+    
     showToast('Cập nhật hồ sơ thành công!');
   } catch (error) {
     if (error.response?.status === 422) {
@@ -327,119 +352,7 @@ const changePassword = async () => {
   }
 };
 
-const logout = async () => {
-  const refreshToken = localStorage.getItem('refresh_token');
-
-  try {
-    await axios.post('/api/auth/logout', { refresh_token: refreshToken });
-  } catch (e) {
-    // Ignore
-  }
-
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  router.push('/login');
-};
-
 onMounted(() => {
   fetchProfile();
 });
 </script>
-
-<style scoped>
-.bg-surface-container-lowest {
-  background-color: var(--color-surface-container-lowest);
-}
-
-.bg-surface-container {
-  background-color: var(--color-surface-container);
-}
-
-.bg-surface-container-low {
-  background-color: var(--color-surface-container-low);
-}
-
-.border-outline-variant {
-  border-color: var(--color-outline-variant);
-}
-
-.text-on-surface {
-  color: var(--color-on-surface);
-}
-
-.text-on-surface-variant {
-  color: var(--color-on-surface-variant);
-}
-
-.text-primary {
-  color: var(--color-primary);
-}
-
-.bg-primary {
-  background-color: var(--color-primary);
-}
-
-.text-on-primary {
-  color: var(--color-on-primary);
-}
-
-.text-error {
-  color: var(--color-error);
-}
-
-.bg-error-container {
-  background-color: var(--color-error-container);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(1rem);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(2rem);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-in {
-  animation-duration: 400ms;
-  animation-fill-mode: both;
-}
-
-.fade-in {
-  animation-name: fadeIn;
-}
-
-.slide-in-from-bottom-4 {
-  animation-name: slideInFromBottom;
-}
-
-.slide-in-from-right-8 {
-  animation-name: slideInFromRight;
-}
-</style>
