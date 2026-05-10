@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ResetPasswordController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\CategoryController;
 
 Route::group(['prefix' => 'auth'], function () {
     // Các route không cần đăng nhập
@@ -18,8 +19,13 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/profile/password', [ProfileController::class, 'changePassword']);
+
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::put('/categories/{id}', [CategoryController::class, 'update']); // Dùng POST kèm _method=PUT khi có upload File
+        Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
     });
 });
 
 Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLink']);
 Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']);
+Route::get('/categories', [CategoryController::class, 'index']);
