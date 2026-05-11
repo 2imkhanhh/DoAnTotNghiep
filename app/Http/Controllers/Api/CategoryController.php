@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Api\Category\StoreCategoryRequest;
 use App\Http\Requests\Api\Category\UpdateCategoryRequest;
+use App\Http\Requests\Api\Category\StoreCategoryAttributeRequest;
+use App\Models\CategoryAttribute;
 
 class CategoryController extends Controller
 {
@@ -78,5 +80,36 @@ class CategoryController extends Controller
         $category->delete();
 
         return response()->json(['success' => true, 'message' => 'Đã xóa danh mục!']);
+    }
+
+    // Lấy danh sách các trường thông tin chi tiết của danh mục
+    public function getAttributes($id)
+    {
+        $attributes = CategoryAttribute::where('category_id', $id)->get();
+        return response()->json([
+            'success' => true,
+            'data' => $attributes
+        ]);
+    }
+
+    public function storeAttribute(StoreCategoryAttributeRequest $request, $id)
+    {
+        // 1. Kiểm tra danh mục
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy danh mục'], 404);
+        }
+
+        // 2. Lấy dữ liệu ĐÃ ĐƯỢC KIỂM DUYỆT SẠCH SẼ từ file Request
+        $data = $request->validated();
+
+        // 3. Lưu vào Database
+        $attribute = $category->attributes()->create($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã thêm thuộc tính thành công cho danh mục!',
+            'data' => $attribute
+        ], 201);
     }
 }

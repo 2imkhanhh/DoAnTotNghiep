@@ -34,4 +34,9 @@ class Category extends Model
         // Mày cứ lấy cái 'parent_id' của tao, đi dò xem thằng nào có 'id' khớp với số đó thì lấy ra."
         return $this->belongsTo(Category::class, 'parent_id');
     }
+
+    public function attributes()
+    {
+        return $this->hasMany(CategoryAttribute::class);
+    }
 }
