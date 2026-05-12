@@ -41,7 +41,7 @@
                         <span class="material-symbols-outlined">notifications</span>
                     </router-link>
 
-                    <router-link to="/post-ad"
+                    <router-link to="/post/create"
                         class="hidden sm:flex items-center gap-1 font-bold text-primary hover:text-primary-container px-3 py-2 rounded-lg hover:bg-surface-container-low transition-colors">
                         <span class="material-symbols-outlined">add_circle</span>
                         Đăng tin
