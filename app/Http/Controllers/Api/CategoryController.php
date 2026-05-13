@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Api\Category\StoreCategoryRequest;
 use App\Http\Requests\Api\Category\UpdateCategoryRequest;
 use App\Http\Requests\Api\Category\StoreCategoryAttributeRequest;
+use App\Http\Requests\Api\Category\UpdateCategoryAttributeRequest;
 use App\Models\CategoryAttribute;
 
 class CategoryController extends Controller
@@ -111,5 +112,60 @@ class CategoryController extends Controller
             'message' => 'Đã thêm thuộc tính thành công cho danh mục!',
             'data' => $attribute
         ], 201);
+    }
+
+    public function updateAttribute(UpdateCategoryAttributeRequest $request, $id, $attribute_id)
+    {
+        // 1. Kiểm tra danh mục có tồn tại không
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy danh mục'], 404);
+        }
+
+        // 2. Tìm thuộc tính thuộc về danh mục này
+        $attribute = CategoryAttribute::where('category_id', $id)
+            ->where('id', $attribute_id)
+            ->first();
+
+        if (!$attribute) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy thuộc tính cần sửa trong danh mục này'], 404);
+        }
+
+        // 3. Lấy dữ liệu đã validate và cập nhật
+        $data = $request->validated();
+        $attribute->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật thuộc tính thành công!',
+            'data' => $attribute
+        ]);
+    }
+
+    // Xóa thuộc tính của danh mục
+    public function destroyAttribute($id, $attribute_id)
+    {
+        // 1. Kiểm tra danh mục
+        $category = Category::find($id);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy danh mục'], 404);
+        }
+
+        // 2. Tìm thuộc tính
+        $attribute = CategoryAttribute::where('category_id', $id)
+            ->where('id', $attribute_id)
+            ->first();
+
+        if (!$attribute) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy thuộc tính cần xóa'], 404);
+        }
+
+        // 3. Xóa khỏi DB
+        $attribute->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa thuộc tính thành công!'
+        ]);
     }
 }

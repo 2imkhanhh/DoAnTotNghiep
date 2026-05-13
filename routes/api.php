@@ -26,6 +26,8 @@ Route::group(['prefix' => 'auth'], function () {
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
         Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
+        Route::put('categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'updateAttribute']); // Thêm route Sửa
+        Route::delete('categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'destroyAttribute']); // Thêm route Xóa
 
         Route::post('/posts', [PostController::class, 'store']);
     });
