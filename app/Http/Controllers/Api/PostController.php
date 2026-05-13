@@ -12,6 +12,18 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    public function index(Request $request)
+    {
+        $limit = $request->get('limit', 8);
+        
+        $posts = Post::with(['images', 'category', 'user'])
+            ->where('status', 1) // Chỉ lấy tin đã duyệt
+            ->latest()
+            ->paginate($limit);
+
+        return response()->json(['success' => true, 'data' => $posts]);
+    }
+
     public function store(StorePostRequest $request)
     {
         // 1. Bật khiên bảo vệ Database (Transaction)

@@ -40,3 +40,4 @@ Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/featured', [CategoryController::class, 'getFeaturedCategories']); // Thêm route danh mục nổi bật
 Route::get('/categories/{id}/attributes', [CategoryController::class, 'getAttributes']);
+Route::get('/posts', [PostController::class, 'index']);

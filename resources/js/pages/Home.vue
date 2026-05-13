@@ -96,92 +96,42 @@
                 <h2 class="text-2xl font-bold text-on-surface">Tin đăng mới nhất</h2>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Product 1 -->
-                <div
-                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                    <div class="relative h-48 w-full">
-                        <img src="https://images.unsplash.com/photo-1598327105666-5b89351cb315?auto=format&fit=crop&q=80&w=600"
-                            alt="Iphone 13 Pro Max" class="w-full h-full object-cover">
-                        <span
-                            class="absolute top-2 right-2 bg-secondary text-on-secondary text-xs font-bold px-2 py-1 rounded">Đã
+            <div v-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div v-for="post in posts" :key="post.id"
+                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group">
+                    <router-link :to="`/post/${post.slug}`" class="relative h-48 w-full overflow-hidden">
+                        <img :src="getPrimaryImage(post)" :alt="post.title"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <span v-if="post.status === 1"
+                            class="absolute top-2 right-2 bg-secondary text-on-secondary text-[10px] font-bold px-2 py-1 rounded shadow-sm">Đã
                             kiểm duyệt</span>
-                    </div>
+                    </router-link>
                     <div class="p-4 flex flex-col grow">
-                        <h3 class="font-bold text-on-surface line-clamp-2 mb-2">Iphone 13 Pro Max 256GB VN/A còn bảo
-                            hành dài</h3>
-                        <p class="text-error font-bold text-lg mb-4">16.500.000 đ</p>
-                        <div class="mt-auto flex items-center justify-between text-xs text-on-surface-variant">
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">schedule</span> 10 phút trước</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">location_on</span> Hà Nội</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 2 -->
-                <div
-                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                    <div class="relative h-48 w-full">
-                        <img src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&q=80&w=600"
-                            alt="Laptop Dell XPS 15" class="w-full h-full object-cover">
-                    </div>
-                    <div class="p-4 flex flex-col grow">
-                        <h3 class="font-bold text-on-surface line-clamp-2 mb-2">Laptop Dell XPS 15 9500 core i7 16GB RAM
-                        </h3>
-                        <p class="text-error font-bold text-lg mb-4">22.000.000 đ</p>
-                        <div class="mt-auto flex items-center justify-between text-xs text-on-surface-variant">
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">schedule</span> 1 giờ trước</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">location_on</span> TP.HCM</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 3 -->
-                <div
-                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                    <div class="relative h-48 w-full">
-                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=600"
-                            alt="Giày Sneaker Nike Air" class="w-full h-full object-cover">
-                    </div>
-                    <div class="p-4 flex flex-col grow">
-                        <h3 class="font-bold text-on-surface line-clamp-2 mb-2">Giày Sneaker Nike Air Jordan 1 auth size
-                            42</h3>
-                        <p class="text-error font-bold text-lg mb-4">2.100.000 đ</p>
-                        <div class="mt-auto flex items-center justify-between text-xs text-on-surface-variant">
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">schedule</span> 3 giờ trước</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">location_on</span> Đà Nẵng</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product 4 -->
-                <div
-                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                    <div class="relative h-48 w-full">
-                        <img src="https://images.unsplash.com/photo-1550226891-ef816aed4a98?auto=format&fit=crop&q=80&w=600"
-                            alt="Sofa da cao cấp" class="w-full h-full object-cover">
-                    </div>
-                    <div class="p-4 flex flex-col grow">
-                        <h3 class="font-bold text-on-surface line-clamp-2 mb-2">Sofa góc da lộn màu ghi xám mới 95%
-                            thanh lý chuyển nhà</h3>
-                        <p class="text-error font-bold text-lg mb-4">4.500.000 đ</p>
-                        <div class="mt-auto flex items-center justify-between text-xs text-on-surface-variant">
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">schedule</span> 5 giờ trước</span>
-                            <span class="flex items-center gap-1"><span
-                                    class="material-symbols-outlined text-sm">location_on</span> Hải Phòng</span>
+                        <router-link :to="`/post/${post.slug}`"
+                            class="font-bold text-on-surface line-clamp-2 mb-2 hover:text-primary transition-colors h-12">
+                            {{ post.title }}
+                        </router-link>
+                        <p class="text-error font-bold text-lg mb-4">{{ formatPrice(post.price) }} đ</p>
+                        <div class="mt-auto flex items-center justify-between text-[11px] text-on-surface-variant">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                {{ formatTime(post.created_at) }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">location_on</span>
+                                {{ post.address.split(',').pop().trim() }}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <div v-else class="py-12 text-center text-on-surface-variant bg-surface-container-low rounded-2xl border-2 border-dashed border-outline-variant">
+                <span class="material-symbols-outlined text-4xl mb-2">inventory_2</span>
+                <p>Hiện chưa có tin đăng nào được hiển thị.</p>
+            </div>
 
-            <div class="text-center mt-8">
+            <div v-if="posts.length > 0" class="text-center mt-8">
                 <button
                     class="px-6 py-2 border-2 border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-colors">
                     Xem thêm tin khác
@@ -238,6 +188,7 @@ const currentSlide = ref(0);
 const totalSlides = 3;
 let slideInterval = null;
 const categories = ref([]);
+const posts = ref([]);
 
 const fetchCategories = async () => {
     try {
@@ -246,6 +197,41 @@ const fetchCategories = async () => {
     } catch (error) {
         console.error('Lỗi khi lấy danh mục nổi bật:', error);
     }
+};
+
+const fetchPosts = async () => {
+    try {
+        const response = await axios.get('/api/posts?limit=8');
+        // Vì Backend dùng paginate nên data sẽ nằm trong response.data.data.data
+        posts.value = response.data.data.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy tin đăng:', error);
+    }
+};
+
+const getPrimaryImage = (post) => {
+    if (post.images && post.images.length > 0) {
+        const primary = post.images.find(img => img.is_primary);
+        return primary ? primary.image_path : post.images[0].image_path;
+    }
+    return 'https://via.placeholder.com/400x300?text=No+Image';
+};
+
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN').format(price);
+};
+
+const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000); // seconds
+
+    if (diff < 60) return 'Vừa xong';
+    if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN');
 };
 
 const nextSlide = () => {
@@ -277,6 +263,7 @@ const resetAutoSlide = () => {
 onMounted(() => {
     startAutoSlide();
     fetchCategories();
+    fetchPosts();
 });
 
 onUnmounted(() => {
