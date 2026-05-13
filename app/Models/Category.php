@@ -14,7 +14,8 @@ class Category extends Model
         'slug',
         'parent_id',
         'icon',
-        'is_active'
+        'is_active',
+        'is_featured'
     ];
 
     // Lấy ra danh sách các Danh mục con của nó

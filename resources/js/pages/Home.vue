@@ -80,47 +80,13 @@
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <a href="#" class="category-item">
+                <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`" class="category-item">
                     <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">smartphone</span>
+                        <img v-if="cat.icon" :src="cat.icon" :alt="cat.name" class="w-8 h-8 object-contain">
+                        <span v-else class="material-symbols-outlined text-3xl">category</span>
                     </div>
-                    <span class="font-bold text-center">Điện thoại</span>
-                </a>
-
-                <a href="#" class="category-item">
-                    <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">laptop_mac</span>
-                    </div>
-                    <span class="font-bold text-center">Máy tính</span>
-                </a>
-
-                <a href="#" class="category-item">
-                    <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">directions_bike</span>
-                    </div>
-                    <span class="font-bold text-center">Xe cộ</span>
-                </a>
-
-                <a href="#" class="category-item">
-                    <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">checkroom</span>
-                    </div>
-                    <span class="font-bold text-center">Thời trang</span>
-                </a>
-
-                <a href="#" class="category-item">
-                    <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">chair</span>
-                    </div>
-                    <span class="font-bold text-center">Nội thất</span>
-                </a>
-
-                <a href="#" class="category-item">
-                    <div class="icon-wrapper">
-                        <span class="material-symbols-outlined text-3xl">menu_book</span>
-                    </div>
-                    <span class="font-bold text-center">Sách báo</span>
-                </a>
+                    <span class="font-bold text-center">{{ cat.name }}</span>
+                </router-link>
             </div>
         </section>
 
@@ -266,13 +232,20 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 
 const currentSlide = ref(0);
 const totalSlides = 3;
 let slideInterval = null;
+const categories = ref([]);
 
-const updateSlider = () => {
-    // Vue takes care of this via the inline style binding on the wrapper
+const fetchCategories = async () => {
+    try {
+        const response = await axios.get('/api/categories/featured');
+        categories.value = response.data.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy danh mục nổi bật:', error);
+    }
 };
 
 const nextSlide = () => {
@@ -303,9 +276,11 @@ const resetAutoSlide = () => {
 
 onMounted(() => {
     startAutoSlide();
+    fetchCategories();
 });
 
 onUnmounted(() => {
     clearInterval(slideInterval);
 });
 </script>
+

@@ -23,6 +23,16 @@ class CategoryController extends Controller
         return response()->json(['success' => true, 'data' => $categories]);
     }
 
+    public function getFeaturedCategories()
+    {
+        // Lấy danh mục được đánh dấu là nổi bật và đang hoạt động
+        $categories = Category::where('is_featured', true)
+            ->where('is_active', true)
+            ->get();
+            
+        return response()->json(['success' => true, 'data' => $categories]);
+    }
+
     // Thêm mới danh mục
     public function store(StoreCategoryRequest $request)
     {
