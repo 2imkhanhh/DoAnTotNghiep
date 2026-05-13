@@ -11,7 +11,8 @@ export const useAuthStore = defineStore('auth', {
         avatarUrl: (state) => {
             if (state.user?.avatar) return state.user.avatar;
             return `https://ui-avatars.com/api/?name=${state.user?.name || 'User'}&background=020037&color=fff`;
-        }
+        },
+        isAdmin: (state) => state.user?.role === 1
     },
 
     actions: {
