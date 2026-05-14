@@ -1,204 +1,129 @@
 <template>
-  <div class="admin-container">
-    <!-- Sidebar -->
-    <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
-      <div class="sidebar-header">
-        <span class="material-symbols-outlined logo-icon">shield_person</span>
-        <span class="logo-text">Admin Panel</span>
-      </div>
-
-      <nav class="sidebar-nav">
-        <router-link to="/admin/dashboard" class="nav-item active">
-          <span class="material-symbols-outlined">dashboard</span>
-          <span class="nav-label">Tổng quan</span>
-        </router-link>
-        <router-link to="/admin/categories" class="nav-item">
-          <span class="material-symbols-outlined">category</span>
-          <span class="nav-label">Danh mục</span>
-        </router-link>
-        <router-link to="/admin/posts" class="nav-item">
-          <span class="material-symbols-outlined">article</span>
-          <span class="nav-label">Tin đăng</span>
-          <span v-if="pendingPosts > 0" class="badge">{{ pendingPosts }}</span>
-        </router-link>
-        <router-link to="/admin/users" class="nav-item">
+  <AdminLayout title="Bảng điều khiển">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon users">
           <span class="material-symbols-outlined">group</span>
-          <span class="nav-label">Người dùng</span>
-        </router-link>
-        <div class="nav-divider"></div>
-        <router-link to="/admin/settings" class="nav-item">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="nav-label">Cài đặt</span>
-        </router-link>
-        <router-link to="/" class="nav-item">
-          <span class="material-symbols-outlined">home</span>
-          <span class="nav-label">Về trang chủ</span>
-        </router-link>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="admin-profile">
-          <img :src="authStore.avatarUrl" alt="Admin" class="admin-avatar">
-          <div class="admin-info">
-            <p class="admin-name">{{ authStore.user?.name }}</p>
-            <p class="admin-role">Quản trị viên</p>
-          </div>
+        </div>
+        <div class="stat-details">
+          <h3>Người dùng</h3>
+          <p class="stat-value">{{ stats.users }}</p>
+          <p class="stat-change positive">+12% tháng này</p>
         </div>
       </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button @click="isSidebarCollapsed = !isSidebarCollapsed" class="icon-btn">
-            <span class="material-symbols-outlined">menu</span>
-          </button>
-          <h1 class="page-title">Bảng điều khiển</h1>
+      <div class="stat-card">
+        <div class="stat-icon posts">
+          <span class="material-symbols-outlined">article</span>
         </div>
-        <div class="topbar-right">
-          <div class="search-box">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Tìm kiếm nhanh...">
-          </div>
-          <button class="icon-btn">
-            <span class="material-symbols-outlined">notifications</span>
-            <span class="dot"></span>
-          </button>
+        <div class="stat-details">
+          <h3>Tin đăng mới</h3>
+          <p class="stat-value">{{ stats.posts }}</p>
+          <p class="stat-change positive">+5.4% hôm nay</p>
         </div>
-      </header>
-
-      <div class="content-body">
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon users">
-              <span class="material-symbols-outlined">group</span>
-            </div>
-            <div class="stat-details">
-              <h3>Người dùng</h3>
-              <p class="stat-value">{{ stats.users }}</p>
-              <p class="stat-change positive">+12% tháng này</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon posts">
-              <span class="material-symbols-outlined">article</span>
-            </div>
-            <div class="stat-details">
-              <h3>Tin đăng mới</h3>
-              <p class="stat-value">{{ stats.posts }}</p>
-              <p class="stat-change positive">+5.4% hôm nay</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon categories">
-              <span class="material-symbols-outlined">category</span>
-            </div>
-            <div class="stat-details">
-              <h3>Danh mục</h3>
-              <p class="stat-value">{{ stats.categories }}</p>
-              <p class="stat-change">Đang hoạt động</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon report">
-              <span class="material-symbols-outlined">report</span>
-            </div>
-            <div class="stat-details">
-              <h3>Báo cáo vi phạm</h3>
-              <p class="stat-value">{{ stats.reports }}</p>
-              <p class="stat-change negative">Cần xử lý gấp</p>
-            </div>
-          </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon categories">
+          <span class="material-symbols-outlined">category</span>
         </div>
+        <div class="stat-details">
+          <h3>Danh mục</h3>
+          <p class="stat-value">{{ stats.categories }}</p>
+          <p class="stat-change">Đang hoạt động</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon report">
+          <span class="material-symbols-outlined">report</span>
+        </div>
+        <div class="stat-details">
+          <h3>Báo cáo vi phạm</h3>
+          <p class="stat-value">{{ stats.reports }}</p>
+          <p class="stat-change negative">Cần xử lý gấp</p>
+        </div>
+      </div>
+    </div>
 
-        <!-- Recent Activity Sections -->
-        <div class="dashboard-grid">
-          <!-- Pending Posts -->
-          <section class="dashboard-section posts-pending">
-            <div class="section-header">
-              <h2 class="section-title">Tin đăng chờ duyệt</h2>
-              <router-link to="/admin/posts" class="view-all">Xem tất cả</router-link>
-            </div>
-            <div class="table-container">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Người đăng</th>
-                    <th>Tiêu đề</th>
-                    <th>Giá</th>
-                    <th>Ngày đăng</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="post in recentPosts" :key="post.id">
-                    <td>
-                      <div class="user-cell">
-                        <img :src="`https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
-                        <span>{{ post.user_name }}</span>
-                      </div>
-                    </td>
-                    <td class="post-title">{{ post.title }}</td>
-                    <td class="price">{{ formatPrice(post.price) }}đ</td>
-                    <td class="date">{{ formatDate(post.created_at) }}</td>
-                    <td>
-                      <div class="action-btns">
-                        <button class="btn-approve" title="Duyệt">
-                          <span class="material-symbols-outlined">check_circle</span>
-                        </button>
-                        <button class="btn-reject" title="Từ chối">
-                          <span class="material-symbols-outlined">cancel</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-if="recentPosts.length === 0">
-                    <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <!-- Top Users -->
-          <section class="dashboard-section top-users">
-            <div class="section-header">
-              <h2 class="section-title">Người dùng tích cực</h2>
-            </div>
-            <div class="user-list">
-              <div v-for="user in topUsers" :key="user.id" class="user-item">
-                <div class="user-info">
-                  <img :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="">
-                  <div>
-                    <p class="name">{{ user.name }}</p>
-                    <p class="email">{{ user.email }}</p>
+    <!-- Recent Activity Sections -->
+    <div class="dashboard-grid">
+      <!-- Pending Posts -->
+      <section class="dashboard-section posts-pending">
+        <div class="section-header">
+          <h2 class="section-title">Tin đăng chờ duyệt</h2>
+          <router-link to="/admin/posts" class="view-all">Xem tất cả</router-link>
+        </div>
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Người đăng</th>
+                <th>Tiêu đề</th>
+                <th>Giá</th>
+                <th>Ngày đăng</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="post in recentPosts" :key="post.id">
+                <td>
+                  <div class="user-cell">
+                    <img :src="`https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
+                    <span>{{ post.user_name }}</span>
                   </div>
-                </div>
-                <div class="user-stats">
-                  <span class="post-count">{{ user.post_count }} tin</span>
-                  <div class="rating">
-                    <span class="material-symbols-outlined">star</span>
-                    {{ user.rating }}
+                </td>
+                <td class="post-title">{{ post.title }}</td>
+                <td class="price">{{ formatPrice(post.price) }}đ</td>
+                <td class="date">{{ formatDate(post.created_at) }}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-approve" title="Duyệt">
+                      <span class="material-symbols-outlined">check_circle</span>
+                    </button>
+                    <button class="btn-reject" title="Từ chối">
+                      <span class="material-symbols-outlined">cancel</span>
+                    </button>
                   </div>
-                </div>
+                </td>
+              </tr>
+              <tr v-if="recentPosts.length === 0">
+                <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Top Users -->
+      <section class="dashboard-section top-users">
+        <div class="section-header">
+          <h2 class="section-title">Người dùng tích cực</h2>
+        </div>
+        <div class="user-list">
+          <div v-for="user in topUsers" :key="user.id" class="user-item">
+            <div class="user-info">
+              <img :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="">
+              <div>
+                <p class="name">{{ user.name }}</p>
+                <p class="email">{{ user.email }}</p>
               </div>
             </div>
-          </section>
+            <div class="user-stats">
+              <span class="post-count">{{ user.post_count }} tin</span>
+              <div class="rating">
+                <span class="material-symbols-outlined">star</span>
+                {{ user.rating }}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
-  </div>
+      </section>
+    </div>
+  </AdminLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../../stores/auth';
-
-const authStore = useAuthStore();
-const isSidebarCollapsed = ref(false);
-const pendingPosts = ref(3);
+import AdminLayout from '../../components/admin/AdminLayout.vue';
 
 const stats = ref({
   users: '1,248',
@@ -228,246 +153,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8fafc;
-  color: var(--color-on-surface);
-  font-family: 'Manrope', sans-serif;
-}
-
-/* Sidebar Styles */
-.sidebar {
-  width: 280px;
-  background-color: #020037;
-  /* Dark theme for admin sidebar */
-  color: white;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  z-index: 100;
-}
-
-.sidebar.collapsed {
-  width: 80px;
-}
-
-.sidebar-header {
-  padding: 2rem 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  overflow: hidden;
-}
-
-.logo-icon {
-  font-size: 2.5rem;
-  color: var(--color-primary-fixed);
-}
-
-.logo-text {
-  font-size: 1.25rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.sidebar.collapsed .logo-text {
-  display: none;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 0 0.75rem;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.875rem 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  border-radius: 0.75rem;
-  margin-bottom: 0.25rem;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.nav-item.active {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.nav-label {
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .badge {
-  display: none;
-}
-
-.badge {
-  background: var(--color-error);
-  color: white;
-  font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 1rem;
-  margin-left: auto;
-}
-
-.nav-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 1rem 0;
-}
-
-.sidebar-footer {
-  padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.admin-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  overflow: hidden;
-}
-
-.admin-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.75rem;
-  object-fit: cover;
-}
-
-.admin-info p {
-  margin: 0;
-  white-space: nowrap;
-}
-
-.admin-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.admin-role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.sidebar.collapsed .admin-info {
-  display: none;
-}
-
-/* Main Content Styles */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.topbar {
-  height: 70px;
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  flex-shrink: 0;
-}
-
-.topbar-left,
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  position: relative;
-}
-
-.icon-btn:hover {
-  background: #f1f5f9;
-  color: var(--color-primary);
-}
-
-.dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background: var(--color-error);
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-.page-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.search-box {
-  position: relative;
-  width: 300px;
-}
-
-.search-box span {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 1.2rem;
-}
-
-.search-box input {
-  width: 100%;
-  background: #f1f5f9;
-  border: 1px solid transparent;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  border-radius: 0.75rem;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.search-box input:focus {
-  background: white;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px var(--color-primary-fixed);
-  outline: none;
-}
-
-/* Dashboard Body */
-.content-body {
-  padding: 2rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
+/* Dashboard Body Specific Styles */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -578,7 +264,7 @@ onMounted(() => {
 
 .view-all {
   font-size: 0.875rem;
-  color: var(--color-primary);
+  color: #3b82f6;
   font-weight: 600;
   text-decoration: none;
 }
@@ -631,7 +317,7 @@ onMounted(() => {
 
 .price {
   font-weight: 700;
-  color: var(--color-error);
+  color: #ef4444;
 }
 
 .date {
@@ -738,23 +424,6 @@ onMounted(() => {
 @media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    height: 100vh;
-    left: -280px;
-  }
-
-  .sidebar.collapsed {
-    left: 0;
-    width: 280px;
-  }
-
-  .search-box {
-    display: none;
   }
 }
 </style>
