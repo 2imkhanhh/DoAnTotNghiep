@@ -42,6 +42,12 @@ const routes = [
         name: 'PostCreate',
         component: () => import('./pages/PostCreate.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/admin/dashboard',
+        name: 'AdminDashboard',
+        component: () => import('./pages/admin/AdminDashboard.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
 ];
 
