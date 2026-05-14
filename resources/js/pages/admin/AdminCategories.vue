@@ -20,51 +20,104 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Icon</th>
-              <th>Tên danh mục</th>
-              <th>Slug</th>
-              <th>Nổi bật</th>
-              <th>Số thuộc tính</th>
-              <th>Thao tác</th>
+              <th style="width: 40%">Tên danh mục</th>
+              <th style="width: 10%">Icon</th>
+              <th style="width: 25%">Slug</th>
+              <th style="width: 10%">Nổi bật</th>
+              <th style="width: 15%">Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="cat in filteredCategories" :key="cat.id">
-              <td>#{{ cat.id }}</td>
-              <td>
-                <div class="cat-icon">
-                  <img v-if="cat.icon" :src="cat.icon" :alt="cat.name">
-                  <span v-else class="material-symbols-outlined">category</span>
-                </div>
-              </td>
-              <td class="font-bold">{{ cat.name }}</td>
-              <td class="text-secondary">{{ cat.slug }}</td>
-              <td>
-                <label class="switch">
-                  <input type="checkbox" :checked="cat.is_featured" @change="toggleFeatured(cat)">
-                  <span class="slider round"></span>
-                </label>
-              </td>
-              <td>
-                <span class="badge-count">{{ cat.attributes_count || 0 }}</span>
-              </td>
-              <td>
-                <div class="action-btns">
-                  <button class="btn-icon edit" @click="openEditModal(cat)" title="Sửa">
-                    <span class="material-symbols-outlined">edit</span>
-                  </button>
-                  <button class="btn-icon attr" @click="manageAttributes(cat)" title="Quản lý thuộc tính">
-                    <span class="material-symbols-outlined">list_alt</span>
-                  </button>
-                  <button class="btn-icon delete" @click="confirmDelete(cat)" title="Xóa">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="filteredCategories.length === 0">
-              <td colspan="7" class="empty-state">
+            <template v-for="parent in filteredTree" :key="parent.id">
+              <!-- Parent Row -->
+              <tr class="parent-row">
+                <td>
+                  <div class="name-cell">
+                    <button 
+                      v-if="parent.children && parent.children.length" 
+                      @click="toggleRow(parent.id)"
+                      class="expand-btn"
+                      :class="{ 'is-expanded': isExpanded(parent.id) }"
+                    >
+                      <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    <span v-else class="expand-placeholder"></span>
+                    <span class="font-bold">{{ parent.name }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cat-icon">
+                    <img v-if="parent.icon" :src="parent.icon" :alt="parent.name">
+                    <span v-else class="material-symbols-outlined">category</span>
+                  </div>
+                </td>
+                <td class="text-secondary">{{ parent.slug }}</td>
+                <td>
+                  <label class="switch">
+                    <input type="checkbox" :checked="parent.is_featured" @change="toggleFeatured(parent)">
+                    <span class="slider round"></span>
+                  </label>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-icon edit" @click="openEditModal(parent)" title="Sửa">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn-icon attr" @click="manageAttributes(parent)" title="Quản lý thuộc tính">
+                      <span class="material-symbols-outlined">list_alt</span>
+                    </button>
+                    <button class="btn-icon delete" @click="confirmDelete(parent)" title="Xóa">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Child Rows -->
+              <tr 
+                v-if="isExpanded(parent.id)" 
+                v-for="child in parent.children" 
+                :key="child.id" 
+                class="child-row"
+              >
+                <td>
+                  <div class="name-cell child-cell">
+                    <span class="expand-placeholder"></span>
+                    <span class="material-symbols-outlined sub-icon">subdirectory_arrow_right</span>
+                    <span>{{ child.name }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cat-icon small">
+                    <img v-if="child.icon" :src="child.icon" :alt="child.name">
+                    <span v-else class="material-symbols-outlined">category</span>
+                  </div>
+                </td>
+                <td class="text-secondary">{{ child.slug }}</td>
+                <td>
+                  <label class="switch">
+                    <input type="checkbox" :checked="child.is_featured" @change="toggleFeatured(child)">
+                    <span class="slider round"></span>
+                  </label>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-icon edit" @click="openEditModal(child)" title="Sửa">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn-icon attr" @click="manageAttributes(child)" title="Quản lý thuộc tính">
+                      <span class="material-symbols-outlined">list_alt</span>
+                    </button>
+                    <button class="btn-icon delete" @click="confirmDelete(child)" title="Xóa">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+
+            <tr v-if="filteredTree.length === 0">
+              <td colspan="5" class="empty-state">
                 <span class="material-symbols-outlined">search_off</span>
                 <p>Không tìm thấy danh mục nào</p>
               </td>
@@ -73,7 +126,7 @@
         </table>
       </div>
 
-      <!-- Add/Edit Modal (Simplified placeholder) -->
+      <!-- Add/Edit Modal -->
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
           <div class="modal-header">
@@ -87,6 +140,17 @@
               <label>Tên danh mục</label>
               <input type="text" v-model="formData.name" required placeholder="VD: Điện thoại, Laptop...">
             </div>
+
+            <div class="form-group">
+              <label>Danh mục cha (Để trống nếu là danh mục lớn)</label>
+              <select v-model="formData.parent_id">
+                <option :value="null">-- Không có (Danh mục gốc) --</option>
+                <option v-for="parent in rootCategories" :key="parent.id" :value="parent.id" :disabled="isEditing && parent.id === formData.id">
+                  {{ parent.name }}
+                </option>
+              </select>
+            </div>
+
             <div class="form-group">
               <label>Icon (URL hoặc Upload)</label>
               <div class="icon-upload">
@@ -117,19 +181,23 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
 
-const categories = ref([]);
+const router = useRouter();
+const categories = ref([]); // This will hold the tree from Backend
 const searchQuery = ref('');
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
 const iconPreview = ref(null);
+const expandedRows = ref([]); // Store IDs of expanded parents
 
 const formData = ref({
   id: null,
   name: '',
+  parent_id: null,
   icon: null,
   is_featured: false
 });
@@ -143,23 +211,56 @@ const fetchCategories = async () => {
   }
 };
 
-const filteredCategories = computed(() => {
-  if (!searchQuery.value) return categories.value;
-  return categories.value.filter(cat => 
-    cat.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
+// Toggle row expansion
+const toggleRow = (id) => {
+  const index = expandedRows.value.indexOf(id);
+  if (index > -1) {
+    expandedRows.value.splice(index, 1);
+  } else {
+    expandedRows.value.push(id);
+  }
+};
+
+const isExpanded = (id) => expandedRows.value.includes(id);
+
+// Tree filtering logic
+const filteredTree = computed(() => {
+  const search = searchQuery.value.toLowerCase();
+  if (!search) return categories.value;
+
+  return categories.value.filter(parent => {
+    const parentMatches = parent.name.toLowerCase().includes(search);
+    const childrenMatches = parent.children?.some(c => c.name.toLowerCase().includes(search));
+    
+    // Auto-expand if children match search
+    if (childrenMatches && !expandedRows.value.includes(parent.id)) {
+        expandedRows.value.push(parent.id);
+    }
+    
+    return parentMatches || childrenMatches;
+  });
+});
+
+// List of categories that can be parents
+const rootCategories = computed(() => {
+  return categories.value;
 });
 
 const openAddModal = () => {
   isEditing.value = false;
-  formData.value = { id: null, name: '', icon: null, is_featured: false };
+  formData.value = { id: null, name: '', parent_id: null, icon: null, is_featured: false };
   iconPreview.value = null;
   showModal.value = true;
 };
 
 const openEditModal = (cat) => {
   isEditing.value = true;
-  formData.value = { ...cat };
+  formData.value = { 
+    id: cat.id,
+    name: cat.name,
+    parent_id: cat.parent_id,
+    is_featured: !!cat.is_featured // Ensure boolean
+  };
   iconPreview.value = cat.icon;
   showModal.value = true;
 };
@@ -167,9 +268,11 @@ const openEditModal = (cat) => {
 const toggleFeatured = async (cat) => {
   try {
     const newVal = !cat.is_featured;
+    // Using FormData to support possible icon updates in same route logic if needed, 
+    // but here simple PUT with JSON is enough since we only change boolean
     await axios.put(`/api/categories/${cat.id}`, { 
-      is_featured: newVal,
-      name: cat.name // API requires name
+      is_featured: newVal ? 1 : 0,
+      name: cat.name
     });
     cat.is_featured = newVal;
   } catch (error) {
@@ -191,6 +294,10 @@ const saveCategory = async () => {
     const data = new FormData();
     data.append('name', formData.value.name);
     data.append('is_featured', formData.value.is_featured ? 1 : 0);
+    if (formData.value.parent_id) {
+        data.append('parent_id', formData.value.parent_id);
+    }
+    
     if (formData.value.icon instanceof File) {
       data.append('icon', formData.value.icon);
     }
@@ -223,8 +330,7 @@ const confirmDelete = async (cat) => {
 };
 
 const manageAttributes = (cat) => {
-  // Logic to navigate to attributes management
-  alert(`Quản lý thuộc tính cho: ${cat.name}`);
+  router.push(`/admin/categories/${cat.id}/attributes`);
 };
 
 onMounted(fetchCategories);
@@ -312,6 +418,45 @@ onMounted(fetchCategories);
   vertical-align: middle;
 }
 
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.expand-btn.is-expanded {
+  transform: rotate(90deg);
+}
+
+.expand-placeholder {
+  width: 24px;
+}
+
+.child-row {
+  background: #fcfdfe;
+}
+
+.child-cell {
+  padding-left: 2.5rem;
+}
+
+.sub-icon {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
 .cat-icon {
   width: 40px;
   height: 40px;
@@ -322,10 +467,21 @@ onMounted(fetchCategories);
   justify-content: center;
 }
 
+.cat-icon.small {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+}
+
 .cat-icon img {
   width: 24px;
   height: 24px;
   object-fit: contain;
+}
+
+.cat-icon.small img {
+  width: 18px;
+  height: 18px;
 }
 
 .text-secondary {
@@ -433,12 +589,13 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 .form-group { margin-bottom: 1.5rem; }
 .form-group label { display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; }
-.form-group input[type="text"] {
+.form-group input[type="text"], .form-group select {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
   outline: none;
+  background-color: white;
 }
 
 .checkbox-label {

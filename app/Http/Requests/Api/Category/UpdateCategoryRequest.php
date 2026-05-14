@@ -26,7 +26,8 @@ class UpdateCategoryRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
             'parent_id' => 'nullable|exists:categories,id',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:2048',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'is_featured' => 'boolean'
         ];
     }
 }

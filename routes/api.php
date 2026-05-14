@@ -21,18 +21,19 @@ Route::group(['prefix' => 'auth'], function () {
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/profile/password', [ProfileController::class, 'changePassword']);
 
-        Route::group(['middleware' => 'admin'], function () {
-            Route::post('/categories', [CategoryController::class, 'store']);
-            Route::put('/categories/{id}', [CategoryController::class, 'update']);
-            Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
-
-            Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
-            Route::put('categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'updateAttribute']);
-            Route::delete('categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'destroyAttribute']);
-        });
-
         Route::post('/posts', [PostController::class, 'store']);
     });
+});
+
+// Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
+Route::group(['middleware' => ['auth:api', 'admin']], function () {
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
+    Route::put('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'updateAttribute']);
+    Route::delete('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'destroyAttribute']);
 });
 
 Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLink']);

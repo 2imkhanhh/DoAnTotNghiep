@@ -54,6 +54,12 @@ const routes = [
         name: 'AdminCategories',
         component: () => import('./pages/admin/AdminCategories.vue'),
         meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/categories/:id/attributes',
+        name: 'AdminCategoryAttributes',
+        component: () => import('./pages/admin/AdminCategoryAttributes.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
 ];
 

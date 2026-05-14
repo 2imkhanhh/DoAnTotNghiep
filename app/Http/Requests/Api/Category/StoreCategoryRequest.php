@@ -26,7 +26,8 @@ class StoreCategoryRequest extends FormRequest
             'name' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:categories,id', // parent_id phải tồn tại trong bảng
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,webp,svg|max:2048', // Nhận cả file SVG/PNG cho icon
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'is_featured' => 'boolean'
         ];
     }
 }
