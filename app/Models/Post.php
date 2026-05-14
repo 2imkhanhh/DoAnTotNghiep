@@ -19,7 +19,8 @@ class Post extends Model
         'address',
         'phone',
         'specifications',
-        'status'
+        'status',
+        'reject_reason'
     ];
 
     // Ép kiểu dữ liệu (Cực kỳ quan trọng)

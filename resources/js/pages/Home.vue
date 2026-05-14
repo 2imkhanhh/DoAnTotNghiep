@@ -102,9 +102,10 @@
                     <router-link :to="`/post/${post.slug}`" class="relative h-48 w-full overflow-hidden">
                         <img :src="getPrimaryImage(post)" :alt="post.title"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <span v-if="post.status === 1"
-                            class="absolute top-2 right-2 bg-secondary text-on-secondary text-[10px] font-bold px-2 py-1 rounded shadow-sm">Đã
-                            kiểm duyệt</span>
+                        <span v-if="post.status === 2"
+                            class="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
+                            Đã bán
+                        </span>
                     </router-link>
                     <div class="p-4 flex flex-col grow">
                         <router-link :to="`/post/${post.slug}`"

@@ -36,6 +36,11 @@ class Category extends Model
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
+    public function images()
+    {
+        return $this->hasMany(PostImage::class);
+    }
+
     public function attributes()
     {
         return $this->hasMany(CategoryAttribute::class);

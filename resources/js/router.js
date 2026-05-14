@@ -8,6 +8,11 @@ const routes = [
         component: () => import('./pages/Home.vue'),
     },
     {
+        path: '/post/:slug',
+        name: 'PostDetail',
+        component: () => import('./pages/PostDetail.vue'),
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import('./pages/Login.vue'),
@@ -59,6 +64,12 @@ const routes = [
         path: '/admin/categories/:id/attributes',
         name: 'AdminCategoryAttributes',
         component: () => import('./pages/admin/AdminCategoryAttributes.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/posts',
+        name: 'AdminPosts',
+        component: () => import('./pages/admin/AdminPosts.vue'),
         meta: { requiresAuth: true, requiresAdmin: true }
     }
 ];

@@ -34,6 +34,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
     Route::put('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'updateAttribute']);
     Route::delete('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'destroyAttribute']);
+
+    Route::get('/admin/posts', [PostController::class, 'adminIndex']);
+    Route::put('/posts/{id}/status', [PostController::class, 'updateStatus']);
+    Route::delete('/posts/{id}', [PostController::class, 'destroy']);
 });
 
 Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLink']);
@@ -42,3 +46,4 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/featured', [CategoryController::class, 'getFeaturedCategories']); // Thêm route danh mục nổi bật
 Route::get('/categories/{id}/attributes', [CategoryController::class, 'getAttributes']);
 Route::get('/posts', [PostController::class, 'index']);
+Route::get('/posts/{slug}', [PostController::class, 'show']);
