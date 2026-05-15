@@ -7,6 +7,11 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PostController;
 
+use App\Http\Controllers\Api\LocationController;
+
+Route::get('/locations/provinces', [LocationController::class, 'getProvinces']);
+Route::get('/locations/wards/{provinceCode}', [LocationController::class, 'getWards']);
+
 Route::group(['prefix' => 'auth'], function () {
     // Các route không cần đăng nhập
     Route::post('register', [AuthController::class, 'register']);

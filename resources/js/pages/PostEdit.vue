@@ -100,11 +100,11 @@
             </div>
           </section>
 
-          <!-- Section: Price & Contact -->
+          <!-- Section: Price & Location -->
           <section class="form-card">
-            <h2 class="card-title"><span class="material-symbols-outlined">payments</span> Giá & Liên hệ</h2>
+            <h2 class="card-title"><span class="material-symbols-outlined">payments</span> Giá & Địa điểm</h2>
 
-            <div class="info-grid">
+            <div class="info-grid mb-6">
               <div class="form-group">
                 <label class="field-label">Giá bán (VNĐ) *</label>
                 <div class="price-input-box">
@@ -122,12 +122,33 @@
               </div>
             </div>
 
+            <!-- Administrative Units -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div class="form-group">
+                <label class="field-label">Tỉnh / Thành phố *</label>
+                <select v-model="form.province_id" @change="onProvinceChange" class="input-field" required>
+                  <option value="">Chọn Tỉnh/Thành</option>
+                  <option v-for="p in provinces" :key="p.code" :value="p.code">{{ p.name }}</option>
+                </select>
+                <p v-if="errors.province_id" class="error-text">{{ errors.province_id[0] }}</p>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Phường / Xã *</label>
+                <select v-model="form.ward_id" @change="onWardChange" class="input-field" :disabled="!form.province_id" required>
+                  <option value="">Chọn Phường/Xã</option>
+                  <option v-for="w in wards" :key="w.code" :value="w.code">{{ w.name }}</option>
+                </select>
+                <p v-if="errors.ward_id" class="error-text">{{ errors.ward_id[0] }}</p>
+              </div>
+            </div>
+
             <div class="form-group">
-              <label class="field-label">Địa chỉ cụ thể *</label>
+              <label class="field-label">Số nhà, tên đường *</label>
               <div class="address-box">
                 <span class="material-symbols-outlined">location_on</span>
                 <input v-model="form.address" type="text" class="input-field with-icon"
-                  placeholder="Tỉnh/Thành phố, Quận/Huyện, Phường/Xã" required />
+                  placeholder="Ví dụ: Số 123, Đường Nguyễn Huệ" required />
               </div>
               <p v-if="errors.address" class="error-text">{{ errors.address[0] }}</p>
             </div>
@@ -164,11 +185,19 @@ const attributes = ref([]);
 const imagePreviews = ref([]);
 const selectedFiles = ref([]);
 
+// Administrative Units
+const provinces = ref([]);
+const wards = ref([]);
+
 const form = reactive({
   title: '',
   description: '',
   price: null,
   address: '',
+  province_id: '',
+  province_name: '',
+  ward_id: '',
+  ward_name: '',
   phone: '',
   category_id: '',
   specifications: {}
@@ -177,9 +206,13 @@ const form = reactive({
 onMounted(async () => {
   const postId = route.params.id;
   try {
-    // 1. Fetch ALL categories for the selection list
-    const catResponse = await axios.get('/api/categories');
-    categories.value = catResponse.data.data;
+    // 1. Fetch ALL categories and provinces
+    const [catRes, provRes] = await Promise.all([
+      axios.get('/api/categories'),
+      axios.get('/api/locations/provinces')
+    ]);
+    categories.value = catRes.data.data;
+    provinces.value = provRes.data;
 
     // 2. Fetch the post details
     const response = await axios.get(`/api/posts/${postId}/edit`);
@@ -190,11 +223,15 @@ onMounted(async () => {
     form.description = post.description;
     form.price = post.price;
     form.address = post.address;
+    form.province_id = post.province_id;
+    form.province_name = post.province_name;
+    form.ward_id = post.ward_id;
+    form.ward_name = post.ward_name;
     form.phone = post.phone;
     form.category_id = post.category_id;
     form.specifications = post.specifications || {};
 
-    // 3. Determine and set the parent category for UI state
+    // 3. Category logic
     if (post.category) {
       if (post.category.parent_id) {
         selectedParentId.value = post.category.parent_id;
@@ -206,14 +243,18 @@ onMounted(async () => {
       }
     }
 
-    // Image previews (existing)
+    // 4. Fetch Wards for initial values
+    if (form.province_id) {
+      const wRes = await axios.get(`/api/locations/wards/${form.province_id}`);
+      wards.value = wRes.data;
+    }
+
+    // Image previews
     if (post.images) {
       imagePreviews.value = post.images.map(img => img.image_path);
     }
 
-    // Fetch category attributes
     await fetchAttributes();
-    
     loading.value = false;
   } catch (error) {
     console.error('Failed to fetch post:', error);
@@ -221,6 +262,32 @@ onMounted(async () => {
     router.push('/profile/posts');
   }
 });
+
+const onProvinceChange = async () => {
+  form.ward_id = '';
+  form.ward_name = '';
+  wards.value = [];
+  
+  if (!form.province_id) {
+    form.province_name = '';
+    return;
+  }
+  
+  const selected = provinces.value.find(p => p.code === form.province_id);
+  form.province_name = selected ? selected.name : '';
+
+  try {
+    const res = await axios.get(`/api/locations/wards/${form.province_id}`);
+    wards.value = res.data;
+  } catch (error) {
+    console.error('Failed to fetch wards:', error);
+  }
+};
+
+const onWardChange = () => {
+  const selected = wards.value.find(w => w.code === form.ward_id);
+  form.ward_name = selected ? selected.name : '';
+};
 
 const selectParent = (cat) => {
   selectedParentId.value = cat.id;
@@ -288,6 +355,10 @@ const submitUpdate = async () => {
   formData.append('description', form.description);
   formData.append('price', form.price);
   formData.append('address', form.address);
+  formData.append('province_id', form.province_id);
+  formData.append('province_name', form.province_name);
+  formData.append('ward_id', form.ward_id);
+  formData.append('ward_name', form.ward_name);
   formData.append('phone', form.phone);
   formData.append('category_id', form.category_id);
   formData.append('specifications', JSON.stringify(form.specifications));

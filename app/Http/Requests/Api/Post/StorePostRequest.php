@@ -27,6 +27,10 @@ class StorePostRequest extends FormRequest
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'address' => 'required|string|max:255',
+            'province_id' => 'required|integer',
+            'province_name' => 'required|string|max:100',
+            'ward_id' => 'required|integer',
+            'ward_name' => 'required|string|max:100',
             'phone' => 'required|string|max:20',
             'category_id' => 'required|exists:categories,id',
 
