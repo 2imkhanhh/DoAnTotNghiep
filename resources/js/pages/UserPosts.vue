@@ -38,7 +38,7 @@
             <!-- Image Thumbnail -->
             <div class="w-full sm:w-48 h-48 sm:h-32 rounded-xl overflow-hidden relative shrink-0 bg-slate-100">
               <img :src="getPrimaryImage(post)" :alt="post.title"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                class="w-full h-full object-cover transition-transform duration-500">
               <div
                 :class="['absolute top-2 left-2 px-3 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-md', getStatusBadgeClass(post.status)]">
                 {{ getStatusText(post.status) }}
@@ -50,7 +50,7 @@
               <div class="flex justify-between items-start gap-4">
                 <div class="flex-1">
                   <span class="text-[12px] font-bold text-primary tracking-wider">{{ post.category?.name
-                  }}</span>
+                    }}</span>
                   <h3
                     class="text-lg font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-primary transition-colors">
                     {{ post.title }}</h3>
@@ -63,10 +63,10 @@
                     class="btn-action bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" title="Đã bán">
                     <span class="material-symbols-outlined">check_circle</span>
                   </button>
-                  <button class="btn-action bg-slate-50 text-slate-600 hover:bg-slate-800 hover:text-white"
-                    title="Sửa tin">
+                  <router-link :to="`/post/edit/${post.id}`"
+                    class="btn-action bg-slate-50 text-slate-600 hover:bg-slate-800 hover:text-white" title="Sửa tin">
                     <span class="material-symbols-outlined">edit</span>
-                  </button>
+                  </router-link>
                   <button @click="confirmDelete(post)"
                     class="btn-action bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" title="Xóa tin">
                     <span class="material-symbols-outlined">delete</span>
@@ -102,10 +102,10 @@
               class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-[18px]">check_circle</span> Đã bán
             </button>
-            <button
-              class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+            <router-link :to="`/post/edit/${post.id}`"
+              class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
               <span class="material-symbols-outlined text-[18px]">edit</span> Sửa
-            </button>
+            </router-link>
             <button @click="confirmDelete(post)"
               class="flex-1 py-2 bg-red-50 text-red-600 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-[18px]">delete</span> Xóa

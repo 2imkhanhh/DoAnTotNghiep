@@ -238,7 +238,7 @@ const submitPost = async () => {
 
   try {
     const token = localStorage.getItem('access_token');
-    await axios.post('/api/auth/posts', formData, {
+    await axios.post('/api/posts', formData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     alert('Đăng tin thành công! Tin của bạn đang được chờ duyệt');

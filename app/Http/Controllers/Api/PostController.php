@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Api\Post\StorePostRequest;
+use App\Http\Requests\Api\Post\UpdatePostRequest;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -125,6 +126,23 @@ class PostController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $post = Post::with(['images', 'category'])
+            ->where('id', $id)
+            ->where('user_id', auth('api')->id())
+            ->first();
+
+        if (!$post) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $post
+        ]);
+    }
+
     public function store(StorePostRequest $request)
     {
         // 1. Bật khiên bảo vệ Database (Transaction)
@@ -180,6 +198,69 @@ class PostController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi đăng tin, vui lòng thử lại!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(UpdatePostRequest $request, $id)
+    {
+        $post = Post::where('id', $id)->where('user_id', auth('api')->id())->first();
+
+        if (!$post) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng hoặc bạn không có quyền sửa'], 404);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data = $request->validated();
+            
+            // Tự động reset trạng thái về chờ duyệt khi sửa
+            $data['status'] = 0;
+            $data['reject_reason'] = null;
+            
+            // Cập nhật slug nếu tiêu đề thay đổi
+            if ($post->title !== $request->title) {
+                $data['slug'] = Str::slug($request->title) . '-' . time();
+            }
+
+            if ($request->has('specifications') && $request->specifications != null) {
+                $data['specifications'] = json_decode($request->specifications, true);
+            }
+
+            $post->update($data);
+
+            // Xử lý hình ảnh mới (nếu có)
+            if ($request->hasFile('images')) {
+                // Kiểm tra xem đã có ảnh bìa chưa
+                $hasPrimary = $post->images()->where('is_primary', true)->exists();
+
+                foreach ($request->file('images') as $index => $file) {
+                    $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('images', $filename, 'public');
+
+                    PostImage::create([
+                        'post_id' => $post->id,
+                        'image_path' => '/storage/' . $path,
+                        // Nếu chưa có ảnh bìa và đây là ảnh đầu tiên trong đống mới -> làm ảnh bìa
+                        'is_primary' => (!$hasPrimary && $index === 0) ? true : false,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật tin đăng thành công! Tin của bạn đang chờ duyệt lại.',
+                'data' => $post->load('images')
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi cập nhật tin đăng',
                 'error' => $e->getMessage()
             ], 500);
         }

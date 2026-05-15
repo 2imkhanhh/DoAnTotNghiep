@@ -1,0 +1,653 @@
+<template>
+  <div class="post-edit-page animate-in fade-in">
+    <div class="container">
+      <div v-if="loading" class="loading-state">
+        <span class="spinner"></span>
+        <p>Đang tải dữ liệu tin đăng...</p>
+      </div>
+
+      <div v-else>
+        <div class="form-header">
+          <h1 class="title">Chỉnh sửa tin đăng</h1>
+          <p class="subtitle">Cập nhật thông tin để tin đăng của bạn chính xác hơn</p>
+        </div>
+
+        <form @submit.prevent="submitUpdate" class="main-form">
+          <!-- Section: Images -->
+          <section class="form-card">
+            <h2 class="card-title"><span class="material-symbols-outlined">image</span> Hình ảnh sản phẩm</h2>
+            <div class="image-upload-wrapper">
+              <div class="image-grid">
+                <div v-for="(img, index) in imagePreviews" :key="index" class="image-item">
+                  <img :src="img" alt="Preview" />
+                  <div v-if="index === 0" class="main-badge">Ảnh bìa</div>
+                  <button type="button" @click="removeImage(index)" class="remove-btn">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <label v-if="imagePreviews.length < 6" class="upload-btn">
+                  <input type="file" multiple accept="image/*" @change="handleImageUpload" hidden />
+                  <span class="material-symbols-outlined">add_a_photo</span>
+                  <span>Thêm ảnh</span>
+                </label>
+              </div>
+              <p v-if="errors.images" class="error-text">{{ errors.images[0] }}</p>
+            </div>
+          </section>
+
+          <!-- Section: Category -->
+          <section class="form-card">
+            <h2 class="card-title"><span class="material-symbols-outlined">category</span> Danh mục sản phẩm</h2>
+            <div class="category-selection">
+              <label class="label-hint">Chọn danh mục chính:</label>
+              <div class="parent-grid">
+                <div v-for="cat in categories" :key="cat.id" class="parent-item"
+                  :class="{ active: selectedParentId === cat.id }" @click="selectParent(cat)">
+                  <img v-if="cat.icon" :src="cat.icon" class="cat-icon" />
+                  <span class="cat-name">{{ cat.name }}</span>
+                </div>
+              </div>
+
+              <div v-if="selectedParentId" class="child-section animate-in slide-in-from-bottom-4">
+                <label class="label-hint">Chọn chi tiết:</label>
+                <div class="child-chips">
+                  <button type="button" v-for="sub in childCategories" :key="sub.id" class="chip-btn"
+                    :class="{ active: form.category_id === sub.id }" @click="selectChild(sub.id)">
+                    {{ sub.name }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Basic Info -->
+          <section class="form-card">
+            <h2 class="card-title"><span class="material-symbols-outlined">edit_note</span> Thông tin chi tiết</h2>
+
+            <div class="form-group">
+              <label class="field-label">Tiêu đề tin đăng *</label>
+              <input v-model="form.title" type="text" class="input-field"
+                placeholder="Ví dụ: iPhone 13 Pro Max màu xanh 128GB" required />
+              <p v-if="errors.title" class="error-text">{{ errors.title[0] }}</p>
+            </div>
+
+            <!-- Dynamic Attributes -->
+            <div v-if="attributes.length > 0" class="attributes-wrapper">
+              <div class="attr-grid">
+                <div v-for="attr in attributes" :key="attr.id" class="form-group">
+                  <label class="field-label">{{ attr.name }} {{ attr.is_required ? '*' : '' }}</label>
+
+                  <select v-if="attr.type === 'select'" v-model="form.specifications[attr.key]"
+                    :required="attr.is_required" class="input-field">
+                    <option value="">Chọn {{ attr.name }}</option>
+                    <option v-for="opt in parseOptions(attr.options)" :key="opt" :value="opt">{{ opt }}</option>
+                  </select>
+
+                  <input v-else-if="attr.type === 'number'" v-model.number="form.specifications[attr.key]" type="number"
+                    :required="attr.is_required" class="input-field" />
+
+                  <input v-else v-model="form.specifications[attr.key]" type="text" :required="attr.is_required"
+                    class="input-field" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Mô tả sản phẩm *</label>
+              <textarea v-model="form.description" rows="6" class="input-field textarea"
+                placeholder="Mô tả tình trạng, thời gian sử dụng, bảo hành..."></textarea>
+              <p v-if="errors.description" class="error-text">{{ errors.description[0] }}</p>
+            </div>
+          </section>
+
+          <!-- Section: Price & Contact -->
+          <section class="form-card">
+            <h2 class="card-title"><span class="material-symbols-outlined">payments</span> Giá & Liên hệ</h2>
+
+            <div class="info-grid">
+              <div class="form-group">
+                <label class="field-label">Giá bán (VNĐ) *</label>
+                <div class="price-input-box">
+                  <input v-model.number="form.price" type="number" class="input-field price-input" placeholder="0"
+                    required />
+                  <span class="currency-label">VNĐ</span>
+                </div>
+                <p v-if="errors.price" class="error-text">{{ errors.price[0] }}</p>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Số điện thoại *</label>
+                <input v-model="form.phone" type="text" class="input-field" placeholder="Nhập số điện thoại" required />
+                <p v-if="errors.phone" class="error-text">{{ errors.phone[0] }}</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Địa chỉ cụ thể *</label>
+              <div class="address-box">
+                <span class="material-symbols-outlined">location_on</span>
+                <input v-model="form.address" type="text" class="input-field with-icon"
+                  placeholder="Tỉnh/Thành phố, Quận/Huyện, Phường/Xã" required />
+              </div>
+              <p v-if="errors.address" class="error-text">{{ errors.address[0] }}</p>
+            </div>
+          </section>
+
+          <div class="submit-section flex gap-4">
+            <button type="button" @click="$router.back()" class="cancel-btn">Hủy bỏ</button>
+            <button type="submit" class="submit-btn" :disabled="submitting">
+              <span v-if="submitting" class="spinner"></span>
+              <span v-else>Cập nhật tin đăng</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, reactive } from 'vue';
+import axios from 'axios';
+import { useRouter, useRoute } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
+const loading = ref(true);
+const submitting = ref(false);
+const errors = ref({});
+
+const categories = ref([]);
+const childCategories = ref([]);
+const selectedParentId = ref('');
+const attributes = ref([]);
+const imagePreviews = ref([]);
+const selectedFiles = ref([]);
+
+const form = reactive({
+  title: '',
+  description: '',
+  price: null,
+  address: '',
+  phone: '',
+  category_id: '',
+  specifications: {}
+});
+
+onMounted(async () => {
+  const postId = route.params.id;
+  try {
+    // 1. Fetch ALL categories for the selection list
+    const catResponse = await axios.get('/api/categories');
+    categories.value = catResponse.data.data;
+
+    // 2. Fetch the post details
+    const response = await axios.get(`/api/posts/${postId}/edit`);
+    const post = response.data.data;
+    
+    // Fill form
+    form.title = post.title;
+    form.description = post.description;
+    form.price = post.price;
+    form.address = post.address;
+    form.phone = post.phone;
+    form.category_id = post.category_id;
+    form.specifications = post.specifications || {};
+
+    // 3. Determine and set the parent category for UI state
+    if (post.category) {
+      if (post.category.parent_id) {
+        selectedParentId.value = post.category.parent_id;
+        const parent = categories.value.find(c => c.id === post.category.parent_id);
+        childCategories.value = parent ? parent.children : [];
+      } else {
+        selectedParentId.value = post.category.id;
+        childCategories.value = post.category.children || [];
+      }
+    }
+
+    // Image previews (existing)
+    if (post.images) {
+      imagePreviews.value = post.images.map(img => img.image_path);
+    }
+
+    // Fetch category attributes
+    await fetchAttributes();
+    
+    loading.value = false;
+  } catch (error) {
+    console.error('Failed to fetch post:', error);
+    alert('Không thể tải dữ liệu tin đăng');
+    router.push('/profile/posts');
+  }
+});
+
+const selectParent = (cat) => {
+  selectedParentId.value = cat.id;
+  childCategories.value = cat.children || [];
+  form.category_id = '';
+  attributes.value = [];
+  form.specifications = {};
+};
+
+const selectChild = (id) => {
+  form.category_id = id;
+  fetchAttributes();
+};
+
+const fetchAttributes = async () => {
+  if (!form.category_id) return;
+  try {
+    const response = await axios.get(`/api/categories/${form.category_id}/attributes`);
+    attributes.value = response.data.data;
+    // Keep existing specs if they match the keys, otherwise set empty
+    const newSpecs = {};
+    attributes.value.forEach(attr => {
+      newSpecs[attr.key] = form.specifications[attr.key] || '';
+    });
+    form.specifications = newSpecs;
+  } catch (error) {
+    console.error('Failed to fetch attributes:', error);
+  }
+};
+
+const parseOptions = (options) => {
+  if (!options) return [];
+  try {
+    return typeof options === 'string' ? JSON.parse(options) : options;
+  } catch (e) {
+    return options.split(',').map(o => o.trim());
+  }
+};
+
+const handleImageUpload = (event) => {
+  const files = Array.from(event.target.files);
+  const currentCount = imagePreviews.value.length;
+  const remaining = 6 - currentCount;
+
+  files.slice(0, remaining).forEach(file => {
+    selectedFiles.value.push(file);
+    const reader = new FileReader();
+    reader.onload = (e) => imagePreviews.value.push(e.target.result);
+    reader.readAsDataURL(file);
+  });
+};
+
+const removeImage = (index) => {
+  selectedFiles.value.splice(index, 1);
+  imagePreviews.value.splice(index, 1);
+};
+
+const submitUpdate = async () => {
+  submitting.value = true;
+  errors.value = {};
+  
+  const formData = new FormData();
+  formData.append('_method', 'PUT'); // Trick for Laravel form-data PUT
+  formData.append('title', form.title);
+  formData.append('description', form.description);
+  formData.append('price', form.price);
+  formData.append('address', form.address);
+  formData.append('phone', form.phone);
+  formData.append('category_id', form.category_id);
+  formData.append('specifications', JSON.stringify(form.specifications));
+  
+  if (selectedFiles.value.length > 0) {
+    selectedFiles.value.forEach((file, index) => formData.append(`images[${index}]`, file));
+  }
+
+  try {
+    const postId = route.params.id;
+    const response = await axios.post(`/api/posts/${postId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    if (response.data.success) {
+      alert(response.data.message);
+      router.push('/profile/posts');
+    }
+  } catch (err) {
+    if (err.response?.data?.errors) errors.value = err.response.data.errors;
+    else alert('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'));
+  } finally {
+    submitting.value = false;
+  }
+};
+</script>
+
+<style scoped>
+/* Reuse styles from PostCreate but add specific ones */
+.post-edit-page {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 0;
+  gap: 1rem;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1c1e21;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #65676b;
+  font-size: 0.95rem;
+}
+
+.main-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1c1e21;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ebedf0;
+  padding-bottom: 1rem;
+}
+
+.card-title .material-symbols-outlined {
+  color: var(--color-primary);
+}
+
+/* Category Selection Styles */
+.label-hint {
+  display: block;
+  font-size: 0.85rem;
+  color: #65676b;
+  margin-bottom: 0.75rem;
+}
+
+.parent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.75rem;
+}
+
+.parent-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.parent-item:hover {
+  background: #f0f2f5;
+}
+
+.parent-item.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-fixed);
+  color: var(--color-primary);
+}
+
+.cat-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.5rem;
+}
+
+.cat-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.child-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #ddd;
+}
+
+.child-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 1rem;
+  background: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.chip-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.image-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 0.2rem 0;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-btn {
+  aspect-ratio: 1;
+  border: 2px dashed #ccd0d5;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #65676b;
+  transition: all 0.2s;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1c1e21;
+  margin-bottom: 0.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #dddfe2;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-fixed);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.attr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+}
+
+.price-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input {
+  padding-right: 3.5rem;
+  font-weight: 700;
+  color: #d32f2f;
+}
+
+.currency-label {
+  position: absolute;
+  right: 1rem;
+  font-weight: 700;
+  color: #65676b;
+}
+
+.address-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.address-box span {
+  position: absolute;
+  left: 0.75rem;
+  color: #65676b;
+}
+
+.with-icon {
+  padding-left: 2.5rem;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.submit-section {
+  margin-top: 1rem;
+  margin-bottom: 3rem;
+}
+
+.submit-btn {
+  flex: 2;
+  padding: 1rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 1rem;
+  background: #f0f2f5;
+  color: #1c1e21;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, .3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .attr-grid, .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

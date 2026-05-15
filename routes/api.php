@@ -21,13 +21,15 @@ Route::group(['prefix' => 'auth'], function () {
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/profile/password', [ProfileController::class, 'changePassword']);
 
-        Route::post('/posts', [PostController::class, 'store']);
     });
 });
 
 // Các route yêu cầu đăng nhập nhưng không nằm trong prefix 'auth'
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/user/posts', [PostController::class, 'userPosts']);
+    Route::post('/posts', [PostController::class, 'store']);
+    Route::get('/posts/{id}/edit', [PostController::class, 'edit']);
+    Route::put('/posts/{id}', [PostController::class, 'update']);
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
