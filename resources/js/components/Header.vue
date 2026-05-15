@@ -84,7 +84,7 @@
                                     <router-link v-if="authStore.isAdmin" to="/admin/dashboard"
                                         class="block px-4 py-2 text-sm text-primary font-bold hover:bg-surface-container-low hover:text-primary">Quản
                                         trị hệ thống</router-link>
-                                    <router-link to="/my-ads"
+                                    <router-link to="/profile/posts"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Quản
                                         lý tin đăng</router-link>
                                     <router-link to="/settings"

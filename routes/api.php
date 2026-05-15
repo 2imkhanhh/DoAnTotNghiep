@@ -25,6 +25,11 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 
+// Các route yêu cầu đăng nhập nhưng không nằm trong prefix 'auth'
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::get('/user/posts', [PostController::class, 'userPosts']);
+});
+
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/categories', [CategoryController::class, 'store']);

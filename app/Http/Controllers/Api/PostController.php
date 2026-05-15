@@ -13,6 +13,40 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    /**
+     * Lấy danh sách tin đăng của chính người dùng đang đăng nhập
+     */
+    public function userPosts(Request $request)
+    {
+        $user = $request->user();
+        $status = $request->get('status');
+
+        $query = Post::with(['images', 'category'])
+            ->where('user_id', $user->id)
+            ->latest();
+
+        if ($status !== null && $status !== '') {
+            $query->where('status', $status);
+        }
+
+        $posts = $query->paginate(10);
+
+        // Lấy số lượng theo từng trạng thái cho User
+        $counts = [
+            'all' => Post::where('user_id', $user->id)->count(),
+            'pending' => Post::where('user_id', $user->id)->where('status', 0)->count(),
+            'approved' => Post::where('user_id', $user->id)->where('status', 1)->count(),
+            'sold' => Post::where('user_id', $user->id)->where('status', 2)->count(),
+            'rejected' => Post::where('user_id', $user->id)->where('status', 3)->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+            'counts' => $counts
+        ]);
+    }
+
     public function index(Request $request)
     {
         $limit = $request->get('limit', 8);
@@ -29,6 +63,41 @@ class PostController extends Controller
         $posts = $query->paginate($limit);
 
         return response()->json(['success' => true, 'data' => $posts]);
+    }
+
+    public function adminIndex(Request $request)
+    {
+        $status = $request->get('status');
+        $search = $request->get('search');
+
+        $query = Post::with(['images', 'category.attributes', 'user'])
+            ->latest();
+
+        if ($status !== null && $status !== '') {
+            $query->where('status', $status);
+        }
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $posts = $query->paginate($request->get('limit', 10));
+
+        // Lấy số lượng chờ duyệt cho Admin
+        $pendingCount = Post::where('status', 0)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+            'counts' => [
+                'pending' => $pendingCount
+            ]
+        ]);
     }
 
     public function show($slug)
@@ -118,32 +187,6 @@ class PostController extends Controller
 
     // --- Admin Methods ---
 
-    // Lấy danh sách tin đăng cho Admin (không giới hạn status=1)
-    public function adminIndex(Request $request)
-    {
-        $status = $request->get('status');
-        $search = $request->get('search');
-        $limit = $request->get('limit', 10);
-
-        $query = Post::with(['images', 'category.attributes', 'user'])->latest();
-
-        if ($status !== null && $status !== '') {
-            $query->where('status', $status);
-        }
-
-        if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
-                  ->orWhereHas('user', function($qu) use ($search) {
-                      $qu->where('name', 'like', "%$search%");
-                  });
-            });
-        }
-
-        $posts = $query->paginate($limit);
-
-        return response()->json(['success' => true, 'data' => $posts]);
-    }
 
     // Cập nhật trạng thái tin đăng (Duyệt/Từ chối/Đã bán)
     public function updateStatus(Request $request, $id)

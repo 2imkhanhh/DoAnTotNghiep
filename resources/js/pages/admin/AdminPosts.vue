@@ -227,13 +227,13 @@ const pagination = ref({
   per_page: 10
 });
 
-const statusTabs = [
+const statusTabs = ref([
   { label: 'Tất cả', value: '', count: null },
   { label: 'Chờ duyệt', value: '0', count: null },
-  { label: 'Đang hiện', value: '1', count: null },
+  { label: 'Đang hiển thị', value: '1', count: null },
   { label: 'Đã bán', value: '2', count: null },
   { label: 'Bị từ chối', value: '3', count: null },
-];
+]);
 
 const fetchPosts = async (page = 1) => {
   loading.value = true;
@@ -253,6 +253,11 @@ const fetchPosts = async (page = 1) => {
       total: response.data.data.total,
       per_page: response.data.data.per_page
     };
+
+    // Cập nhật số lượng Chờ duyệt cho tab
+    if (response.data.counts && response.data.counts.pending !== undefined) {
+      statusTabs.value[1].count = response.data.counts.pending;
+    }
   } catch (error) {
     console.error('Lỗi khi tải tin đăng:', error);
   } finally {
@@ -352,7 +357,7 @@ const getAttributeName = (post, key) => {
 const getStatusText = (status) => {
   const texts = {
     0: 'Chờ duyệt',
-    1: 'Đang hiện',
+    1: 'Đang hiển thị',
     2: 'Đã bán',
     3: 'Bị từ chối'
   };
