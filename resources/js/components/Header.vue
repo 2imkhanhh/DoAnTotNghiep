@@ -92,7 +92,7 @@
                                         đặt</router-link>
                                     <div class="border-t border-outline-variant my-1"></div>
                                     <button @click="authStore.logout()"
-                                        class="w-full text-left block px-4 py-2 text-sm text-error hover:bg-error-container font-bold">Đăng
+                                        class="w-full text-left block px-4 py-2 text-sm text-error hover:bg-error-container font-bold cursor-pointer">Đăng
                                         xuất</button>
                                 </div>
                             </div>

@@ -17,7 +17,7 @@
       <!-- Status Tabs -->
       <div
         class="bg-white p-1 rounded-2xl shadow-sm border border-slate-200 flex flex-nowrap overflow-x-auto mb-8 no-scrollbar">
-        <button v-for="tab in statusTabs" :key="tab.value" @click="setTab(tab.value)" :class="['flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap',
+        <button v-for="tab in statusTabs" :key="tab.value" @click="setTab(tab.value)" :class="['flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer',
           currentTab === tab.value ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50']">
           <span class="material-symbols-outlined text-[20px]">{{ tab.icon }}</span>
           {{ tab.label }}
@@ -49,7 +49,7 @@
             <div class="flex-1 flex flex-col">
               <div class="flex justify-between items-start gap-4">
                 <div class="flex-1">
-                  <span class="text-[10px] font-bold text-primary uppercase tracking-wider">{{ post.category?.name
+                  <span class="text-[12px] font-bold text-primary tracking-wider">{{ post.category?.name
                   }}</span>
                   <h3
                     class="text-lg font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-primary transition-colors">
@@ -269,6 +269,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  cursor: pointer !important;
 }
 
 .post-card {

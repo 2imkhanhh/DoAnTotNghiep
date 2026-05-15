@@ -241,7 +241,7 @@ const submitPost = async () => {
     await axios.post('/api/auth/posts', formData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Đăng tin thành công!');
+    alert('Đăng tin thành công! Tin của bạn đang được chờ duyệt');
     router.push('/');
   } catch (err) {
     if (err.response?.data?.errors) errors.value = err.response.data.errors;
