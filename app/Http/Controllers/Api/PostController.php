@@ -23,6 +23,10 @@ class PostController extends Controller
         $status = $request->get('status');
 
         $query = Post::with(['images', 'category'])
+            // Thêm withExists kiểm tra yêu thích
+            ->withExists(['favoritedBy as is_favorited' => function ($query) {
+                $query->where('user_id', auth('api')->id());
+            }])
             ->where('user_id', $user->id)
             ->latest();
 
@@ -52,8 +56,12 @@ class PostController extends Controller
     {
         $limit = $request->get('limit', 8);
         $category_id = $request->get('category_id');
-        
+
         $query = Post::with(['images', 'category', 'user'])
+            // Thêm withExists kiểm tra yêu thích
+            ->withExists(['favoritedBy as is_favorited' => function ($query) {
+                $query->where('user_id', auth('api')->id());
+            }])
             ->where('status', 1)
             ->latest();
 
@@ -79,11 +87,11 @@ class PostController extends Controller
         }
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($qu) use ($search) {
-                      $qu->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($qu) use ($search) {
+                        $qu->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -104,6 +112,10 @@ class PostController extends Controller
     public function show($slug)
     {
         $post = Post::with(['images', 'category.attributes', 'user'])
+            // Thêm withExists kiểm tra yêu thích cho bài viết chính
+            ->withExists(['favoritedBy as is_favorited' => function ($query) {
+                $query->where('user_id', auth('api')->id());
+            }])
             ->where('slug', $slug)
             ->first();
 
@@ -113,6 +125,10 @@ class PostController extends Controller
 
         // Lấy tin đăng liên quan (cùng danh mục, trừ tin hiện tại)
         $relatedPosts = Post::with(['images', 'user'])
+            // Thêm withExists kiểm tra yêu thích cho các bài viết liên quan bên dưới
+            ->withExists(['favoritedBy as is_favorited' => function ($query) {
+                $query->where('user_id', auth('api')->id());
+            }])
             ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
             ->where('status', 1)
@@ -215,11 +231,11 @@ class PostController extends Controller
 
         try {
             $data = $request->validated();
-            
+
             // Tự động reset trạng thái về chờ duyệt khi sửa
             $data['status'] = 0;
             $data['reject_reason'] = null;
-            
+
             // Cập nhật slug nếu tiêu đề thay đổi
             if ($post->title !== $request->title) {
                 $data['slug'] = Str::slug($request->title) . '-' . time();
@@ -267,7 +283,6 @@ class PostController extends Controller
     }
 
     // --- Admin Methods ---
-
 
     // Cập nhật trạng thái tin đăng (Duyệt/Từ chối/Đã bán)
     public function updateStatus(Request $request, $id)

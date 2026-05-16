@@ -34,10 +34,23 @@ class Post extends Model
         'price' => 'decimal:2'
     ];
 
+    protected $appends = ['is_favorited'];
+
+    public function getIsFavoritedAttribute()
+    {
+        // Trả về giá trị từ subquery withExists, ép kiểu về boolean
+        return (bool) ($this->attributes['is_favorited'] ?? false);
+    }
+
     // Mối quan hệ: Một tin đăng thuộc về MỘT người dùng
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'post_id', 'user_id');
     }
 
     // Mối quan hệ: Một tin đăng thuộc về MỘT danh mục
