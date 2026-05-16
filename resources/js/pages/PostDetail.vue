@@ -178,27 +178,53 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 const post = ref(null);
 const relatedPosts = ref([]);
 const activeImage = ref(0);
 const loading = ref(true);
-const favoriteIds = ref([]); // Demo local state
+const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const isFavorite = (postId) => {
     if (!postId) return false;
-    return favoriteIds.value.includes(postId) || favoriteIds.value.includes(String(postId)) || favoriteIds.value.includes(Number(postId));
+    return favoriteIds.value.includes(Number(postId));
 };
 
-const toggleFavorite = (postId) => {
+const fetchFavorites = async () => {
+    if (!authStore.isLoggedIn) return;
+    try {
+        const response = await axios.get('/api/user/favorites');
+        if (response.data.success) {
+            favoriteIds.value = response.data.data.data.map(p => p.id);
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách yêu thích:', error);
+    }
+};
+
+const toggleFavorite = async (postId) => {
+    if (!authStore.isLoggedIn) {
+        alert('Vui lòng đăng nhập để sử dụng tính năng này');
+        return;
+    }
+
     if (!postId) return;
-    const index = favoriteIds.value.indexOf(postId);
-    if (index === -1) {
-        favoriteIds.value.push(postId);
-    } else {
-        favoriteIds.value.splice(index, 1);
+
+    try {
+        const response = await axios.post(`/api/posts/${postId}/favorite`);
+        if (response.data.success) {
+            if (response.data.is_favorited) {
+                favoriteIds.value.push(Number(postId));
+            } else {
+                favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi khi thực hiện yêu thích:', error);
     }
 };
 
@@ -252,6 +278,7 @@ watch(() => route.params.slug, () => {
 
 onMounted(() => {
   fetchPostDetail();
+  fetchFavorites();
 });
 </script>
 

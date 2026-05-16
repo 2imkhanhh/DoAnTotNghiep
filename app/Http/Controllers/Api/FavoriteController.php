@@ -37,7 +37,10 @@ class FavoriteController extends Controller
         $user = $request->user();
 
         // Lấy danh sách kèm theo ảnh đại diện của bài viết
-        $favorites = $user->favoritePosts()->with('images')->orderBy('favorites.created_at', 'desc')->paginate(10);
+        $favorites = $user->favoritePosts()
+            ->with('images')
+            ->orderBy('favorites.created_at', 'desc')
+            ->paginate(10);
 
         return response()->json([
             'success' => true,

@@ -203,16 +203,51 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const currentSlide = ref(0);
 const totalSlides = 3;
 let slideInterval = null;
 const categories = ref([]);
 const posts = ref([]);
-const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích (demo)
+const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const isFavorite = (postId) => {
-    return favoriteIds.value.includes(postId) || favoriteIds.value.includes(String(postId)) || favoriteIds.value.includes(Number(postId));
+    return favoriteIds.value.includes(Number(postId));
+};
+
+const fetchFavorites = async () => {
+    if (!authStore.isLoggedIn) return;
+    try {
+        const response = await axios.get('/api/user/favorites');
+        // Vì Backend dùng paginate nên data sẽ nằm trong response.data.data.data
+        if (response.data.success) {
+            favoriteIds.value = response.data.data.data.map(p => p.id);
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách yêu thích:', error);
+    }
+};
+
+const toggleFavorite = async (postId) => {
+    if (!authStore.isLoggedIn) {
+        alert('Vui lòng đăng nhập để sử dụng tính năng này');
+        return;
+    }
+
+    try {
+        const response = await axios.post(`/api/posts/${postId}/favorite`);
+        if (response.data.success) {
+            if (response.data.is_favorited) {
+                favoriteIds.value.push(Number(postId));
+            } else {
+                favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi khi thực hiện yêu thích:', error);
+    }
 };
 
 const fetchCategories = async () => {
@@ -274,16 +309,7 @@ const goToSlide = (index) => {
     resetAutoSlide();
 };
 
-const toggleFavorite = (postId) => {
-    const index = favoriteIds.value.indexOf(postId);
-    if (index === -1) {
-        favoriteIds.value.push(postId);
-        console.log('Đã thêm vào yêu thích:', postId);
-    } else {
-        favoriteIds.value.splice(index, 1);
-        console.log('Đã xóa khỏi yêu thích:', postId);
-    }
-};
+
 
 const startAutoSlide = () => {
     slideInterval = setInterval(() => {
@@ -300,6 +326,7 @@ onMounted(() => {
     startAutoSlide();
     fetchCategories();
     fetchPosts();
+    fetchFavorites();
 });
 
 onUnmounted(() => {
