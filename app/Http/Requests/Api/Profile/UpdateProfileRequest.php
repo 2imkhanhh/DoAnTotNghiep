@@ -22,7 +22,7 @@ class UpdateProfileRequest extends FormRequest
                 'sometimes',
                 'nullable',
                 'string',
-                'max:20',
+                'regex:/^0[0-9]{9}$/',
                 Rule::unique('users', 'phone')->ignore($userId)
             ],
             'address' => 'sometimes|nullable|string|max:255',
@@ -31,6 +31,14 @@ class UpdateProfileRequest extends FormRequest
             'ward_id' => 'sometimes|nullable|integer',
             'ward_name' => 'sometimes|nullable|string|max:100',
             'avatar' => 'sometimes|nullable|string',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'phone.regex' => 'Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số.',
+            'phone.unique' => 'Số điện thoại này đã được sử dụng.',
         ];
     }
 }
