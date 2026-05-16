@@ -118,9 +118,12 @@
                                 <span class="material-symbols-outlined text-sm">schedule</span>
                                 {{ formatTime(post.created_at) }}
                             </span>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">location_on</span>
-                                {{ post.address.split(',').pop().trim() }}
+                            <span class="flex items-start gap-1">
+                                <span class="material-symbols-outlined text-sm mt-0.5">location_on</span>
+                                <div class="flex flex-col leading-tight">
+                                    <span>{{ post.ward_name }}</span>
+                                    <span>{{ post.province_name }}</span>
+                                </div>
                             </span>
                         </div>
                     </div>

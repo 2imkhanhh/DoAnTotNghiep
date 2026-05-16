@@ -53,9 +53,12 @@
                 <span class="material-symbols-outlined">schedule</span>
                 {{ formatDate(post.created_at) }}
               </div>
-              <div class="meta-item">
-                <span class="material-symbols-outlined">location_on</span>
-                {{ post.address }}
+              <div class="meta-item items-start">
+                <span class="material-symbols-outlined mt-1">location_on</span>
+                <div class="flex flex-col">
+                  <span>{{ post.ward_name }}</span>
+                  <span>{{ post.province_name }}</span>
+                </div>
               </div>
               <div class="meta-item">
                 <span class="material-symbols-outlined">visibility</span>

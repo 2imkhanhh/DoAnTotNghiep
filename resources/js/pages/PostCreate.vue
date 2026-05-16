@@ -137,15 +137,7 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="field-label">Số nhà, tên đường *</label>
-            <div class="address-box">
-              <span class="material-symbols-outlined">location_on</span>
-              <input v-model="form.address" type="text" class="input-field with-icon"
-                placeholder="Ví dụ: Số 123, Đường Nguyễn Huệ" required />
-            </div>
-            <p v-if="errors.address" class="error-text">{{ errors.address[0] }}</p>
-          </div>
+
         </section>
 
         <div class="submit-section">

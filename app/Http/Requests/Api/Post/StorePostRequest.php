@@ -26,7 +26,7 @@ class StorePostRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'address' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
             'province_id' => 'required|integer',
             'province_name' => 'required|string|max:100',
             'ward_id' => 'required|integer',

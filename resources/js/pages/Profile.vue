@@ -134,18 +134,7 @@
                   </div>
                 </div>
 
-                <!-- Address -->
-                <div class="space-y-2 sm:col-span-2">
-                  <label class="text-sm font-bold text-on-surface-variant px-1">Địa chỉ cụ thể (Số nhà, tên đường)</label>
-                  <div class="relative">
-                    <span
-                      class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">location_on</span>
-                    <input v-model="profileData.address" type="text"
-                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="Nhập số nhà, tên đường">
-                  </div>
-                  <p v-if="errors.address" class="text-xs text-error mt-1 px-1">{{ errors.address[0] }}</p>
-                </div>
+
 
                 <!-- Avatar (File Upload) -->
                 <div class="space-y-2 sm:col-span-2">
