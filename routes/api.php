@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ResetPasswordController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\FavoriteController;
 
 use App\Http\Controllers\Api\LocationController;
 
@@ -25,7 +26,6 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::put('/profile/password', [ProfileController::class, 'changePassword']);
-
     });
 });
 
@@ -35,6 +35,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/posts', [PostController::class, 'store']);
     Route::get('/posts/{id}/edit', [PostController::class, 'edit']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
+
+    Route::post('/posts/{id}/favorite', [FavoriteController::class, 'toggleFavorite']);
+    Route::get('/user/favorites', [FavoriteController::class, 'getFavorites']);
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn

@@ -53,6 +53,12 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
+    public function favoritePosts()
+    {
+        // Liên kết với bảng Post thông qua bảng trung gian 'favorites'
+        return $this->belongsToMany(Post::class, 'favorites', 'user_id', 'post_id')->withTimestamps();
+    }
+
     /**
      * Get the attributes that should be cast.
      *
