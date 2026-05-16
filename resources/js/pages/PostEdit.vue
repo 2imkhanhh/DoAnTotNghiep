@@ -106,14 +106,15 @@
 
             <div class="info-grid mb-6">
               <div class="form-group">
-                <label class="field-label">Giá bán (VNĐ) *</label>
-                <div class="price-input-box">
-                  <input v-model.number="form.price" type="number" class="input-field price-input" placeholder="0"
-                    required />
-                  <span class="currency-label">VNĐ</span>
-                </div>
-                <p v-if="errors.price" class="error-text">{{ errors.price[0] }}</p>
+              <label class="field-label">Giá bán *</label>
+              <div class="price-input-wrapper">
+                <span class="currency-icon material-symbols-outlined">payments</span>
+                <input :value="formattedPrice" @input="handlePriceInput" type="text" placeholder="Ví dụ: 5.000.000"
+                  class="input-field with-icon" required>
+                <span class="currency-unit">VNĐ</span>
               </div>
+              <p v-if="errors.price" class="error-text">{{ errors.price[0] }}</p>
+            </div>
 
               <div class="form-group">
                 <label class="field-label">Số điện thoại *</label>
@@ -160,7 +161,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
 
@@ -195,6 +196,16 @@ const form = reactive({
   specifications: {}
 });
 
+const formattedPrice = computed(() => {
+  if (!form.price) return '';
+  return new Intl.NumberFormat('vi-VN').format(form.price);
+});
+
+const handlePriceInput = (e) => {
+  const value = e.target.value.replace(/\D/g, '');
+  form.price = value ? parseInt(value) : null;
+};
+
 onMounted(async () => {
   const postId = route.params.id;
   try {
@@ -213,7 +224,7 @@ onMounted(async () => {
     // Fill form
     form.title = post.title;
     form.description = post.description;
-    form.price = post.price;
+    form.price = Math.floor(post.price);
     form.address = post.address;
     form.province_id = post.province_id;
     form.province_name = post.province_name;
@@ -623,23 +634,25 @@ const submitUpdate = async () => {
   gap: 1rem;
 }
 
-.price-input-box {
+.price-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.price-input {
-  padding-right: 3.5rem;
-  font-weight: 700;
-  color: #d32f2f;
+.currency-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #65676b;
+  font-size: 1.2rem;
 }
 
-.currency-label {
+.currency-unit {
   position: absolute;
   right: 1rem;
   font-weight: 700;
-  color: #65676b;
+  color: var(--color-primary);
+  font-size: 0.9rem;
 }
 
 .address-box {
