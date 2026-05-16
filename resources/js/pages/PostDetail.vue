@@ -40,13 +40,26 @@
           <!-- Description Section -->
           <div class="info-card card">
             <div class="post-header">
-              <div class="post-meta-top">
-                <span class="category-tag">{{ post.category?.name }}</span>
-                <span v-if="post.status !== 1" :class="['status-badge', getStatusClass(post.status)]">
-                  {{ getStatusText(post.status) }}
-                </span>
+              <div class="flex justify-between items-start gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="post-meta-top mb-2">
+                    <span class="category-tag">{{ post.category?.name }}</span>
+                    <span v-if="post.status !== 1" :class="['status-badge', getStatusClass(post.status)]">
+                      {{ getStatusText(post.status) }}
+                    </span>
+                  </div>
+                  <h1 class="post-title">{{ post.title }}</h1>
+                </div>
+                
+                <button @click="toggleFavorite(post.id)" 
+                  class="pill-favorite-btn"
+                  :class="{ 'active': isFavorite(post.id) }">
+                  <span class="material-symbols-outlined" :class="{ 'font-variation-fill': isFavorite(post.id) }">
+                    favorite
+                  </span>
+                  <span class="btn-text">Lưu</span>
+                </button>
               </div>
-              <h1 class="post-title">{{ post.title }}</h1>
             </div>
             <div class="post-meta">
               <div class="meta-item">
@@ -172,6 +185,22 @@ const post = ref(null);
 const relatedPosts = ref([]);
 const activeImage = ref(0);
 const loading = ref(true);
+const favoriteIds = ref([]); // Demo local state
+
+const isFavorite = (postId) => {
+    if (!postId) return false;
+    return favoriteIds.value.includes(postId) || favoriteIds.value.includes(String(postId)) || favoriteIds.value.includes(Number(postId));
+};
+
+const toggleFavorite = (postId) => {
+    if (!postId) return;
+    const index = favoriteIds.value.indexOf(postId);
+    if (index === -1) {
+        favoriteIds.value.push(postId);
+    } else {
+        favoriteIds.value.splice(index, 1);
+    }
+};
 
 const fetchPostDetail = async () => {
   loading.value = true;
@@ -348,9 +377,49 @@ onMounted(() => {
   object-fit: cover;
 }
 
-/* Post Info */
 .info-card {
   padding: 2rem;
+}
+
+.post-header {
+  margin-bottom: 1.5rem;
+}
+
+.pill-favorite-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.25rem;
+  border: 1px solid #dddfe2;
+  border-radius: 999px;
+  background: white;
+  color: #1c1e21;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: fit-content;
+  margin-top: 0.25rem;
+}
+
+.pill-favorite-btn:hover {
+  background: #f2f3f5;
+  border-color: #ccd0d5;
+}
+
+.pill-favorite-btn.active {
+  border-color: #fee2e2;
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.pill-favorite-btn .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.pill-favorite-btn .btn-text {
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .post-title {
@@ -359,6 +428,8 @@ onMounted(() => {
   color: #1e293b;
   margin-bottom: 1rem;
   line-height: 1.2;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .post-meta {
