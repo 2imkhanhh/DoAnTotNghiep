@@ -99,11 +99,27 @@
             <div v-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <div v-for="post in posts" :key="post.id"
                     class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group">
-                    <router-link :to="`/post/${post.slug}`" class="relative h-48 w-full overflow-hidden">
+                    <router-link :to="`/post/${post.slug}`" class="relative h-48 w-full overflow-hidden block">
                         <img :src="getPrimaryImage(post)" :alt="post.title"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        
+                        <!-- Favorite Button -->
+                        <button @click.prevent="toggleFavorite(post.id)" 
+                            class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
+                            <!-- 1. Ruột Đỏ (Nằm dưới, chỉ hiện khi yêu thích) -->
+                            <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute', 
+                                isFavorite(post.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
+                                favorite
+                            </span>
+                            
+                            <!-- 2. Viền Trắng (Nằm trên cùng, luôn hiện để giữ đường viền) -->
+                            <span class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                                favorite
+                            </span>
+                        </button>
+
                         <span v-if="post.status === 2"
-                            class="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
+                            class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                             Đã bán
                         </span>
                     </router-link>
@@ -193,6 +209,11 @@ const totalSlides = 3;
 let slideInterval = null;
 const categories = ref([]);
 const posts = ref([]);
+const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích (demo)
+
+const isFavorite = (postId) => {
+    return favoriteIds.value.includes(postId) || favoriteIds.value.includes(String(postId)) || favoriteIds.value.includes(Number(postId));
+};
 
 const fetchCategories = async () => {
     try {
@@ -251,6 +272,17 @@ const prevSlide = () => {
 const goToSlide = (index) => {
     currentSlide.value = index;
     resetAutoSlide();
+};
+
+const toggleFavorite = (postId) => {
+    const index = favoriteIds.value.indexOf(postId);
+    if (index === -1) {
+        favoriteIds.value.push(postId);
+        console.log('Đã thêm vào yêu thích:', postId);
+    } else {
+        favoriteIds.value.splice(index, 1);
+        console.log('Đã xóa khỏi yêu thích:', postId);
+    }
 };
 
 const startAutoSlide = () => {

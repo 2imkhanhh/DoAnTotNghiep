@@ -241,3 +241,12 @@
 .slide-in-from-right-8 {
   animation-name: slideInFromRight;
 }
+
+/* Material Symbols Fill Support */
+.font-variation-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+}
+
+.cursor-pointer {
+  cursor: pointer !important;
+}
