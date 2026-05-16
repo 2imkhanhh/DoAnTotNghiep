@@ -28,7 +28,9 @@ class ProfileController extends Controller
         $userId = auth('api')->id();
 
         // GỌI TRỰC TIẾP TỪ MODEL 
-        User::where('id', $userId)->update($request->only(['name', 'phone', 'address', 'avatar']));
+        User::where('id', $userId)->update($request->only([
+            'name', 'phone', 'address', 'province_id', 'province_name', 'ward_id', 'ward_name', 'avatar'
+        ]));
 
         // Lấy lại thông tin user sau khi đã update để trả về cho Frontend
         $updatedUser = User::find($userId);

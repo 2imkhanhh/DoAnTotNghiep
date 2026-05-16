@@ -41,11 +41,6 @@
               <span class="material-symbols-outlined">sell</span>
               <span>Tin đăng của tôi</span>
             </router-link>
-            <router-link to="/history"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface hover:bg-surface-container-low transition-all duration-200 mt-1">
-              <span class="material-symbols-outlined">history</span>
-              <span>Lịch sử mua hàng</span>
-            </router-link>
             <div class="border-t border-outline-variant my-2"></div>
             <button @click="authStore.logout()"
               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error-container transition-all duration-200 cursor-pointer">
@@ -103,20 +98,51 @@
                       class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">call</span>
                     <input v-model="profileData.phone" type="tel"
                       class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="09xx xxx xxx">
+                      placeholder="Nhập số điện thoại">
                   </div>
                   <p v-if="errors.phone" class="text-xs text-error mt-1 px-1">{{ errors.phone[0] }}</p>
                 </div>
 
+                <!-- Administrative Units -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:col-span-2">
+                  <div class="space-y-2">
+                    <label class="text-sm font-bold text-on-surface-variant px-1">Tỉnh / Thành phố</label>
+                    <div class="relative">
+                      <span
+                        class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">map</span>
+                      <select v-model="profileData.province_id" @change="onProvinceChange"
+                        class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
+                        <option value="">Chọn Tỉnh/Thành</option>
+                        <option v-for="p in provinces" :key="p.code" :value="p.code">{{ p.name }}</option>
+                      </select>
+                    </div>
+                    <p v-if="errors.province_id" class="text-xs text-error mt-1 px-1">{{ errors.province_id[0] }}</p>
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="text-sm font-bold text-on-surface-variant px-1">Phường / Xã</label>
+                    <div class="relative">
+                      <span
+                        class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">location_city</span>
+                      <select v-model="profileData.ward_id" @change="onWardChange" :disabled="!profileData.province_id"
+                        class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none disabled:opacity-50">
+                        <option value="">Chọn Phường/Xã</option>
+                        <option v-for="w in wards" :key="w.code" :value="w.code">{{ w.name }}</option>
+                      </select>
+                    </div>
+                    <p v-if="errors.ward_id" class="text-xs text-error mt-1 px-1">{{ errors.ward_id[0] }}</p>
+                  </div>
+                </div>
+
                 <!-- Address -->
                 <div class="space-y-2 sm:col-span-2">
-                  <label class="text-sm font-bold text-on-surface-variant px-1">Địa chỉ</label>
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Địa chỉ cụ thể (Số nhà, tên đường)</label>
                   <div class="relative">
                     <span
                       class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">location_on</span>
                     <input v-model="profileData.address" type="text"
                       class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="Nhập địa chỉ của bạn">
+                      placeholder="Nhập số nhà, tên đường">
                   </div>
                   <p v-if="errors.address" class="text-xs text-error mt-1 px-1">{{ errors.address[0] }}</p>
                 </div>
@@ -243,12 +269,20 @@ const passwordLoading = ref(false);
 const errors = ref({});
 const passwordErrors = ref({});
 
+// Administrative Units
+const provinces = ref([]);
+const wards = ref([]);
+
 // Khởi tạo dữ liệu từ Store ngay lập tức để tránh nhấp nháy UI
 const profileData = ref({
   name: authStore.user?.name || '',
   email: authStore.user?.email || '',
   phone: authStore.user?.phone || '',
   address: authStore.user?.address || '',
+  province_id: authStore.user?.province_id || '',
+  province_name: authStore.user?.province_name || '',
+  ward_id: authStore.user?.ward_id || '',
+  ward_name: authStore.user?.ward_name || '',
   avatar: authStore.user?.avatar || ''
 });
 
@@ -260,10 +294,59 @@ watch(() => authStore.user, (newUser) => {
       email: newUser.email,
       phone: newUser.phone,
       address: newUser.address,
+      province_id: newUser.province_id,
+      province_name: newUser.province_name,
+      ward_id: newUser.ward_id,
+      ward_name: newUser.ward_name,
       avatar: newUser.avatar
     };
+    if (newUser.province_id) fetchInitialWards(newUser.province_id);
   }
 }, { deep: true });
+
+const onProvinceChange = async () => {
+  profileData.value.ward_id = '';
+  profileData.value.ward_name = '';
+  wards.value = [];
+
+  if (!profileData.value.province_id) {
+    profileData.value.province_name = '';
+    return;
+  }
+
+  const selected = provinces.value.find(p => p.code === profileData.value.province_id);
+  profileData.value.province_name = selected ? selected.name : '';
+
+  try {
+    const res = await axios.get(`/api/locations/wards/${profileData.value.province_id}`);
+    wards.value = res.data;
+  } catch (error) {
+    console.error('Failed to fetch wards:', error);
+  }
+};
+
+const onWardChange = () => {
+  const selected = wards.value.find(w => w.code === profileData.value.ward_id);
+  profileData.value.ward_name = selected ? selected.name : '';
+};
+
+const fetchInitialWards = async (provinceId) => {
+  try {
+    const res = await axios.get(`/api/locations/wards/${provinceId}`);
+    wards.value = res.data;
+  } catch (error) {
+    console.error('Failed to fetch initial wards:', error);
+  }
+};
+
+const fetchProvinces = async () => {
+  try {
+    const res = await axios.get('/api/locations/provinces');
+    provinces.value = res.data;
+  } catch (error) {
+    console.error('Failed to fetch provinces:', error);
+  }
+};
 
 const passwordData = ref({
   current_password: '',
@@ -356,6 +439,11 @@ const changePassword = async () => {
 };
 
 onMounted(() => {
-  fetchProfile();
+  fetchProvinces();
+  fetchProfile().then(() => {
+    if (profileData.value.province_id) {
+      fetchInitialWards(profileData.value.province_id);
+    }
+  });
 });
 </script>

@@ -26,6 +26,10 @@ class UpdateProfileRequest extends FormRequest
                 Rule::unique('users', 'phone')->ignore($userId)
             ],
             'address' => 'sometimes|nullable|string|max:255',
+            'province_id' => 'sometimes|nullable|integer',
+            'province_name' => 'sometimes|nullable|string|max:100',
+            'ward_id' => 'sometimes|nullable|integer',
+            'ward_name' => 'sometimes|nullable|string|max:100',
             'avatar' => 'sometimes|nullable|string',
         ];
     }
