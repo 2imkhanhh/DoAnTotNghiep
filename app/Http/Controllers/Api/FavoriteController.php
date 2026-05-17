@@ -18,6 +18,14 @@ class FavoriteController extends Controller
 
         $user = $request->user();
 
+        // Chặn không cho phép tự thích bài viết của chính mình
+        if ($post->user_id === $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không thể yêu thích tin đăng của chính mình'
+            ], 400);
+        }
+
         // toggle() sẽ tự động: Nếu có rồi thì xóa, chưa có thì thêm vào
         $user->favoritePosts()->toggle($postId);
 

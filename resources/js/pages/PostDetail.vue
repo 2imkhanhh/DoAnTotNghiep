@@ -51,7 +51,7 @@
                   <h1 class="post-title">{{ post.title }}</h1>
                 </div>
                 
-                <button @click="toggleFavorite(post.id)" 
+                <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click="toggleFavorite(post.id)" 
                   class="pill-favorite-btn"
                   :class="{ 'active': isFavorite(post.id) }">
                   <span class="material-symbols-outlined" :class="{ 'font-variation-fill': isFavorite(post.id) }">

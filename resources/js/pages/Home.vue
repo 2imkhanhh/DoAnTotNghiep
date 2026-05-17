@@ -104,7 +104,7 @@
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         
                         <!-- Favorite Button -->
-                        <button @click.prevent="toggleFavorite(post.id)" 
+                        <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click.prevent="toggleFavorite(post.id)" 
                             class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                             <!-- 1. Ruột Đỏ (Nằm dưới, chỉ hiện khi yêu thích) -->
                             <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute', 
