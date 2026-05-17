@@ -43,6 +43,11 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/seller/:id',
+        name: 'PublicProfile',
+        component: () => import('./pages/PublicProfile.vue'),
+    },
+    {
         path: '/profile/posts',
         name: 'UserPosts',
         component: () => import('./pages/UserPosts.vue'),

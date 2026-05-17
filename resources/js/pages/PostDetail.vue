@@ -131,7 +131,7 @@
                     <span class="rating-text">{{ post.user?.rating || '5.0' }}</span>
                   </div>
                 </div>
-                <button class="view-profile">Xem trang</button>
+                <button class="view-profile" @click="goToSellerProfile">Xem trang</button>
               </div>
               <div class="seller-stats">
                 <div class="stat-item">
@@ -327,6 +327,20 @@ const formatTime = (dateString) => {
 
 const goToPost = (slug) => {
   router.push(`/post/${slug}`);
+};
+
+const goToSellerProfile = () => {
+  if (!post.value || !post.value.user) return;
+  
+  if (authStore.isLoggedIn && post.value.user_id === authStore.user?.id) {
+    router.push('/profile');
+  } else {
+    router.push({
+      name: 'PublicProfile',
+      params: { id: post.value.user_id },
+      state: { seller: post.value.user }
+    });
+  }
 };
 
 // Re-fetch when slug changes
