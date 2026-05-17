@@ -21,8 +21,15 @@
           <div class="gallery-card card">
             <div class="main-image">
               <img :src="post.images[activeImage]?.image_path" :alt="post.title">
-              <button class="zoom-btn">
-                <span class="material-symbols-outlined">zoom_in</span>
+
+              <!-- Navigation Arrows -->
+              <button v-if="post.images.length > 1" class="gallery-nav-btn prev-btn" @click="prevImage"
+                aria-label="Ảnh trước">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button v-if="post.images.length > 1" class="gallery-nav-btn next-btn" @click="nextImage"
+                aria-label="Ảnh sau">
+                <span class="material-symbols-outlined">chevron_right</span>
               </button>
             </div>
             <div class="thumbnails" v-if="post.images.length > 1">
@@ -183,6 +190,24 @@ const relatedPosts = ref([]);
 const activeImage = ref(0);
 const loading = ref(true);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
+
+const prevImage = () => {
+  if (!post.value || !post.value.images.length) return;
+  if (activeImage.value === 0) {
+    activeImage.value = post.value.images.length - 1;
+  } else {
+    activeImage.value--;
+  }
+};
+
+const nextImage = () => {
+  if (!post.value || !post.value.images.length) return;
+  if (activeImage.value === post.value.images.length - 1) {
+    activeImage.value = 0;
+  } else {
+    activeImage.value++;
+  }
+};
 
 const isFavorite = (postId) => {
   if (!postId) return false;
@@ -358,21 +383,74 @@ onMounted(() => {
   object-fit: contain;
 }
 
-.zoom-btn {
+/* Gallery Navigation Arrows */
+.gallery-nav-btn {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(4px);
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #1e293b;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  z-index: 10;
 }
+
+.main-image:hover .gallery-nav-btn {
+  opacity: 1;
+}
+
+.gallery-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.gallery-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.prev-btn {
+  left: 1rem;
+}
+
+.next-btn {
+  right: 1rem;
+}
+
+.gallery-nav-btn span {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .gallery-nav-btn {
+    opacity: 0.9 !important;
+    width: 38px;
+    height: 38px;
+  }
+
+  .gallery-nav-btn span {
+    font-size: 24px;
+  }
+
+  .prev-btn {
+    left: 0.5rem;
+  }
+
+  .next-btn {
+    right: 0.5rem;
+  }
+}
+
 
 .thumbnails {
   display: flex;
