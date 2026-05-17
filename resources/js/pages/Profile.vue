@@ -36,10 +36,15 @@
               <span class="material-symbols-outlined">lock</span>
               <span>Đổi mật khẩu</span>
             </button>
-            <router-link to="/my-ads"
+            <router-link to="/profile/posts"
               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface hover:bg-surface-container-low transition-all duration-200 mt-1">
               <span class="material-symbols-outlined">sell</span>
               <span>Tin đăng của tôi</span>
+            </router-link>
+            <router-link to="/profile/favorites"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface hover:bg-surface-container-low transition-all duration-200 mt-1">
+              <span class="material-symbols-outlined">favorite</span>
+              <span>Tin đăng yêu thích</span>
             </router-link>
             <div class="border-t border-outline-variant my-2"></div>
             <button @click="authStore.logout()"

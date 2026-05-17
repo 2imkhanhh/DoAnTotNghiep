@@ -36,9 +36,9 @@ class FavoriteController extends Controller
     {
         $user = $request->user();
 
-        // Lấy danh sách kèm theo ảnh đại diện của bài viết
+        // Lấy danh sách kèm theo ảnh đại diện của bài viết và thông tin người đăng
         $favorites = $user->favoritePosts()
-            ->with('images')
+            ->with(['images', 'user'])
             ->orderBy('favorites.created_at', 'desc')
             ->paginate(10);
 

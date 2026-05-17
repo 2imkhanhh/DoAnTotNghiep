@@ -87,6 +87,8 @@
                                     <router-link to="/profile/posts"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Quản
                                         lý tin đăng</router-link>
+                                    <router-link to="/profile/favorites"
+                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Tin đăng yêu thích</router-link>
                                     <router-link to="/settings"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Cài
                                         đặt</router-link>

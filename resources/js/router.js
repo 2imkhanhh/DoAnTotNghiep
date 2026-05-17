@@ -49,6 +49,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/profile/favorites',
+        name: 'UserFavorites',
+        component: () => import('./pages/UserFavorites.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/post/create',
         name: 'PostCreate',
         component: () => import('./pages/PostCreate.vue'),
