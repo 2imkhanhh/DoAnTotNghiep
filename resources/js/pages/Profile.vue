@@ -22,6 +22,30 @@
                 <p class="text-xs text-on-surface-variant truncate">{{ profileData.email }}</p>
               </div>
             </div>
+            <!-- Followers and Following Display -->
+            <div class="flex items-center mt-5 pt-5 border-t border-outline-variant divide-x divide-outline-variant">
+              <button @click="openFollowModal('followers')" type="button"
+                class="flex-1 flex flex-col items-center justify-center py-1 hover:bg-surface-container-low/50 transition-colors cursor-pointer focus:outline-none group rounded-l-lg">
+                <span
+                  class="text-xl font-extrabold text-on-surface group-hover:text-primary transition-colors leading-none">
+                  {{ profileData.followers_count }}
+                </span>
+                <span class="text-[11px] font-medium text-on-surface-variant mt-1.5 uppercase tracking-wide">
+                  Người theo dõi
+                </span>
+              </button>
+
+              <button @click="openFollowModal('following')" type="button"
+                class="flex-1 flex flex-col items-center justify-center py-1 hover:bg-surface-container-low/50 transition-colors cursor-pointer focus:outline-none group rounded-r-lg">
+                <span
+                  class="text-xl font-extrabold text-on-surface group-hover:text-primary transition-colors leading-none">
+                  {{ profileData.following_count }}
+                </span>
+                <span class="text-[11px] font-medium text-on-surface-variant mt-1.5 uppercase tracking-wide">
+                  Đang theo dõi
+                </span>
+              </button>
+            </div>
           </div>
           <nav class="p-2">
             <button @click="activeTab = 'info'"
@@ -36,16 +60,12 @@
               <span class="material-symbols-outlined">lock</span>
               <span>Đổi mật khẩu</span>
             </button>
-            <router-link to="/profile/posts"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface hover:bg-surface-container-low transition-all duration-200 mt-1">
-              <span class="material-symbols-outlined">sell</span>
-              <span>Tin đăng của tôi</span>
-            </router-link>
-            <router-link to="/profile/favorites"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface hover:bg-surface-container-low transition-all duration-200 mt-1">
-              <span class="material-symbols-outlined">favorite</span>
-              <span>Tin đăng yêu thích</span>
-            </router-link>
+            <button @click="activeTab = 'reviews'"
+              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-1 cursor-pointer',
+                activeTab === 'reviews' ? 'bg-primary text-on-primary font-bold shadow-md' : 'text-on-surface hover:bg-surface-container-low']">
+              <span class="material-symbols-outlined">star</span>
+              <span>Đánh giá của tôi</span>
+            </button>
             <div class="border-t border-outline-variant my-2"></div>
             <button @click="authStore.logout()"
               class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-error hover:bg-error-container transition-all duration-200 cursor-pointer">
@@ -235,20 +255,239 @@
             </form>
           </div>
         </div>
+
+        <!-- Reviews Tab -->
+        <div v-if="activeTab === 'reviews'"
+          class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div class="p-6 sm:p-8 border-b border-outline-variant">
+            <h1 class="text-2xl font-bold text-on-surface">Đánh giá của tôi</h1>
+            <p class="text-on-surface-variant">Xem các đánh giá, phản hồi và xếp hạng từ người dùng đã giao dịch với bạn
+            </p>
+          </div>
+
+          <!-- Summary Score Card -->
+          <div class="p-6 sm:p-8 border-b border-outline-variant bg-surface-container-low/20">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              <!-- Average Score -->
+              <div class="text-center md:border-r border-outline-variant py-4">
+                <div class="text-5xl font-black text-on-surface mb-2">4.8</div>
+                <div class="flex justify-center gap-1 mb-2 text-amber-500">
+                  <span class="material-symbols-outlined font-variation-fill">star</span>
+                  <span class="material-symbols-outlined font-variation-fill">star</span>
+                  <span class="material-symbols-outlined font-variation-fill">star</span>
+                  <span class="material-symbols-outlined font-variation-fill">star</span>
+                  <span class="material-symbols-outlined font-variation-fill">star_half</span>
+                </div>
+                <p class="text-xs text-on-surface-variant">Trung bình trên 156 đánh giá</p>
+              </div>
+
+              <!-- Stars Breakdown -->
+              <div class="col-span-2 space-y-2 md:pl-6">
+                <!-- 5 star -->
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-on-surface-variant w-10">5 sao</span>
+                  <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-full" style="width: 85%"></div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">85%</span>
+                </div>
+                <!-- 4 star -->
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-on-surface-variant w-10">4 sao</span>
+                  <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-full" style="width: 10%"></div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">10%</span>
+                </div>
+                <!-- 3 star -->
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-on-surface-variant w-10">3 sao</span>
+                  <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-full" style="width: 3%"></div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">3%</span>
+                </div>
+                <!-- 2 star -->
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-on-surface-variant w-10">2 sao</span>
+                  <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-full" style="width: 1%"></div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">1%</span>
+                </div>
+                <!-- 1 star -->
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-on-surface-variant w-10">1 sao</span>
+                  <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-amber-500 h-full rounded-full" style="width: 1%"></div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">1%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Options -->
+          <div class="px-6 sm:px-8 py-4 border-b border-outline-variant flex flex-wrap gap-2">
+            <button v-for="filter in ratingFilters" :key="filter.value" @click="currentRatingFilter = filter.value"
+              :class="['px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer border',
+                currentRatingFilter === filter.value
+                  ? 'bg-primary text-on-primary border-primary shadow-sm'
+                  : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-container']">
+              {{ filter.label }}
+            </button>
+          </div>
+
+          <!-- Review List -->
+          <div class="p-6 sm:p-8 space-y-6">
+            <div v-if="filteredReviews.length === 0" class="text-center py-12 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-2 opacity-40">rate_review</span>
+              <p class="font-medium">Chưa có đánh giá nào cho mức điểm này</p>
+            </div>
+
+            <div v-else v-for="rev in filteredReviews" :key="rev.id"
+              class="border-b border-outline-variant last:border-0 pb-6 last:pb-0">
+              <div class="flex items-start gap-4">
+                <img :src="rev.reviewer_avatar"
+                  class="w-10 h-10 rounded-full object-cover shrink-0 border border-outline-variant" />
+                <div class="flex-1">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                    <h4 class="font-bold text-on-surface text-sm sm:text-base">{{ rev.reviewer_name }}</h4>
+                    <span class="text-xs text-on-surface-variant">{{ rev.date }}</span>
+                  </div>
+
+                  <div class="flex items-center gap-1 text-amber-500 mb-2">
+                    <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm font-variation-fill">
+                      {{ star <= rev.rating ? 'star' : 'star_outline' }} </span>
+                        <span class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <span
+                            class="text-primary hover:underline cursor-pointer font-bold">{{ rev.post_title
+                            }}</span></span>
+                  </div>
+
+                  <p class="text-on-surface text-sm leading-relaxed mb-3">
+                    {{ rev.comment }}
+                  </p>
+
+                  <!-- Seller Response (if any) -->
+                  <div v-if="rev.reply"
+                    class="bg-surface-container p-3 rounded-xl border border-outline-variant text-xs sm:text-sm mt-2 relative">
+                    <div class="absolute top-3 left-4 w-1.5 h-1.5 bg-primary rounded-full"></div>
+                    <div class="pl-4">
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="font-bold text-on-surface">Phản hồi của bạn</span>
+                        <span class="text-[10px] text-on-surface-variant font-medium">{{ rev.reply_date }}</span>
+                      </div>
+                      <p class="text-on-surface-variant leading-relaxed">
+                        {{ rev.reply }}
+                      </p>
+                    </div>
+                  </div>
+                  <div v-else class="mt-2 flex justify-end">
+                    <button @click="openReplyModal(rev)"
+                      class="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                      <span class="material-symbols-outlined text-sm">reply</span>
+                      Phản hồi đánh giá
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
 
-    <!-- Success Toast (Simple) -->
-    <div v-if="toast.show"
-      class="fixed bottom-8 right-8 z-50 bg-on-surface text-surface px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-8 duration-300">
-      <span class="material-symbols-outlined text-primary-fixed">check_circle</span>
-      <span class="font-bold">{{ toast.message }}</span>
+    <!-- Reply Modal Overlay -->
+    <div v-if="replyModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeReplyModal"></div>
+      <div
+        class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 relative z-10">
+        <div class="p-6 border-b border-outline-variant flex justify-between items-center">
+          <h3 class="text-lg font-bold text-on-surface">Phản hồi đánh giá</h3>
+          <button @click="closeReplyModal" class="text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="bg-surface-container p-3 rounded-xl border border-outline-variant">
+            <div class="font-bold text-on-surface text-xs mb-1">{{ replyModal.review?.reviewer_name }} ({{
+              replyModal.review?.rating }} ★)</div>
+            <p class="text-on-surface-variant text-xs italic">"{{ replyModal.review?.comment }}"</p>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-on-surface-variant px-1">Nội dung phản hồi</label>
+            <textarea v-model="replyModal.text" rows="3"
+              class="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+              placeholder="Nhập nội dung phản hồi của bạn..."></textarea>
+          </div>
+        </div>
+        <div class="p-6 border-t border-outline-variant flex justify-end gap-3">
+          <button @click="closeReplyModal"
+            class="px-4 py-2 border border-outline-variant text-on-surface-variant text-sm font-bold rounded-xl hover:bg-surface-container-low transition-all cursor-pointer">
+            Hủy
+          </button>
+          <button @click="submitReply" :disabled="!replyModal.text.trim()"
+            class="px-5 py-2 bg-primary text-on-primary text-sm font-bold rounded-xl shadow-md hover:shadow-primary/20 transition-all cursor-pointer disabled:opacity-50">
+            Gửi phản hồi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Follow Modal Overlay -->
+    <div v-if="followModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+        @click="closeFollowModal"></div>
+      <div
+        class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 relative z-10">
+        <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+          <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">
+              {{ followModal.type === 'followers' ? 'group' : 'person_add' }}
+            </span>
+            {{ followModal.type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi' }}
+          </h3>
+          <button @click="closeFollowModal"
+            class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors cursor-pointer focus:outline-none flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div class="p-4 max-h-[350px] overflow-y-auto space-y-2">
+          <div v-for="user in followModal.list" :key="user.id"
+            class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant">
+            <div class="flex items-center gap-3">
+              <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'"
+                class="w-9 h-9 rounded-full object-cover border border-outline-variant" />
+              <div class="min-w-0">
+                <div class="font-bold text-on-surface text-sm truncate w-40 sm:w-48">{{ user.name }}</div>
+                <div class="text-[11px] text-on-surface-variant">@{{ user.username }}</div>
+              </div>
+            </div>
+            <button v-if="followModal.type === 'following'" @click="unfollowUser(user.id)" type="button"
+              class="px-2.5 py-1.5 text-xs font-bold text-error bg-error-container hover:bg-error-container/80 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
+              Hủy theo dõi
+            </button>
+            <button v-else-if="!user.isFollowing" @click="followBackUser(user.id)" type="button"
+              class="px-2.5 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
+              Theo dõi lại
+            </button>
+            <button v-else type="button"
+              class="px-2.5 py-1.5 text-xs font-bold text-on-surface-variant bg-surface-container-high rounded-lg cursor-not-allowed shrink-0">
+              Đang theo dõi
+            </button>
+          </div>
+          <div v-if="followModal.list.length === 0" class="text-center py-8 text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl mb-2 opacity-40">group</span>
+            <p class="font-medium text-sm">Danh sách này trống</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
@@ -262,6 +501,183 @@ const loading = ref(false);
 const passwordLoading = ref(false);
 const errors = ref({});
 const passwordErrors = ref({});
+
+// Reviews and Rating Statistics System
+const currentRatingFilter = ref('all');
+const ratingFilters = [
+  { label: 'Tất cả (156)', value: 'all' },
+  { label: '5 Sao (132)', value: '5' },
+  { label: '4 Sao (16)', value: '4' },
+  { label: '3 Sao (5)', value: '3' },
+  { label: '2 Sao (2)', value: '2' },
+  { label: '1 Sao (1)', value: '1' }
+];
+
+const mockReviews = ref([
+  {
+    id: 1,
+    reviewer_name: 'Nguyễn Văn Hùng',
+    reviewer_avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff',
+    rating: 5,
+    date: '12/05/2026',
+    post_title: 'iPhone 13 Pro Max 256GB Gold',
+    comment: 'Điện thoại dùng rất tốt, pin còn 92% đúng như chủ thớt mô tả. Ngoại hình đẹp keng xà beng, chủ shop hỗ trợ ship cod nhanh cực kỳ, đóng gói cẩn thận 3 lớp chống sốc luôn. Rất uy tín nha mọi người!',
+    reply: 'Cảm ơn bác Hùng đã tin tưởng ủng hộ shop nhé! Có vấn đề gì cần hỗ trợ cứ nhắn tin trực tiếp cho em nha.',
+    reply_date: '12/05/2026'
+  },
+  {
+    id: 2,
+    reviewer_name: 'Trần Thị Lan',
+    reviewer_avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Lan&background=10b981&color=fff',
+    rating: 5,
+    date: '08/05/2026',
+    post_title: 'MacBook Air M1 8GB/256GB Gray',
+    comment: 'Máy dùng siêu mượt, bàn phím và màn hình không một vết xước. Giao dịch trực tiếp tại nhà nhanh gọn lẹ, anh chủ nhiệt tình test máy giúp mình từ A-Z. Rất recommend mua đồ cũ ở đây!',
+    reply: null,
+    reply_date: null
+  },
+  {
+    id: 3,
+    reviewer_name: 'Lê Minh Tuấn',
+    reviewer_avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff',
+    rating: 4,
+    date: '30/04/2026',
+    post_title: 'Xe máy Honda Wave Alpha 2021',
+    comment: 'Xe chạy êm, máy zin. Chỉ có lốp xe hơi mòn tí phải đi thay nhưng với giá này thì quá hời rồi. Bác bán hàng vui tính, bớt cho mình 200k tiền xăng xe đi lại nữa.',
+    reply: 'Cảm ơn bạn đã phản hồi! Do xe cũng đi được một thời gian nên lốp hơi mòn, mình đã chủ động bớt lộc xăng xe để bạn làm lại lốp rồi nhé. Chúc bạn vạn dặm bình an!',
+    reply_date: '30/04/2026'
+  },
+  {
+    id: 4,
+    reviewer_name: 'Phạm Thanh Sơn',
+    reviewer_avatar: 'https://ui-avatars.com/api/?name=Pham+Thanh+Son&background=ef4444&color=fff',
+    rating: 3,
+    date: '15/04/2026',
+    post_title: 'Tai nghe Bluetooth Sony WH-1000XM4',
+    comment: 'Tai nghe chất âm tốt, chống ồn đỉnh. Tuy nhiên đệm da hơi sờn nhẹ ở góc mà trong tin đăng chưa nói rõ. Nhưng giao dịch nhanh nên vẫn vote 4 sao trừ 1 sao ngoại hình.',
+    reply: 'Dạ shop xin lỗi vì sơ sót không chụp kỹ góc sờn đó nhé ạ. Lần sau shop sẽ lưu ý mô tả chi tiết hơn. Cảm ơn phản hồi đóng góp của bạn!',
+    reply_date: '16/04/2026'
+  },
+  {
+    id: 5,
+    reviewer_name: 'Hoàng Ngọc Ánh',
+    reviewer_avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff',
+    rating: 5,
+    date: '02/04/2026',
+    post_title: 'Tủ lạnh Samsung Inverter 236L',
+    comment: 'Tủ lạnh chạy cực êm, không ồn tí nào, làm lạnh nhanh. Giao hàng hỗ trợ khiêng lên tận lầu 3 giúp mình luôn, quá nhiệt tình luôn ạ. 10 điểm không có nhưng!',
+    reply: null,
+    reply_date: null
+  }
+]);
+
+const filteredReviews = computed(() => {
+  if (currentRatingFilter.value === 'all') return mockReviews.value;
+  return mockReviews.value.filter(rev => rev.rating === parseInt(currentRatingFilter.value));
+});
+
+const replyModal = ref({
+  show: false,
+  review: null,
+  text: ''
+});
+
+const openReplyModal = (review) => {
+  replyModal.value.review = review;
+  replyModal.value.text = '';
+  replyModal.value.show = true;
+};
+
+const closeReplyModal = () => {
+  replyModal.value.show = false;
+  replyModal.value.review = null;
+  replyModal.value.text = '';
+};
+
+const submitReply = () => {
+  if (!replyModal.value.text.trim()) return;
+  const review = mockReviews.value.find(r => r.id === replyModal.value.review.id);
+  if (review) {
+    review.reply = replyModal.value.text;
+    review.reply_date = new Date().toLocaleDateString('vi-VN');
+    showToast('Đã gửi phản hồi đánh giá thành công!');
+  }
+  closeReplyModal();
+};
+
+// Followers and Following Logic
+const mockFollowers = ref([
+  { id: 101, name: 'Nguyễn Văn Hùng', username: 'hung_nv', avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff', isFollowing: true },
+  { id: 102, name: 'Trần Thị Lan', username: 'lan_tranthi', avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Lan&background=10b981&color=fff', isFollowing: false },
+  { id: 103, name: 'Lê Minh Tuấn', username: 'tuan_leminh', avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff', isFollowing: true },
+  { id: 104, name: 'Phạm Thanh Sơn', username: 'son_pham', avatar: 'https://ui-avatars.com/api/?name=Pham+Thanh+Son&background=ef4444&color=fff', isFollowing: false },
+  { id: 105, name: 'Hoàng Ngọc Ánh', username: 'anh_hoang', avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff', isFollowing: true }
+]);
+
+const mockFollowing = ref([
+  { id: 101, name: 'Nguyễn Văn Hùng', username: 'hung_nv', avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff' },
+  { id: 103, name: 'Lê Minh Tuấn', username: 'tuan_leminh', avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff' },
+  { id: 105, name: 'Hoàng Ngọc Ánh', username: 'anh_hoang', avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff' },
+  { id: 106, name: 'Đỗ Thùy Chi', username: 'chi_thuy_do', avatar: 'https://ui-avatars.com/api/?name=Do+Thuy+Chi&background=8b5cf6&color=fff' },
+  { id: 107, name: 'Vũ Quốc Bảo', username: 'bao_vuquoc', avatar: 'https://ui-avatars.com/api/?name=Vu+Quoc+Bao&background=06b6d4&color=fff' }
+]);
+
+const followModal = ref({
+  show: false,
+  type: 'followers',
+  list: []
+});
+
+const openFollowModal = (type) => {
+  followModal.value.type = type;
+  followModal.value.list = type === 'followers' ? [...mockFollowers.value] : [...mockFollowing.value];
+  followModal.value.show = true;
+};
+
+const closeFollowModal = () => {
+  followModal.value.show = false;
+};
+
+const unfollowUser = (userId) => {
+  mockFollowing.value = mockFollowing.value.filter(u => u.id !== userId);
+
+  // Also update isFollowing status in followers list if they are present there
+  const follower = mockFollowers.value.find(u => u.id === userId);
+  if (follower) {
+    follower.isFollowing = false;
+  }
+
+  profileData.value.following_count = mockFollowing.value.length;
+  // Update modal list if open
+  if (followModal.value.show && followModal.value.type === 'following') {
+    followModal.value.list = [...mockFollowing.value];
+  }
+  showToast('Đã hủy theo dõi người dùng!');
+};
+
+const followBackUser = (userId) => {
+  const follower = mockFollowers.value.find(u => u.id === userId);
+  if (follower) {
+    follower.isFollowing = true;
+
+    // Add to following list
+    if (!mockFollowing.value.some(u => u.id === userId)) {
+      mockFollowing.value.push({
+        id: follower.id,
+        name: follower.name,
+        username: follower.username,
+        avatar: follower.avatar
+      });
+    }
+  }
+
+  profileData.value.following_count = mockFollowing.value.length;
+  // Update modal list if open
+  if (followModal.value.show && followModal.value.type === 'followers') {
+    followModal.value.list = [...mockFollowers.value];
+  }
+  showToast('Đã theo dõi người dùng!');
+};
 
 // Administrative Units
 const provinces = ref([]);
@@ -277,7 +693,9 @@ const profileData = ref({
   province_name: authStore.user?.province_name || '',
   ward_id: authStore.user?.ward_id || '',
   ward_name: authStore.user?.ward_name || '',
-  avatar: authStore.user?.avatar || ''
+  avatar: authStore.user?.avatar || '',
+  followers_count: authStore.user?.followers_count !== undefined ? authStore.user?.followers_count : mockFollowers.value.length,
+  following_count: authStore.user?.following_count !== undefined ? authStore.user?.following_count : mockFollowing.value.length
 });
 
 // Đồng bộ lại nếu Store thay đổi (ví dụ khi Header nạp xong dữ liệu muộn hơn)
@@ -292,7 +710,9 @@ watch(() => authStore.user, (newUser) => {
       province_name: newUser.province_name,
       ward_id: newUser.ward_id,
       ward_name: newUser.ward_name,
-      avatar: newUser.avatar
+      avatar: newUser.avatar,
+      followers_count: newUser.followers_count !== undefined ? newUser.followers_count : mockFollowers.value.length,
+      following_count: newUser.following_count !== undefined ? newUser.following_count : mockFollowing.value.length
     };
     if (newUser.province_id) fetchInitialWards(newUser.province_id);
   }
@@ -365,7 +785,11 @@ const fetchProfile = async () => {
   try {
     const response = await axios.get('/api/auth/profile');
     const userData = response.data.data;
-    profileData.value = userData;
+    profileData.value = {
+      ...userData,
+      followers_count: userData.followers_count !== undefined ? userData.followers_count : mockFollowers.value.length,
+      following_count: userData.following_count !== undefined ? userData.following_count : mockFollowing.value.length
+    };
     // Cập nhật lại Store để Header đồng bộ theo
     authStore.setUser(userData);
   } catch (error) {

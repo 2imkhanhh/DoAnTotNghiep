@@ -26,12 +26,8 @@
               </button>
             </div>
             <div class="thumbnails" v-if="post.images.length > 1">
-              <div 
-                v-for="(img, index) in post.images" 
-                :key="index"
-                :class="['thumb-item', { active: activeImage === index }]"
-                @click="activeImage = index"
-              >
+              <div v-for="(img, index) in post.images" :key="index"
+                :class="['thumb-item', { active: activeImage === index }]" @click="activeImage = index">
                 <img :src="img.image_path" alt="">
               </div>
             </div>
@@ -50,10 +46,9 @@
                   </div>
                   <h1 class="post-title">{{ post.title }}</h1>
                 </div>
-                
-                <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click="toggleFavorite(post.id)" 
-                  class="pill-favorite-btn"
-                  :class="{ 'active': isFavorite(post.id) }">
+
+                <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id"
+                  @click="toggleFavorite(post.id)" class="pill-favorite-btn" :class="{ 'active': isFavorite(post.id) }">
                   <span class="material-symbols-outlined" :class="{ 'font-variation-fill': isFavorite(post.id) }">
                     favorite
                   </span>
@@ -157,17 +152,17 @@
       <section class="related-section" v-if="relatedPosts.length">
         <h2 class="section-title-large">Tin đăng tương tự</h2>
         <div class="post-grid">
-           <!-- Using your existing PostCard component or simplified version -->
-           <div v-for="rel in relatedPosts" :key="rel.id" class="rel-post-card" @click="goToPost(rel.slug)">
-              <div class="rel-thumb">
-                <img :src="rel.images[0]?.image_path" alt="">
-              </div>
-              <div class="rel-body">
-                <h4 class="rel-title">{{ rel.title }}</h4>
-                <p class="rel-price">{{ formatPrice(rel.price) }}đ</p>
-                <span class="rel-time">{{ formatDate(rel.created_at) }}</span>
-              </div>
-           </div>
+          <!-- Using your existing PostCard component or simplified version -->
+          <div v-for="rel in relatedPosts" :key="rel.id" class="rel-post-card" @click="goToPost(rel.slug)">
+            <div class="rel-thumb">
+              <img :src="rel.images[0]?.image_path" alt="">
+            </div>
+            <div class="rel-body">
+              <h4 class="rel-title">{{ rel.title }}</h4>
+              <p class="rel-price">{{ formatPrice(rel.price) }}đ</p>
+              <span class="rel-time">{{ formatDate(rel.created_at) }}</span>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -190,42 +185,42 @@ const loading = ref(true);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const isFavorite = (postId) => {
-    if (!postId) return false;
-    return favoriteIds.value.includes(Number(postId));
+  if (!postId) return false;
+  return favoriteIds.value.includes(Number(postId));
 };
 
 const fetchFavorites = async () => {
-    if (!authStore.isLoggedIn) return;
-    try {
-        const response = await axios.get('/api/user/favorites');
-        if (response.data.success) {
-            favoriteIds.value = response.data.data.data.map(p => p.id);
-        }
-    } catch (error) {
-        console.error('Lỗi khi lấy danh sách yêu thích:', error);
+  if (!authStore.isLoggedIn) return;
+  try {
+    const response = await axios.get('/api/user/favorites');
+    if (response.data.success) {
+      favoriteIds.value = response.data.data.data.map(p => p.id);
     }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách yêu thích:', error);
+  }
 };
 
 const toggleFavorite = async (postId) => {
-    if (!authStore.isLoggedIn) {
-        alert('Vui lòng đăng nhập để sử dụng tính năng này');
-        return;
-    }
+  if (!authStore.isLoggedIn) {
+    alert('Vui lòng đăng nhập để sử dụng tính năng này');
+    return;
+  }
 
-    if (!postId) return;
+  if (!postId) return;
 
-    try {
-        const response = await axios.post(`/api/posts/${postId}/favorite`);
-        if (response.data.success) {
-            if (response.data.is_favorited) {
-                favoriteIds.value.push(Number(postId));
-            } else {
-                favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
-            }
-        }
-    } catch (error) {
-        console.error('Lỗi khi thực hiện yêu thích:', error);
+  try {
+    const response = await axios.post(`/api/posts/${postId}/favorite`);
+    if (response.data.success) {
+      if (response.data.is_favorited) {
+        favoriteIds.value.push(Number(postId));
+      } else {
+        favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
+      }
     }
+  } catch (error) {
+    console.error('Lỗi khi thực hiện yêu thích:', error);
+  }
 };
 
 const fetchPostDetail = async () => {
@@ -253,10 +248,10 @@ const formatPrice = (price) => {
 
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('vi-VN', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric' 
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
   });
 };
 
@@ -374,7 +369,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .thumbnails {
@@ -756,6 +751,7 @@ onMounted(() => {
   color: #1e293b;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -775,9 +771,11 @@ onMounted(() => {
   .content-grid {
     grid-template-columns: 1fr;
   }
+
   .sticky-sidebar {
     position: static;
   }
+
   .post-grid {
     grid-template-columns: repeat(2, 1fr);
   }
