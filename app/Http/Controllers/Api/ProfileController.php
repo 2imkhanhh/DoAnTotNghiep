@@ -15,7 +15,12 @@ class ProfileController extends Controller
     // 1. Lấy thông tin hồ sơ
     public function show()
     {
+        /** @var \App\Models\User $user */
         $user = auth('api')->user();
+        if ($user) {
+            $user->loadCount(['followers', 'followings']);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => $user
@@ -41,7 +46,7 @@ class ProfileController extends Controller
         ]));
 
         // Lấy lại thông tin user sau khi đã update để trả về cho Frontend
-        $updatedUser = User::find($userId);
+        $updatedUser = User::withCount(['followers', 'followings'])->find($userId);
 
         return response()->json([
             'success' => true,
@@ -76,7 +81,14 @@ class ProfileController extends Controller
     // 4. Lấy thông tin hồ sơ công khai của người bán
     public function showPublic($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::withCount(['followers', 'followings'])->findOrFail($id);
+
+        $user->is_followed = false;
+        if (auth('api')->check()) {
+            /** @var \App\Models\User $currentUser */
+            $currentUser = auth('api')->user();
+            $user->is_followed = $currentUser->isFollowing($id);
+        }
 
         // Lấy danh sách bài đăng đang hiển thị (status = 1)
         $posts = Post::with(['category', 'images'])

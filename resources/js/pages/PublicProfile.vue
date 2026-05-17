@@ -13,10 +13,11 @@
                 alt="Avatar" class="w-full h-full rounded-full object-cover border-[3px] border-primary/20 shadow-sm">
               <!-- Nút theo dõi (Icon góc đen, viền trắng) -->
               <button @click="toggleFollow"
-                :class="['absolute -bottom-1 -right-1 w-9 h-9 rounded-full shadow-lg border-[3px] border-surface-container-lowest flex items-center justify-center transition-all z-10 cursor-pointer', isFollowing ? 'bg-surface-container-high text-on-surface' : 'bg-primary text-white hover:scale-105']"
-                :title="isFollowing ? 'Bỏ theo dõi' : 'Theo dõi'">
-                <span class="material-symbols-outlined text-[22px] font-bold block">{{ isFollowing ? 'done' : 'add'
-                }}</span>
+                :class="['absolute -bottom-1 -right-1 w-9 h-9 rounded-full shadow-lg border-[3px] border-surface-container-lowest flex items-center justify-center transition-all z-10 cursor-pointer', seller.is_followed ? 'bg-surface-container-high text-on-surface' : 'bg-primary text-white hover:scale-105']"
+                :title="seller.is_followed ? 'Bỏ theo dõi' : 'Theo dõi'">
+                <span class="material-symbols-outlined text-[22px] font-bold block">{{ seller.is_followed ? 'done' :
+                  'add'
+                  }}</span>
               </button>
             </div>
 
@@ -29,16 +30,16 @@
 
             <!-- Followers / Following -->
             <div class="flex justify-center gap-12 mt-6 mb-2">
-              <div @click="showFollowersModal = true" class="text-center cursor-pointer group">
+              <div @click="openFollowModal('followers')" class="text-center cursor-pointer group">
                 <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{
-                  seller.followers_count || mockFollowers.length }}</div>
+                  seller.followers_count || 0 }}</div>
                 <div
                   class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">
                   Người theo dõi</div>
               </div>
-              <div class="text-center cursor-pointer group">
+              <div @click="openFollowModal('following')" class="text-center cursor-pointer group">
                 <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{
-                  seller.following_count || 5 }}</div>
+                  seller.followings_count || 0 }}</div>
                 <div
                   class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">
                   Đang theo dõi</div>
@@ -53,7 +54,8 @@
               <div class="text-sm text-left">
                 <p class="font-bold text-on-surface">Địa chỉ</p>
                 <p class="text-on-surface-variant mt-0.5 leading-relaxed">
-                  {{ seller.ward_name && seller.province_name ? `${seller.ward_name}, ${seller.province_name}` : (seller.province_name ? seller.province_name : 'Đang cập nhật') }}
+                  {{ seller.ward_name && seller.province_name ? `${seller.ward_name}, ${seller.province_name}` :
+                    (seller.province_name ? seller.province_name : 'Đang cập nhật') }}
                 </p>
               </div>
             </div>
@@ -62,7 +64,8 @@
               <span class="material-symbols-outlined text-on-surface-variant text-lg mt-0.5">mail</span>
               <div class="text-sm text-left w-full">
                 <p class="font-bold text-on-surface">Email</p>
-                <p class="text-on-surface-variant mt-0.5 leading-relaxed truncate">{{ seller.email || 'Đang cập nhật' }}</p>
+                <p class="text-on-surface-variant mt-0.5 leading-relaxed truncate">{{ seller.email || 'Đang cập nhật' }}
+                </p>
               </div>
             </div>
 
@@ -117,16 +120,18 @@
                     {{ item.category }}
                   </span>
                   <!-- Nút yêu thích (Trái tim) -->
-                  <button v-if="!authStore.isLoggedIn || item.user_id !== authStore.user?.id" @click.stop="toggleFavorite(item.id)"
+                  <button v-if="!authStore.isLoggedIn || item.user_id !== authStore.user?.id"
+                    @click.stop="toggleFavorite(item.id)"
                     class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                     <!-- Ruột Đỏ -->
-                    <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute', 
-                        isFavorite(item.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
-                        favorite
+                    <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute',
+                      isFavorite(item.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
+                      favorite
                     </span>
                     <!-- Viền Trắng -->
-                    <span class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                        favorite
+                    <span
+                      class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                      favorite
                     </span>
                   </button>
                 </div>
@@ -200,40 +205,44 @@
       </main>
     </div>
 
-    <!-- Modal Hiển thị Danh sách Người theo dõi -->
-    <div v-if="showFollowersModal"
+    <!-- Modal Hiển thị Danh sách Người theo dõi / Đang theo dõi -->
+    <div v-if="followModal.show"
       class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      @click.self="showFollowersModal = false">
+      @click.self="followModal.show = false">
       <div
         class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh] animate-fadeIn">
         <!-- Header -->
         <div
           class="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
-          <h3 class="font-extrabold text-lg text-on-surface">Người theo dõi ({{ mockFollowers.length }})</h3>
-          <button @click="showFollowersModal = false"
-            class="text-on-surface-variant hover:text-error transition-colors p-1 rounded-full hover:bg-error/10">
+          <h3 class="font-extrabold text-lg text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">
+              {{ followModal.type === 'followers' ? 'group' : 'person_add' }}
+            </span>
+            {{ followModal.type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi' }} ({{ followModal.list.length }})
+          </h3>
+          <button @click="followModal.show = false"
+            class="text-on-surface-variant hover:text-error transition-colors p-1 rounded-full cursor-pointer">
             <span class="material-symbols-outlined block">close</span>
           </button>
         </div>
 
         <!-- List -->
         <div class="p-3 overflow-y-auto grow custom-scrollbar">
-          <div v-if="mockFollowers.length === 0" class="text-center py-10 text-on-surface-variant">
-            Người dùng này chưa có ai theo dõi.
+          <div v-if="followModal.isLoading" class="text-center py-10 text-on-surface-variant flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">progress_activity</span>
+            <p class="font-medium text-sm">Đang tải dữ liệu...</p>
+          </div>
+          <div v-else-if="followModal.list.length === 0" class="text-center py-10 text-on-surface-variant">
+            Danh sách này hiện đang trống.
           </div>
           <div v-else class="space-y-2">
-            <div v-for="follower in mockFollowers" :key="follower.id"
+            <div v-for="user in followModal.list" :key="user.id"
               class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container transition-colors border border-transparent hover:border-outline-variant cursor-pointer">
-              <img :src="follower.avatar"
+              <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'"
                 class="w-12 h-12 rounded-full object-cover border border-outline-variant shrink-0" />
               <div class="flex-1 min-w-0">
-                <h4 class="font-bold text-sm text-on-surface truncate" :title="follower.name">{{ follower.name }}</h4>
-                <p class="text-xs text-on-surface-variant mt-0.5">{{ follower.mutual_friends }} bạn chung</p>
+                <h4 class="font-bold text-sm text-on-surface truncate" :title="user.name">{{ user.name }}</h4>
               </div>
-              <button
-                class="px-3 py-1.5 text-[11px] font-bold rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
-                Xem trang
-              </button>
             </div>
           </div>
         </div>
@@ -253,27 +262,48 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
+// Mock dữ liệu danh sách người theo dõi
+const followModal = ref({ show: false, type: 'followers', list: [], isLoading: false });
+
+const openFollowModal = async (type) => {
+  followModal.value.type = type;
+  followModal.value.show = true;
+  followModal.value.list = [];
+  followModal.value.isLoading = true;
+
+  try {
+    const endpoint = type === 'followers' ? `/api/users/${seller.value.id}/followers` : `/api/users/${seller.value.id}/followings`;
+    const response = await axios.get(endpoint);
+    if (response.data.success) {
+      followModal.value.list = response.data.data;
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách theo dõi:', error);
+  } finally {
+    followModal.value.isLoading = false;
+  }
+};
+
 const seller = ref({});
-const isFollowing = ref(false);
 const posts = ref([]);
 const showFollowersModal = ref(false);
 const postFilter = ref('active');
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const isFavorite = (postId) => {
-    return favoriteIds.value.includes(Number(postId));
+  return favoriteIds.value.includes(Number(postId));
 };
 
 const fetchFavorites = async () => {
-    if (!authStore.isLoggedIn) return;
-    try {
-        const response = await axios.get('/api/user/favorites');
-        if (response.data.success) {
-            favoriteIds.value = response.data.data.data.map(p => p.id);
-        }
-    } catch (error) {
-        console.error('Lỗi khi lấy danh sách yêu thích:', error);
+  if (!authStore.isLoggedIn) return;
+  try {
+    const response = await axios.get('/api/user/favorites');
+    if (response.data.success) {
+      favoriteIds.value = response.data.data.data.map(p => p.id);
     }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách yêu thích:', error);
+  }
 };
 
 const filteredPosts = computed(() => {
@@ -281,36 +311,22 @@ const filteredPosts = computed(() => {
   return []; // Mock data rỗng cho phần Đã bán (đợi API hoàn thiện lấy bài viết đã bán sau)
 });
 
-// Mock dữ liệu danh sách người theo dõi
-const mockFollowers = ref([
-  {
-    id: 1,
-    name: 'Phạm Thu Hương',
-    avatar: 'https://ui-avatars.com/api/?name=Pham+Thu+Huong&background=f43f5e&color=fff',
-    mutual_friends: 2
-  },
-  {
-    id: 2,
-    name: 'Lê Minh Tuấn',
-    avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=3b82f6&color=fff',
-    mutual_friends: 0
-  },
-  {
-    id: 3,
-    name: 'Trần Quỳnh Như',
-    avatar: 'https://ui-avatars.com/api/?name=Tran+Quynh+Nhu&background=10b981&color=fff',
-    mutual_friends: 5
-  },
-  {
-    id: 4,
-    name: 'Hoàng Quốc Việt',
-    avatar: 'https://ui-avatars.com/api/?name=Hoang+Quoc+Viet&background=f59e0b&color=fff',
-    mutual_friends: 1
+const toggleFollow = async () => {
+  if (!authStore.isLoggedIn) {
+    alert('Vui lòng đăng nhập để sử dụng tính năng này!');
+    router.push('/login');
+    return;
   }
-]);
 
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value;
+  try {
+    const response = await axios.post(`/api/users/${seller.value.id}/follow`);
+    if (response.data.success) {
+      seller.value.is_followed = response.data.is_following;
+      seller.value.followers_count = response.data.followers_count;
+    }
+  } catch (error) {
+    console.error('Lỗi khi thao tác theo dõi:', error);
+  }
 };
 
 const formatPrice = (price) => {
@@ -408,11 +424,11 @@ const toggleFavorite = async (postId) => {
   try {
     const response = await axios.post(`/api/posts/${postId}/favorite`);
     if (response.data.success) {
-        if (response.data.is_favorited) {
-            favoriteIds.value.push(Number(postId));
-        } else {
-            favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
-        }
+      if (response.data.is_favorited) {
+        favoriteIds.value.push(Number(postId));
+      } else {
+        favoriteIds.value = favoriteIds.value.filter(id => id !== Number(postId));
+      }
     }
   } catch (error) {
     console.error('Lỗi khi thao tác yêu thích:', error);

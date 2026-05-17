@@ -40,6 +40,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/posts/{id}/favorite', [FavoriteController::class, 'toggleFavorite']);
     Route::get('/user/favorites', [FavoriteController::class, 'getFavorites']);
     Route::post('/users/{id}/follow', [FollowController::class, 'toggleFollow']);
+    Route::get('/users/{id}/followers', [FollowController::class, 'getFollowers']);
+    Route::get('/users/{id}/followings', [FollowController::class, 'getFollowings']);
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn

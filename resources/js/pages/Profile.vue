@@ -32,7 +32,7 @@
 
               <button @click="openFollowModal('following')" type="button"
                 class="text-center cursor-pointer focus:outline-none group">
-                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.following_count || 0 }}</div>
+                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.followings_count || 0 }}</div>
                 <div class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">Đang theo dõi</div>
               </button>
             </div>
@@ -425,50 +425,54 @@
     </div>
 
     <!-- Follow Modal Overlay -->
-    <div v-if="followModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
-        @click="closeFollowModal"></div>
+    <div v-if="followModal.show"
+      class="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      @click.self="closeFollowModal">
       <div
-        class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 relative z-10">
-        <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-          <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+        class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh] animate-fadeIn">
+        <div class="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
+          <h3 class="font-extrabold text-lg text-on-surface flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-xl">
               {{ followModal.type === 'followers' ? 'group' : 'person_add' }}
             </span>
-            {{ followModal.type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi' }}
+            {{ followModal.type === 'followers' ? 'Người theo dõi' : 'Đang theo dõi' }} ({{ followModal.list.length }})
           </h3>
           <button @click="closeFollowModal"
-            class="text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors cursor-pointer focus:outline-none flex items-center justify-center">
-            <span class="material-symbols-outlined text-xl">close</span>
+            class="text-on-surface-variant hover:text-error transition-colors p-1 rounded-full focus:outline-none flex items-center justify-center cursor-pointer">
+            <span class="material-symbols-outlined block">close</span>
           </button>
         </div>
-        <div class="p-4 max-h-[350px] overflow-y-auto space-y-2">
-          <div v-for="user in followModal.list" :key="user.id"
-            class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant">
-            <div class="flex items-center gap-3">
-              <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'"
-                class="w-9 h-9 rounded-full object-cover border border-outline-variant" />
-              <div class="min-w-0">
-                <div class="font-bold text-on-surface text-sm truncate w-40 sm:w-48">{{ user.name }}</div>
-                <div class="text-[11px] text-on-surface-variant">@{{ user.username }}</div>
-              </div>
-            </div>
-            <button v-if="followModal.type === 'following'" @click="unfollowUser(user.id)" type="button"
-              class="px-2.5 py-1.5 text-xs font-bold text-error bg-error-container hover:bg-error-container/80 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
-              Hủy theo dõi
-            </button>
-            <button v-else-if="!user.isFollowing" @click="followBackUser(user.id)" type="button"
-              class="px-2.5 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
-              Theo dõi lại
-            </button>
-            <button v-else type="button"
-              class="px-2.5 py-1.5 text-xs font-bold text-on-surface-variant bg-surface-container-high rounded-lg cursor-not-allowed shrink-0">
-              Đang theo dõi
-            </button>
+        <div class="p-3 overflow-y-auto grow custom-scrollbar">
+          <div v-if="followModal.isLoading" class="text-center py-10 text-on-surface-variant flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">progress_activity</span>
+            <p class="font-medium text-sm">Đang tải dữ liệu...</p>
           </div>
-          <div v-if="followModal.list.length === 0" class="text-center py-8 text-on-surface-variant">
-            <span class="material-symbols-outlined text-4xl mb-2 opacity-40">group</span>
-            <p class="font-medium text-sm">Danh sách này trống</p>
+          <div v-else-if="followModal.list.length === 0" class="text-center py-10 text-on-surface-variant">
+            Danh sách này hiện đang trống.
+          </div>
+          <div v-else class="space-y-2">
+            <div v-for="user in followModal.list" :key="user.id"
+              class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container transition-colors border border-transparent hover:border-outline-variant cursor-pointer">
+              <div class="flex items-center gap-3">
+                <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'"
+                  class="w-12 h-12 rounded-full object-cover border border-outline-variant shrink-0" />
+                <div class="min-w-0">
+                  <div class="font-bold text-on-surface text-sm truncate w-24 sm:w-32" :title="user.name">{{ user.name }}</div>
+                </div>
+              </div>
+              <button v-if="followModal.type === 'following'" @click="unfollowUser(user.id)" type="button"
+                class="px-2.5 py-1.5 text-xs font-bold text-error bg-error-container hover:bg-error-container/80 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
+                Hủy theo dõi
+              </button>
+              <button v-else-if="!user.isFollowing" @click="followBackUser(user.id)" type="button"
+                class="px-2.5 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-all cursor-pointer focus:outline-none shrink-0">
+                Theo dõi lại
+              </button>
+              <button v-else type="button"
+                class="px-2.5 py-1.5 text-xs font-bold text-on-surface-variant bg-surface-container-high rounded-lg cursor-not-allowed shrink-0">
+                Đang theo dõi
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -596,77 +600,72 @@ const submitReply = () => {
 };
 
 // Followers and Following Logic
-const mockFollowers = ref([
-  { id: 101, name: 'Nguyễn Văn Hùng', username: 'hung_nv', avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff', isFollowing: true },
-  { id: 102, name: 'Trần Thị Lan', username: 'lan_tranthi', avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Lan&background=10b981&color=fff', isFollowing: false },
-  { id: 103, name: 'Lê Minh Tuấn', username: 'tuan_leminh', avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff', isFollowing: true },
-  { id: 104, name: 'Phạm Thanh Sơn', username: 'son_pham', avatar: 'https://ui-avatars.com/api/?name=Pham+Thanh+Son&background=ef4444&color=fff', isFollowing: false },
-  { id: 105, name: 'Hoàng Ngọc Ánh', username: 'anh_hoang', avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff', isFollowing: true }
-]);
-
-const mockFollowing = ref([
-  { id: 101, name: 'Nguyễn Văn Hùng', username: 'hung_nv', avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff' },
-  { id: 103, name: 'Lê Minh Tuấn', username: 'tuan_leminh', avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff' },
-  { id: 105, name: 'Hoàng Ngọc Ánh', username: 'anh_hoang', avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff' },
-  { id: 106, name: 'Đỗ Thùy Chi', username: 'chi_thuy_do', avatar: 'https://ui-avatars.com/api/?name=Do+Thuy+Chi&background=8b5cf6&color=fff' },
-  { id: 107, name: 'Vũ Quốc Bảo', username: 'bao_vuquoc', avatar: 'https://ui-avatars.com/api/?name=Vu+Quoc+Bao&background=06b6d4&color=fff' }
-]);
-
 const followModal = ref({
   show: false,
   type: 'followers',
-  list: []
+  list: [],
+  isLoading: false
 });
 
-const openFollowModal = (type) => {
+const openFollowModal = async (type) => {
   followModal.value.type = type;
-  followModal.value.list = type === 'followers' ? [...mockFollowers.value] : [...mockFollowing.value];
   followModal.value.show = true;
+  followModal.value.list = [];
+  followModal.value.isLoading = true;
+
+  try {
+      const endpoint = type === 'followers' ? `/api/users/${authStore.user?.id}/followers` : `/api/users/${authStore.user?.id}/followings`;
+      const response = await axios.get(endpoint);
+      if (response.data.success) {
+          let users = response.data.data;
+          
+          if (type === 'followers') {
+             const followingRes = await axios.get(`/api/users/${authStore.user?.id}/followings`);
+             const followingIds = followingRes.data.data.map(u => u.id);
+             users = users.map(user => ({
+                 ...user,
+                 isFollowing: followingIds.includes(user.id)
+             }));
+          }
+          
+          followModal.value.list = users;
+      }
+  } catch (error) {
+      console.error('Lỗi khi lấy danh sách theo dõi:', error);
+  } finally {
+      followModal.value.isLoading = false;
+  }
 };
 
 const closeFollowModal = () => {
   followModal.value.show = false;
 };
 
-const unfollowUser = (userId) => {
-  mockFollowing.value = mockFollowing.value.filter(u => u.id !== userId);
-
-  // Also update isFollowing status in followers list if they are present there
-  const follower = mockFollowers.value.find(u => u.id === userId);
-  if (follower) {
-    follower.isFollowing = false;
+const unfollowUser = async (userId) => {
+  try {
+      const response = await axios.post(`/api/users/${userId}/follow`);
+      if (response.data.success) {
+          followModal.value.list = followModal.value.list.filter(u => u.id !== userId);
+          if (profileData.value.followings_count > 0) profileData.value.followings_count--;
+          showToast('Đã hủy theo dõi người dùng!');
+      }
+  } catch (error) {
+      console.error('Lỗi khi thao tác:', error);
   }
-
-  profileData.value.following_count = mockFollowing.value.length;
-  // Update modal list if open
-  if (followModal.value.show && followModal.value.type === 'following') {
-    followModal.value.list = [...mockFollowing.value];
-  }
-  showToast('Đã hủy theo dõi người dùng!');
 };
 
-const followBackUser = (userId) => {
-  const follower = mockFollowers.value.find(u => u.id === userId);
-  if (follower) {
-    follower.isFollowing = true;
-
-    // Add to following list
-    if (!mockFollowing.value.some(u => u.id === userId)) {
-      mockFollowing.value.push({
-        id: follower.id,
-        name: follower.name,
-        username: follower.username,
-        avatar: follower.avatar
-      });
-    }
+const followBackUser = async (userId) => {
+  try {
+      const response = await axios.post(`/api/users/${userId}/follow`);
+      if (response.data.success) {
+          const user = followModal.value.list.find(u => u.id === userId);
+          if (user) user.isFollowing = true;
+          profileData.value.followings_count++;
+          showToast('Đã theo dõi người dùng!');
+      }
+  } catch (error) {
+      console.error('Lỗi khi thao tác:', error);
   }
-
-  profileData.value.following_count = mockFollowing.value.length;
-  // Update modal list if open
-  if (followModal.value.show && followModal.value.type === 'followers') {
-    followModal.value.list = [...mockFollowers.value];
-  }
-  showToast('Đã theo dõi người dùng!');
 };
 
 // Administrative Units
@@ -684,8 +683,8 @@ const profileData = ref({
   ward_id: authStore.user?.ward_id || '',
   ward_name: authStore.user?.ward_name || '',
   avatar: authStore.user?.avatar || '',
-  followers_count: authStore.user?.followers_count !== undefined ? authStore.user?.followers_count : mockFollowers.value.length,
-  following_count: authStore.user?.following_count !== undefined ? authStore.user?.following_count : mockFollowing.value.length
+  followers_count: authStore.user?.followers_count || 0,
+  followings_count: authStore.user?.followings_count || 0
 });
 
 // Đồng bộ lại nếu Store thay đổi (ví dụ khi Header nạp xong dữ liệu muộn hơn)
@@ -701,8 +700,8 @@ watch(() => authStore.user, (newUser) => {
       ward_id: newUser.ward_id,
       ward_name: newUser.ward_name,
       avatar: newUser.avatar,
-      followers_count: newUser.followers_count !== undefined ? newUser.followers_count : mockFollowers.value.length,
-      following_count: newUser.following_count !== undefined ? newUser.following_count : mockFollowing.value.length
+      followers_count: newUser.followers_count || 0,
+      followings_count: newUser.followings_count || 0
     };
     if (newUser.province_id) fetchInitialWards(newUser.province_id);
   }
@@ -777,8 +776,8 @@ const fetchProfile = async () => {
     const userData = response.data.data;
     profileData.value = {
       ...userData,
-      followers_count: userData.followers_count !== undefined ? userData.followers_count : mockFollowers.value.length,
-      following_count: userData.following_count !== undefined ? userData.following_count : mockFollowing.value.length
+      followers_count: userData.followers_count || 0,
+      followings_count: userData.followings_count || 0
     };
     // Cập nhật lại Store để Header đồng bộ theo
     authStore.setUser(userData);

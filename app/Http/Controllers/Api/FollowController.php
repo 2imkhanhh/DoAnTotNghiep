@@ -38,4 +38,18 @@ class FollowController extends Controller
             'followers_count' => $userToFollow->followers()->count() // Trả về số lượng để update UI
         ]);
     }
+
+    public function getFollowers($userId)
+    {
+        $user = User::findOrFail($userId);
+        $followers = $user->followers()->select('users.id', 'name', 'email', 'avatar')->get();
+        return response()->json(['success' => true, 'data' => $followers]);
+    }
+
+    public function getFollowings($userId)
+    {
+        $user = User::findOrFail($userId);
+        $followings = $user->followings()->select('users.id', 'name', 'email', 'avatar')->get();
+        return response()->json(['success' => true, 'data' => $followings]);
+    }
 }
