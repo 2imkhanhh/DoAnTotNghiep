@@ -37,6 +37,12 @@
     0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+.category-item .icon-wrapper img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
 .category-item:hover .icon-wrapper {
   background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
   color: #ffffff;

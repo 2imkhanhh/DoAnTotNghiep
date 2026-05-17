@@ -56,11 +56,11 @@
 
             <!-- Slider Controls -->
             <button @click="prevSlide"
-                class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer">
                 <span class="material-symbols-outlined">chevron_left</span>
             </button>
             <button @click="nextSlide"
-                class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer">
                 <span class="material-symbols-outlined">chevron_right</span>
             </button>
 
@@ -82,7 +82,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`" class="category-item">
                     <div class="icon-wrapper">
-                        <img v-if="cat.icon" :src="cat.icon" :alt="cat.name" class="w-8 h-8 object-contain">
+                        <img v-if="cat.icon" :src="cat.icon" :alt="cat.name" class="w-11 h-11 object-contain">
                         <span v-else class="material-symbols-outlined text-3xl">category</span>
                     </div>
                     <span class="font-bold text-center">{{ cat.name }}</span>

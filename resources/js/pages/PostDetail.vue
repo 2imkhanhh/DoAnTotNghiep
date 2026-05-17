@@ -157,17 +157,34 @@
 
       <!-- Related Posts -->
       <section class="related-section" v-if="relatedPosts.length">
-        <h2 class="section-title-large">Tin đăng tương tự</h2>
+        <div class="related-header">
+          <h2 class="section-title-large">Tin đăng tương tự</h2>
+          <span class="related-subtitle">Khám phá các sản phẩm cùng danh mục có thể bạn quan tâm</span>
+        </div>
         <div class="post-grid">
-          <!-- Using your existing PostCard component or simplified version -->
           <div v-for="rel in relatedPosts" :key="rel.id" class="rel-post-card" @click="goToPost(rel.slug)">
             <div class="rel-thumb">
-              <img :src="rel.images[0]?.image_path" alt="">
+              <img :src="getRelatedPrimaryImage(rel)" :alt="rel.title" class="rel-img">
+              <div class="rel-thumb-overlay"></div>
+              <span class="rel-badge" v-if="rel.category">{{ rel.category.name }}</span>
             </div>
             <div class="rel-body">
-              <h4 class="rel-title">{{ rel.title }}</h4>
+              <h4 class="rel-title" :title="rel.title">{{ rel.title }}</h4>
               <p class="rel-price">{{ formatPrice(rel.price) }}đ</p>
-              <span class="rel-time">{{ formatDate(rel.created_at) }}</span>
+              
+              <div class="rel-meta">
+                <div class="rel-meta-item">
+                  <span class="material-symbols-outlined">schedule</span>
+                  <span>{{ formatTime(rel.created_at) }}</span>
+                </div>
+                <div class="rel-meta-item items-start">
+                  <span class="material-symbols-outlined mt-0.5">location_on</span>
+                  <div class="flex flex-col leading-tight">
+                    <span>{{ rel.ward_name || 'Đang cập nhật' }}</span>
+                    <span>{{ rel.province_name }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -288,6 +305,27 @@ const getAttributeName = (post, key) => {
   return attr ? attr.name : key;
 };
 
+const getRelatedPrimaryImage = (relPost) => {
+  if (relPost.images && relPost.images.length > 0) {
+    const primary = relPost.images.find(img => img.is_primary);
+    return primary ? primary.image_path : relPost.images[0].image_path;
+  }
+  return 'https://via.placeholder.com/400x300?text=No+Image';
+};
+
+const formatTime = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = Math.floor((now - date) / 1000); // seconds
+
+  if (diff < 60) return 'Vừa xong';
+  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+  
+  return date.toLocaleDateString('vi-VN');
+};
+
 const goToPost = (slug) => {
   router.push(`/post/${slug}`);
 };
@@ -388,18 +426,17 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(4px);
   border: none;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1e293b;
+  color: white;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
   z-index: 10;
@@ -410,7 +447,7 @@ onMounted(() => {
 }
 
 .gallery-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.4);
   transform: translateY(-50%) scale(1.08);
 }
 
@@ -427,7 +464,7 @@ onMounted(() => {
 }
 
 .gallery-nav-btn span {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
 }
 
@@ -551,7 +588,7 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.meta-item span {
+.meta-item .material-symbols-outlined {
   font-size: 1.25rem;
 }
 
@@ -779,14 +816,28 @@ onMounted(() => {
 
 /* Related Section */
 .related-section {
-  margin-top: 4rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 3.5rem;
+  margin-top: 5rem;
+}
+
+.related-header {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .section-title-large {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: #1e293b;
-  margin-bottom: 2rem;
+  margin: 0;
+}
+
+.related-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
 }
 
 .post-grid {
@@ -797,31 +848,67 @@ onMounted(() => {
 
 .rel-post-card {
   background: white;
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .rel-post-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(59, 130, 246, 0.1);
 }
 
 .rel-thumb {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 4/3;
+  position: relative;
+  overflow: hidden;
+  background: #f1f5f9;
 }
 
-.rel-thumb img {
+.rel-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rel-post-card:hover .rel-img {
+  transform: scale(1.1);
+}
+
+.rel-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.rel-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: rgba(59, 130, 246, 0.9);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .rel-body {
-  padding: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .rel-title {
@@ -829,6 +916,8 @@ onMounted(() => {
   font-size: 0.95rem;
   font-weight: 700;
   color: #1e293b;
+  line-height: 1.4;
+  transition: color 0.3s;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -836,14 +925,37 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.rel-price {
-  color: #ef4444;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
+.rel-post-card:hover .rel-title {
+  color: #3b82f6;
 }
 
-.rel-time {
+.rel-price {
+  color: #ef4444;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.rel-meta {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.rel-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #64748b;
   font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.rel-meta-item span.material-symbols-outlined {
+  font-size: 1rem;
   color: #94a3b8;
 }
 
@@ -858,6 +970,12 @@ onMounted(() => {
 
   .post-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .post-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

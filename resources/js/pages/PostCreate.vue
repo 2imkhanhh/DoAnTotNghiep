@@ -482,6 +482,7 @@ const submitPost = async () => {
   width: 32px;
   height: 32px;
   margin-bottom: 0.5rem;
+  object-fit: contain;
 }
 
 .cat-name {
