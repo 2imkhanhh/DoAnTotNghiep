@@ -29,7 +29,14 @@ class ProfileController extends Controller
 
         // GỌI TRỰC TIẾP TỪ MODEL 
         User::where('id', $userId)->update($request->only([
-            'name', 'phone', 'address', 'province_id', 'province_name', 'ward_id', 'ward_name', 'avatar'
+            'name',
+            'phone',
+            'address',
+            'province_id',
+            'province_name',
+            'ward_id',
+            'ward_name',
+            'avatar'
         ]));
 
         // Lấy lại thông tin user sau khi đã update để trả về cho Frontend
@@ -62,6 +69,27 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Đổi mật khẩu thành công!'
+        ]);
+    }
+
+    // 4. Lấy thông tin hồ sơ công khai của người bán
+    public function showPublic($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Lấy danh sách bài đăng đang hiển thị (status = 1)
+        $posts = \App\Models\Post::with(['category', 'images'])
+            ->where('user_id', $id)
+            ->where('status', 1)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'user' => $user,
+                'posts' => $posts
+            ]
         ]);
     }
 }

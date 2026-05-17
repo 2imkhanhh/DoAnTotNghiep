@@ -53,6 +53,25 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
+    protected $appends = ['sold_count', 'reviews_count'];
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'user_id');
+    }
+
+    public function getSoldCountAttribute()
+    {
+        return $this->posts()->where('status', 2)->count();
+    }
+
+    public function getReviewsCountAttribute()
+    {
+        // Hiện tại hệ thống chưa có bảng đánh giá, tạm thời lấy một con số (có thể kết hợp với sold_count) 
+        // để hiển thị trên giao diện Public Profile. Ở đây giả lập là 20.
+        return 20; 
+    }
+
     public function favoritePosts()
     {
         // Liên kết với bảng Post thông qua bảng trung gian 'favorites'

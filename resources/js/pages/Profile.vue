@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex flex-col md:flex-row gap-8">
       <!-- Sidebar -->
-      <aside class="w-full md:w-64 shrink-0">
+      <aside class="w-full md:w-80 shrink-0">
         <div
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant overflow-hidden shadow-sm sticky top-24">
           <div class="p-6 border-b border-outline-variant">
@@ -23,27 +23,17 @@
               </div>
             </div>
             <!-- Followers and Following Display -->
-            <div class="flex items-center mt-5 pt-5 border-t border-outline-variant divide-x divide-outline-variant">
+            <div class="flex justify-center gap-12 mt-6 mb-2">
               <button @click="openFollowModal('followers')" type="button"
-                class="flex-1 flex flex-col items-center justify-center py-1 hover:bg-surface-container-low/50 transition-colors cursor-pointer focus:outline-none group rounded-l-lg">
-                <span
-                  class="text-xl font-extrabold text-on-surface group-hover:text-primary transition-colors leading-none">
-                  {{ profileData.followers_count }}
-                </span>
-                <span class="text-[11px] font-medium text-on-surface-variant mt-1.5 uppercase tracking-wide">
-                  Người theo dõi
-                </span>
+                class="text-center cursor-pointer focus:outline-none group">
+                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.followers_count || 0 }}</div>
+                <div class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">Người theo dõi</div>
               </button>
 
               <button @click="openFollowModal('following')" type="button"
-                class="flex-1 flex flex-col items-center justify-center py-1 hover:bg-surface-container-low/50 transition-colors cursor-pointer focus:outline-none group rounded-r-lg">
-                <span
-                  class="text-xl font-extrabold text-on-surface group-hover:text-primary transition-colors leading-none">
-                  {{ profileData.following_count }}
-                </span>
-                <span class="text-[11px] font-medium text-on-surface-variant mt-1.5 uppercase tracking-wide">
-                  Đang theo dõi
-                </span>
+                class="text-center cursor-pointer focus:outline-none group">
+                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.following_count || 0 }}</div>
+                <div class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">Đang theo dõi</div>
               </button>
             </div>
           </div>
@@ -77,7 +67,7 @@
       </aside>
 
       <!-- Main Content -->
-      <main class="grow">
+      <main class="grow max-w-3xl w-full">
         <!-- Info Tab -->
         <div v-if="activeTab === 'info'"
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">

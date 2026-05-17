@@ -62,3 +62,4 @@ Route::get('/categories/featured', [CategoryController::class, 'getFeaturedCateg
 Route::get('/categories/{id}/attributes', [CategoryController::class, 'getAttributes']);
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{slug}', [PostController::class, 'show']);
+Route::get('/seller/{id}', [ProfileController::class, 'showPublic']);
