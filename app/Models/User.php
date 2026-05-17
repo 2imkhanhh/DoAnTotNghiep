@@ -69,7 +69,7 @@ class User extends Authenticatable implements JWTSubject
     {
         // Hiện tại hệ thống chưa có bảng đánh giá, tạm thời lấy một con số (có thể kết hợp với sold_count) 
         // để hiển thị trên giao diện Public Profile. Ở đây giả lập là 20.
-        return 20; 
+        return 20;
     }
 
     public function favoritePosts()
@@ -89,6 +89,24 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Những người mà user này đang theo dõi
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'followed_id')->withTimestamps();
+    }
+
+    // Những người đang theo dõi user này (Người hâm mộ)
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id')->withTimestamps();
+    }
+
+    // Hàm kiểm tra xem user hiện tại có đang follow 1 user khác không
+    public function isFollowing($userId)
+    {
+        return $this->followings()->where('followed_id', $userId)->exists();
     }
 
     public function getJWTIdentifier()

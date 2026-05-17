@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Post;
 use App\Http\Requests\Api\Profile\UpdateProfileRequest;
 use App\Http\Requests\Api\Profile\ChangePasswordRequest;
 
@@ -78,7 +79,7 @@ class ProfileController extends Controller
         $user = User::findOrFail($id);
 
         // Lấy danh sách bài đăng đang hiển thị (status = 1)
-        $posts = \App\Models\Post::with(['category', 'images'])
+        $posts = Post::with(['category', 'images'])
             ->where('user_id', $id)
             ->where('status', 1)
             ->latest()

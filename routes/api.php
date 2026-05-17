@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\FollowController;
 
 use App\Http\Controllers\Api\LocationController;
 
@@ -38,6 +39,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::post('/posts/{id}/favorite', [FavoriteController::class, 'toggleFavorite']);
     Route::get('/user/favorites', [FavoriteController::class, 'getFavorites']);
+    Route::post('/users/{id}/follow', [FollowController::class, 'toggleFollow']);
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
