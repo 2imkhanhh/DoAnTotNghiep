@@ -26,16 +26,30 @@ class FavoriteController extends Controller
             ], 400);
         }
 
+        // Kiểm tra xem bài viết đã được yêu thích chưa
+        $isFavorited = $user->favoritePosts()->where('post_id', $postId)->exists();
+
+        // Nếu chưa yêu thích (sẽ thêm mới sau khi toggle), kiểm tra giới hạn 50 tin
+        if (!$isFavorited) {
+            $favoritesCount = $user->favoritePosts()->count();
+            if ($favoritesCount >= 50) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chỉ có thể lưu tối đa 50 tin yêu thích'
+                ], 400);
+            }
+        }
+
         // toggle() sẽ tự động: Nếu có rồi thì xóa, chưa có thì thêm vào
         $user->favoritePosts()->toggle($postId);
 
         // Kiểm tra lại trạng thái sau khi toggle
-        $isFavorited = $user->favoritePosts()->where('post_id', $postId)->exists();
+        $isFavoritedAfter = $user->favoritePosts()->where('post_id', $postId)->exists();
 
         return response()->json([
             'success' => true,
-            'message' => $isFavorited ? 'Đã thêm vào mục yêu thích' : 'Đã bỏ yêu thích',
-            'is_favorited' => $isFavorited
+            'message' => $isFavoritedAfter ? 'Đã thêm vào mục yêu thích' : 'Đã bỏ yêu thích',
+            'is_favorited' => $isFavoritedAfter
         ]);
     }
 

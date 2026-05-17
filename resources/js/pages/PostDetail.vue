@@ -220,6 +220,8 @@ const toggleFavorite = async (postId) => {
     }
   } catch (error) {
     console.error('Lỗi khi thực hiện yêu thích:', error);
+    const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện yêu thích';
+    alert(msg);
   }
 };
 
