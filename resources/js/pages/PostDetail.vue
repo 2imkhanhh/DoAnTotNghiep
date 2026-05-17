@@ -119,29 +119,28 @@
               </div>
             </div>
 
-            <!-- Seller Card -->
             <div class="seller-card card">
               <div class="seller-header">
                 <div class="avatar">
-                  <img :src="`https://ui-avatars.com/api/?name=${post.user?.name}&background=random`" alt="">
+                  <img :src="post.user?.avatar || `https://ui-avatars.com/api/?name=${post.user?.name}&background=random`" alt="Avatar">
                 </div>
                 <div class="seller-meta">
                   <h4 class="seller-name">{{ post.user?.name }}</h4>
                   <div class="seller-rating">
                     <span class="material-symbols-outlined filled">star</span>
-                    <span class="rating-text">4.8 (20 đánh giá)</span>
+                    <span class="rating-text">{{ post.user?.rating || '5.0' }}</span>
                   </div>
                 </div>
                 <button class="view-profile">Xem trang</button>
               </div>
               <div class="seller-stats">
                 <div class="stat-item">
-                  <span class="label">Tham gia</span>
-                  <span class="value">2 năm</span>
+                  <span class="label">Đã bán</span>
+                  <span class="value">{{ post.user?.sold_count || 0 }}</span>
                 </div>
                 <div class="stat-item">
-                  <span class="label">Phản hồi</span>
-                  <span class="value">95%</span>
+                  <span class="label">Đánh giá</span>
+                  <span class="value">{{ post.user?.reviews_count || 20 }}</span>
                 </div>
               </div>
             </div>
@@ -171,7 +170,7 @@
             <div class="rel-body">
               <h4 class="rel-title" :title="rel.title">{{ rel.title }}</h4>
               <p class="rel-price">{{ formatPrice(rel.price) }}đ</p>
-              
+
               <div class="rel-meta">
                 <div class="rel-meta-item">
                   <span class="material-symbols-outlined">schedule</span>
@@ -322,7 +321,7 @@ const formatTime = (dateString) => {
   if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
   if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
-  
+
   return date.toLocaleDateString('vi-VN');
 };
 
@@ -786,6 +785,8 @@ onMounted(() => {
 .stat-item {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .stat-item .label {
