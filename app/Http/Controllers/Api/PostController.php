@@ -247,6 +247,24 @@ class PostController extends Controller
 
             $post->update($data);
 
+            // 1. Nhận danh sách ID ảnh cũ còn giữ lại từ Frontend
+            $remainingIds = [];
+            if ($request->has('remaining_images')) {
+                $remainingIds = json_decode($request->remaining_images, true);
+                if (!is_array($remainingIds)) {
+                    $remainingIds = [];
+                }
+            }
+
+            // 2. Lấy ra những ảnh cũ của post mà KHÔNG nằm trong danh sách giữ lại để xóa đi
+            $imagesToDelete = $post->images()->whereNotIn('id', $remainingIds)->get();
+            foreach ($imagesToDelete as $img) {
+                // Xóa tệp vật lý trong storage
+                Storage::disk('public')->delete(str_replace('/storage/', '', $img->image_path));
+                // Xóa bản ghi trong database
+                $img->delete();
+            }
+
             // Xử lý hình ảnh mới (nếu có)
             if ($request->hasFile('images')) {
                 // Kiểm tra xem đã có ảnh bìa chưa
@@ -262,6 +280,16 @@ class PostController extends Controller
                         // Nếu chưa có ảnh bìa và đây là ảnh đầu tiên trong đống mới -> làm ảnh bìa
                         'is_primary' => (!$hasPrimary && $index === 0) ? true : false,
                     ]);
+                }
+            }
+
+            // 3. Đảm bảo luôn có đúng 1 ảnh làm ảnh bìa (is_primary = true)
+            $allImages = $post->images()->get();
+            if ($allImages->isNotEmpty()) {
+                $hasPrimary = $allImages->where('is_primary', true)->isNotEmpty();
+                if (!$hasPrimary) {
+                    // Nếu chưa có ảnh bìa nào (do ảnh bìa cũ bị xóa), đặt ảnh đầu tiên làm ảnh bìa
+                    $allImages->first()->update(['is_primary' => true]);
                 }
             }
 

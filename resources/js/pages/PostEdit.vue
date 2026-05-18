@@ -18,14 +18,14 @@
             <h2 class="card-title"><span class="material-symbols-outlined">image</span> Hình ảnh sản phẩm</h2>
             <div class="image-upload-wrapper">
               <div class="image-grid">
-                <div v-for="(img, index) in imagePreviews" :key="index" class="image-item">
-                  <img :src="img" alt="Preview" />
+                <div v-for="(img, index) in postImages" :key="index" class="image-item">
+                  <img :src="img.path" alt="Preview" />
                   <div v-if="index === 0" class="main-badge">Ảnh bìa</div>
                   <button type="button" @click="removeImage(index)" class="remove-btn">
                     <span class="material-symbols-outlined">close</span>
                   </button>
                 </div>
-                <label v-if="imagePreviews.length < 6" class="upload-btn">
+                <label v-if="postImages.length < 6" class="upload-btn">
                   <input type="file" multiple accept="image/*" @change="handleImageUpload" hidden />
                   <span class="material-symbols-outlined">add_a_photo</span>
                   <span>Thêm ảnh</span>
@@ -175,8 +175,7 @@ const categories = ref([]);
 const childCategories = ref([]);
 const selectedParentId = ref('');
 const attributes = ref([]);
-const imagePreviews = ref([]);
-const selectedFiles = ref([]);
+const postImages = ref([]);
 
 // Administrative Units
 const provinces = ref([]);
@@ -254,7 +253,11 @@ onMounted(async () => {
 
     // Image previews
     if (post.images) {
-      imagePreviews.value = post.images.map(img => img.image_path);
+      postImages.value = post.images.map(img => ({
+        id: img.id,
+        path: img.image_path,
+        file: null
+      }));
     }
 
     await fetchAttributes();
@@ -332,20 +335,24 @@ const parseOptions = (options) => {
 
 const handleImageUpload = (event) => {
   const files = Array.from(event.target.files);
-  const currentCount = imagePreviews.value.length;
+  const currentCount = postImages.value.length;
   const remaining = 6 - currentCount;
 
   files.slice(0, remaining).forEach(file => {
-    selectedFiles.value.push(file);
     const reader = new FileReader();
-    reader.onload = (e) => imagePreviews.value.push(e.target.result);
+    reader.onload = (e) => {
+      postImages.value.push({
+        id: null,
+        path: e.target.result,
+        file: file
+      });
+    };
     reader.readAsDataURL(file);
   });
 };
 
 const removeImage = (index) => {
-  selectedFiles.value.splice(index, 1);
-  imagePreviews.value.splice(index, 1);
+  postImages.value.splice(index, 1);
 };
 
 const submitUpdate = async () => {
@@ -366,9 +373,15 @@ const submitUpdate = async () => {
   formData.append('category_id', form.category_id);
   formData.append('specifications', JSON.stringify(form.specifications));
   
-  if (selectedFiles.value.length > 0) {
-    selectedFiles.value.forEach((file, index) => formData.append(`images[${index}]`, file));
-  }
+  // Append new files
+  const newFiles = postImages.value.filter(img => img.file !== null).map(img => img.file);
+  newFiles.forEach((file, index) => {
+    formData.append(`images[${index}]`, file);
+  });
+
+  // Append remaining old image IDs
+  const remainingOldIds = postImages.value.filter(img => img.id !== null).map(img => img.id);
+  formData.append('remaining_images', JSON.stringify(remainingOldIds));
 
   try {
     const postId = route.params.id;
