@@ -31,7 +31,7 @@ class StorePostRequest extends FormRequest
             'province_name' => 'required|string|max:100',
             'ward_id' => 'required|integer',
             'ward_name' => 'required|string|max:100',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^0[0-9]{9}$/'],
             'category_id' => 'required|exists:categories,id',
 
             // Specifications sử dụng Custom Rule để validate động theo danh mục
@@ -49,6 +49,8 @@ class StorePostRequest extends FormRequest
     public function messages()
     {
         return [
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số.',
             'images.required' => 'Vui lòng tải lên ít nhất 1 hình ảnh.',
             'images.max' => 'Bạn chỉ được tải lên tối đa 6 hình ảnh.',
             'images.*.image' => 'File tải lên phải là định dạng hình ảnh.',

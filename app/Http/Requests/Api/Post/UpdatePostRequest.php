@@ -22,7 +22,7 @@ class UpdatePostRequest extends FormRequest
             'province_name' => 'required|string|max:100',
             'ward_id' => 'required|integer',
             'ward_name' => 'required|string|max:100',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^0[0-9]{9}$/'],
             'category_id' => 'required|exists:categories,id',
 
             'specifications' => [
@@ -39,6 +39,8 @@ class UpdatePostRequest extends FormRequest
     public function messages()
     {
         return [
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 chữ số.',
             'images.max' => 'Bạn chỉ được tải lên tối đa 6 hình ảnh.',
             'images.*.image' => 'File tải lên phải là định dạng hình ảnh.',
         ];

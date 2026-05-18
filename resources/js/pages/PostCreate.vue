@@ -118,7 +118,7 @@
 
             <div class="form-group">
               <label class="field-label">Số điện thoại *</label>
-              <input v-model="form.phone" type="text" class="input-field" placeholder="Nhập số điện thoại" required />
+              <input v-model="form.phone" type="tel" pattern="0[0-9]{9}" maxlength="10" class="input-field" placeholder="Nhập số điện thoại (10 chữ số)" required />
               <p v-if="errors.phone" class="error-text">{{ errors.phone[0] }}</p>
             </div>
           </div>
