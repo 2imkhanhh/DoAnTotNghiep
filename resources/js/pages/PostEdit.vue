@@ -86,6 +86,13 @@
                   <input v-else-if="attr.type === 'number'" v-model.number="form.specifications[attr.key]" type="number"
                     :required="attr.is_required" class="input-field" />
 
+                  <div v-else-if="attr.type === 'checkbox'" class="checkbox-options-grid">
+                    <label v-for="opt in parseOptions(attr.options)" :key="opt" class="custom-checkbox-item">
+                      <input type="checkbox" :value="opt" v-model="form.specifications[attr.key]" />
+                      <span>{{ opt }}</span>
+                    </label>
+                  </div>
+
                   <input v-else v-model="form.specifications[attr.key]" type="text" :required="attr.is_required"
                     class="input-field" />
                 </div>
@@ -316,7 +323,16 @@ const fetchAttributes = async () => {
     // Keep existing specs if they match the keys, otherwise set empty
     const newSpecs = {};
     attributes.value.forEach(attr => {
-      newSpecs[attr.key] = form.specifications[attr.key] || '';
+      if (form.specifications[attr.key] !== undefined && form.specifications[attr.key] !== null) {
+        if (attr.type === 'checkbox' && !Array.isArray(form.specifications[attr.key])) {
+          form.specifications[attr.key] = typeof form.specifications[attr.key] === 'string'
+            ? [form.specifications[attr.key]]
+            : [];
+        }
+        newSpecs[attr.key] = form.specifications[attr.key];
+      } else {
+        newSpecs[attr.key] = attr.type === 'checkbox' ? [] : '';
+      }
     });
     form.specifications = newSpecs;
   } catch (error) {
@@ -739,5 +755,43 @@ const submitUpdate = async () => {
   .attr-grid, .info-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Premium Checkbox Attribute Style */
+.checkbox-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.custom-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+  transition: color 0.2s ease;
+}
+
+.custom-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+  cursor: pointer;
+  vertical-align: middle !important;
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+}
+
+.custom-checkbox-item:hover {
+  color: var(--color-primary, #3b82f6);
 }
 </style>

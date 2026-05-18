@@ -166,10 +166,21 @@ const formData = ref({
   is_required: false
 });
 
+const findCategoryRecursive = (cats, id) => {
+  for (const cat of cats) {
+    if (cat.id == id) return cat;
+    if (cat.children && cat.children.length > 0) {
+      const found = findCategoryRecursive(cat.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 const fetchCategoryInfo = async () => {
   try {
     const response = await axios.get('/api/categories');
-    const cat = response.data.data.find(c => c.id == categoryId);
+    const cat = findCategoryRecursive(response.data.data, categoryId);
     if (cat) categoryName.value = cat.name;
   } catch (e) { }
 };

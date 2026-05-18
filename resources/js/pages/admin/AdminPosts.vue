@@ -24,7 +24,7 @@
           <thead>
             <tr>
               <th>Hình ảnh</th>
-              <th>Thông tin tin đăng</th>
+              <th>Thông tin</th>
               <th>Giá</th>
               <th>Người đăng</th>
               <th>Trạng thái</th>
@@ -45,7 +45,8 @@
                   <h4 class="title" @click="viewDetail(post)">{{ post.title }}</h4>
                   <p class="address">
                     <span class="material-symbols-outlined">location_on</span>
-                    {{ post.address }}
+                    {{ (post.ward_name || post.province_name) ? `${post.ward_name ? post.ward_name + ', ' :
+                      ''}${post.province_name || ''}` : (post.address || 'Đang cập nhật') }}
                   </p>
                 </div>
               </td>
@@ -120,6 +121,16 @@
               <div class="detail-images">
                 <div class="main-img">
                   <img :src="selectedPost.images[activeImgIdx]?.image_path" alt="">
+
+                  <!-- Navigation Arrows -->
+                  <button v-if="selectedPost.images.length > 1" class="gallery-nav-btn prev-btn" @click="prevImage"
+                    aria-label="Ảnh trước">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button v-if="selectedPost.images.length > 1" class="gallery-nav-btn next-btn" @click="nextImage"
+                    aria-label="Ảnh sau">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
                 </div>
                 <div class="thumbs-list">
                   <img v-for="(img, idx) in selectedPost.images" :key="idx" :src="img.image_path"
@@ -137,7 +148,9 @@
                 <p class="detail-price">{{ formatPrice(selectedPost.price) }}đ</p>
                 <p class="detail-address">
                   <span class="material-symbols-outlined">location_on</span>
-                  {{ selectedPost.address }}
+                  {{ (selectedPost.ward_name || selectedPost.province_name) ? `${selectedPost.ward_name ?
+                    selectedPost.ward_name + ', ' : ''}${selectedPost.province_name || ''}` : (selectedPost.address ||
+                  'Đang cập nhật') }}
                 </p>
 
                 <div class="info-section">
@@ -219,6 +232,24 @@ const rejectionReason = ref('');
 const postToReject = ref(null);
 const selectedPost = ref(null);
 const activeImgIdx = ref(0);
+
+const prevImage = () => {
+  if (!selectedPost.value || !selectedPost.value.images || !selectedPost.value.images.length) return;
+  if (activeImgIdx.value === 0) {
+    activeImgIdx.value = selectedPost.value.images.length - 1;
+  } else {
+    activeImgIdx.value--;
+  }
+};
+
+const nextImage = () => {
+  if (!selectedPost.value || !selectedPost.value.images || !selectedPost.value.images.length) return;
+  if (activeImgIdx.value === selectedPost.value.images.length - 1) {
+    activeImgIdx.value = 0;
+  } else {
+    activeImgIdx.value++;
+  }
+};
 
 const pagination = ref({
   current_page: 1,
@@ -555,6 +586,8 @@ onMounted(() => {
   border-radius: 2rem;
   font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .status-badge.pending {
@@ -1073,5 +1106,61 @@ onMounted(() => {
 .empty-state span {
   font-size: 4rem;
   margin-bottom: 1rem;
+}
+
+/* Detail Modal Gallery Navigation Arrows */
+.main-img {
+  position: relative;
+}
+
+.gallery-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.6);
+  /* Nền tối sang trọng (Dark Charcoal) */
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+  /* Luôn hiển thị mờ để báo hiệu */
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.main-img:hover .gallery-nav-btn {
+  opacity: 1;
+}
+
+.gallery-nav-btn:hover {
+  background: rgba(15, 23, 42, 0.85);
+  /* Tăng độ đậm khi hover */
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.prev-btn {
+  left: 1rem;
+}
+
+.next-btn {
+  right: 1rem;
+}
+
+.gallery-nav-btn span {
+  font-size: 26px;
+  font-weight: 600;
 }
 </style>

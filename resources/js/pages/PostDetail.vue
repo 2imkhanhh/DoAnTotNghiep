@@ -122,7 +122,9 @@
             <div class="seller-card card">
               <div class="seller-header">
                 <div class="avatar">
-                  <img :src="post.user?.avatar || `https://ui-avatars.com/api/?name=${post.user?.name}&background=random`" alt="Avatar">
+                  <img
+                    :src="post.user?.avatar || `https://ui-avatars.com/api/?name=${post.user?.name}&background=random`"
+                    alt="Avatar">
                 </div>
                 <div class="seller-meta">
                   <h4 class="seller-name">{{ post.user?.name }}</h4>
@@ -331,7 +333,7 @@ const goToPost = (slug) => {
 
 const goToSellerProfile = () => {
   if (!post.value || !post.value.user) return;
-  
+
   if (authStore.isLoggedIn && post.value.user_id === authStore.user?.id) {
     router.push('/profile');
   } else {
@@ -439,20 +441,23 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.6);
+  /* Nền tối sang trọng (Dark Charcoal) */
+  backdrop-filter: blur(8px);
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+  /* Luôn hiển thị mờ để báo hiệu có thể click */
   z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .main-image:hover .gallery-nav-btn {
@@ -460,8 +465,10 @@ onMounted(() => {
 }
 
 .gallery-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: translateY(-50%) scale(1.08);
+  background: rgba(15, 23, 42, 0.85);
+  /* Tăng độ đậm khi hover */
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 .gallery-nav-btn:active {
@@ -477,15 +484,17 @@ onMounted(() => {
 }
 
 .gallery-nav-btn span {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
 }
 
 @media (max-width: 768px) {
   .gallery-nav-btn {
-    opacity: 0.9 !important;
+    opacity: 0.95 !important;
     width: 38px;
     height: 38px;
+    background: rgba(15, 23, 42, 0.75);
+    /* Đậm hơn trên mobile để nhìn rõ */
   }
 
   .gallery-nav-btn span {
@@ -893,7 +902,7 @@ onMounted(() => {
 }
 
 .rel-post-card:hover .rel-img {
-  transform: scale(1.1);
+  transform: scale(1);
 }
 
 .rel-thumb-overlay {
@@ -938,10 +947,6 @@ onMounted(() => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.rel-post-card:hover .rel-title {
-  color: #3b82f6;
 }
 
 .rel-price {
