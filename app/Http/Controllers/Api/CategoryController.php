@@ -15,11 +15,10 @@ use App\Models\CategoryAttribute;
 
 class CategoryController extends Controller
 {
-    // Lấy toàn bộ danh mục GỐC kèm theo các danh mục CON bên trong
+    // Lấy toàn bộ danh mục GỐC kèm theo các danh mục CON bên trong (Hỗ trợ 3 cấp)
     public function index()
     {
-        // with('children') sẽ tự động lồng mảng danh mục con vào bên trong danh mục cha
-        $categories = Category::whereNull('parent_id')->with('children')->get();
+        $categories = Category::whereNull('parent_id')->with('children.children')->get();
         return response()->json(['success' => true, 'data' => $categories]);
     }
 
@@ -29,7 +28,7 @@ class CategoryController extends Controller
         $categories = Category::where('is_featured', true)
             ->where('is_active', true)
             ->get();
-            
+
         return response()->json(['success' => true, 'data' => $categories]);
     }
 
@@ -38,6 +37,17 @@ class CategoryController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = Str::slug($request->name);
+
+        // Kiểm tra tối đa 10 danh mục nổi bật ở Backend
+        if (!empty($data['is_featured'])) {
+            $featuredCount = Category::where('is_featured', true)->count();
+            if ($featuredCount >= 8) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chỉ được phép thiết lập tối đa 8 danh mục nổi bật! Hãy tắt nổi bật của danh mục khác trước.'
+                ], 422);
+            }
+        }
 
         if ($request->hasFile('icon')) {
             $file = $request->file('icon');
@@ -60,6 +70,17 @@ class CategoryController extends Controller
         $data = $request->validated();
         if ($request->has('name')) {
             $data['slug'] = Str::slug($request->name);
+        }
+
+        // Kiểm tra tối đa 8 danh mục nổi bật ở Backend khi cập nhật
+        if (isset($data['is_featured']) && $data['is_featured'] && !$category->is_featured) {
+            $featuredCount = Category::where('is_featured', true)->count();
+            if ($featuredCount >= 8) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chỉ được phép thiết lập tối đa 8 danh mục nổi bật! Hãy tắt nổi bật của danh mục khác trước.'
+                ], 422);
+            }
         }
 
         if ($request->hasFile('icon')) {

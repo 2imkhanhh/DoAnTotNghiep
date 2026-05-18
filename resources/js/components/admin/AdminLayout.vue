@@ -294,6 +294,7 @@ const isSidebarCollapsed = ref(false);
   padding: 2rem;
   overflow-y: auto;
   flex: 1;
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 768px) {

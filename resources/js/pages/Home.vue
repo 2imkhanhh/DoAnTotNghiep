@@ -72,14 +72,17 @@
             </div>
         </section>
 
-        <!-- Danh mục nổi bật -->
         <section id="explore">
             <div class="flex justify-between items-end mb-6">
-                <h2 class="text-2xl font-bold text-on-surface">Danh mục nổi bật</h2>
-                <a href="#" class="text-primary font-medium hover:underline">Xem tất cả</a>
+                <h2 class="text-2xl font-bold text-on-surface">
+                    {{ showAllCategories ? 'Tất cả danh mục' : 'Danh mục nổi bật' }}
+                </h2>
+                <button @click.prevent="toggleShowAllCategories" class="text-primary font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
+                    {{ showAllCategories ? 'Thu gọn' : 'Xem tất cả' }}
+                </button>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                 <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`" class="category-item">
                     <div class="icon-wrapper">
                         <img v-if="cat.icon" :src="cat.icon" :alt="cat.name" class="w-11 h-11 object-contain">
@@ -201,7 +204,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
@@ -209,7 +212,25 @@ const authStore = useAuthStore();
 const currentSlide = ref(0);
 const totalSlides = 3;
 let slideInterval = null;
-const categories = ref([]);
+const showAllCategories = ref(false);
+const allCategories = ref([]);
+const featuredCategories = ref([]);
+
+const categories = computed(() => {
+    if (showAllCategories.value) {
+        const flat = [];
+        for (const parent of allCategories.value) {
+            flat.push(parent);
+            if (parent.children && parent.children.length) {
+                for (const child of parent.children) {
+                    flat.push(child);
+                }
+            }
+        }
+        return flat;
+    }
+    return featuredCategories.value;
+});
 const posts = ref([]);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
@@ -255,9 +276,25 @@ const toggleFavorite = async (postId) => {
 const fetchCategories = async () => {
     try {
         const response = await axios.get('/api/categories/featured');
-        categories.value = response.data.data;
+        featuredCategories.value = response.data.data;
     } catch (error) {
         console.error('Lỗi khi lấy danh mục nổi bật:', error);
+    }
+};
+
+const toggleShowAllCategories = async () => {
+    if (showAllCategories.value) {
+        showAllCategories.value = false;
+    } else {
+        if (allCategories.value.length === 0) {
+            try {
+                const response = await axios.get('/api/categories');
+                allCategories.value = response.data.data;
+            } catch (error) {
+                console.error('Lỗi khi lấy tất cả danh mục:', error);
+            }
+        }
+        showAllCategories.value = true;
     }
 };
 
