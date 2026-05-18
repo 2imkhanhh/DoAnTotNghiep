@@ -29,7 +29,12 @@
           <tbody>
             <tr v-for="attr in attributes" :key="attr.id">
               <td>#{{ attr.id }}</td>
-              <td class="font-bold">{{ attr.name }}</td>
+              <td class="font-bold">
+                {{ attr.name }}
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: normal; margin-top: 0.125rem;">
+                  Key: <code>{{ attr.key }}</code>
+                </div>
+              </td>
               <td>
                 <span :class="['badge-type', attr.type]">{{ formatType(attr.type) }}</span>
               </td>
@@ -77,9 +82,19 @@
           <form @submit.prevent="saveAttribute" class="modal-form">
             <div class="form-group">
               <label>Tên thuộc tính (VD: Màu sắc, Dung lượng...)</label>
-              <input type="text" v-model="formData.name" required placeholder="Nhập tên thuộc tính">
+              <input type="text" v-model="formData.name" required @input="handleNameInput"
+                placeholder="Nhập tên thuộc tính">
             </div>
-            
+
+            <div class="form-group">
+              <label>Mã thuộc tính</label>
+              <input type="text" v-model="formData.key" required
+                placeholder="Nhập mã thuộc tính (không dấu, không khoảng cách)" @input="isKeyManuallyEdited = true">
+              <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                Mã được tự động tạo từ tên.
+              </small>
+            </div>
+
             <div class="form-group">
               <label>Kiểu hiển thị</label>
               <select v-model="formData.type" required @change="handleTypeChange">
@@ -92,14 +107,10 @@
 
             <!-- Options management for Select/Checkbox -->
             <div v-if="['select', 'checkbox'].includes(formData.type)" class="form-group">
-              <label>Danh sách lựa chọn (Nhấn Enter để thêm)</label>
+              <label>Danh sách lựa chọn</label>
               <div class="options-input-wrapper">
-                <input 
-                  type="text" 
-                  v-model="newOption" 
-                  @keydown.enter.prevent="addOption"
-                  placeholder="Nhập giá trị và nhấn Enter"
-                >
+                <input type="text" v-model="newOption" @keydown.enter.prevent="addOption"
+                  placeholder="Nhập giá trị và nhấn Enter">
                 <button type="button" @click="addOption" class="btn-add">Thêm</button>
               </div>
               <div class="options-list">
@@ -143,11 +154,13 @@ const attributes = ref([]);
 const showModal = ref(false);
 const isEditing = ref(false);
 const loading = ref(false);
+const isKeyManuallyEdited = ref(false);
 const newOption = ref('');
 
 const formData = ref({
   id: null,
   name: '',
+  key: '',
   type: 'text',
   options: [],
   is_required: false
@@ -158,7 +171,7 @@ const fetchCategoryInfo = async () => {
     const response = await axios.get('/api/categories');
     const cat = response.data.data.find(c => c.id == categoryId);
     if (cat) categoryName.value = cat.name;
-  } catch (e) {}
+  } catch (e) { }
 };
 
 const fetchAttributes = async () => {
@@ -180,21 +193,47 @@ const formatType = (type) => {
   return types[type] || type;
 };
 
+const generateKey = (name) => {
+  if (!name) return '';
+  let str = name.toLowerCase();
+  str = str.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, "a");
+  str = str.replace(/[èéẹẻẽêềếệểễ]/g, "e");
+  str = str.replace(/[ìíịỉĩ]/g, "i");
+  str = str.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, "o");
+  str = str.replace(/[ùúụủũưừứựửữ]/g, "u");
+  str = str.replace(/[ỳýỵỷỹ]/g, "y");
+  str = str.replace(/đ/g, "d");
+
+  str = str.replace(/[^a-z0-9\s_-]/g, '');
+  str = str.replace(/\s+/g, '_');
+  str = str.replace(/_+/g, '_');
+  return str.trim().replace(/^_+|_+$/g, '');
+};
+
+const handleNameInput = () => {
+  if (!isEditing.value && !isKeyManuallyEdited.value) {
+    formData.value.key = generateKey(formData.value.name);
+  }
+};
+
 const openAddModal = () => {
   isEditing.value = false;
-  formData.value = { 
-    id: null, 
-    name: '', 
-    type: 'text', 
-    options: [], 
-    is_required: false 
+  isKeyManuallyEdited.value = false;
+  formData.value = {
+    id: null,
+    name: '',
+    key: '',
+    type: 'text',
+    options: [],
+    is_required: false
   };
   showModal.value = true;
 };
 
 const openEditModal = (attr) => {
   isEditing.value = true;
-  formData.value = { 
+  isKeyManuallyEdited.value = true;
+  formData.value = {
     ...attr,
     options: attr.options ? [...attr.options] : []
   };
@@ -301,7 +340,7 @@ onMounted(() => {
 .table-card {
   background: white;
   border-radius: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -333,10 +372,25 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.badge-type.text { background: #e0f2fe; color: #0369a1; }
-.badge-type.number { background: #fef3c7; color: #92400e; }
-.badge-type.select { background: #dcfce7; color: #166534; }
-.badge-type.checkbox { background: #f5f3ff; color: #5b21b6; }
+.badge-type.text {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-type.number {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-type.select {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-type.checkbox {
+  background: #f5f3ff;
+  color: #5b21b6;
+}
 
 .options-tags {
   display: flex;
@@ -358,51 +412,153 @@ onMounted(() => {
 }
 
 .btn-icon {
-  width: 32px; height: 32px; border: none; background: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; border-radius: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
 }
 
-.btn-icon.edit { color: #3b82f6; }
-.btn-icon.edit:hover { background: #eff6ff; }
-.btn-icon.delete { color: #ef4444; }
-.btn-icon.delete:hover { background: #fef2f2; }
+.btn-icon.edit {
+  color: #3b82f6;
+}
+
+.btn-icon.edit:hover {
+  background: #eff6ff;
+}
+
+.btn-icon.delete {
+  color: #ef4444;
+}
+
+.btn-icon.delete:hover {
+  background: #fef2f2;
+}
 
 /* Modal styles */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center; z-index: 1000;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
   backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: white; width: 100%; max-width: 550px; border-radius: 1.5rem;
-  padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  background: white;
+  width: 100%;
+  max-width: 550px;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-.modal-header h3 { font-size: 1.25rem; font-weight: 800; margin: 0; }
-.close-btn { background: none; border: none; cursor: pointer; color: #64748b; }
-
-.form-group { margin-bottom: 1.5rem; }
-.form-group label { display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.9rem; }
-.form-group input, .form-group select {
-  width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #e2e8f0;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
-.options-input-wrapper { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-.btn-add { background: #334155; color: white; border: none; padding: 0 1rem; border-radius: 0.75rem; cursor: pointer; }
+.modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+}
 
-.options-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.options-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-add {
+  background: #334155;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
+
+.options-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .option-tag {
-  background: #f1f5f9; padding: 0.4rem 0.75rem; border-radius: 0.5rem;
-  display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600;
+  background: #f1f5f9;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
-.option-tag span { font-size: 1rem; cursor: pointer; color: #ef4444; }
 
-.checkbox-label { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+.option-tag span {
+  font-size: 1rem;
+  cursor: pointer;
+  color: #ef4444;
+}
 
-.modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
 
-.empty-state { text-align: center; padding: 4rem !important; color: #94a3b8; }
-.empty-state span { font-size: 3rem; margin-bottom: 1rem; }
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem !important;
+  color: #94a3b8;
+}
+
+.empty-state span {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
 </style>

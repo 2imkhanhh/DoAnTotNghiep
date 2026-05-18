@@ -25,10 +25,10 @@ class StoreCategoryAttributeRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'key' => 'required|string|alpha_dash',
-            'type' => 'required|in:text,number,select,radio',
+            'type' => 'required|in:text,number,select,checkbox,radio',
 
-            // Dùng required_if: Nếu type là select hoặc radio thì BẮT BUỘC phải có mảng options
-            'options' => 'required_if:type,select,radio|array|nullable',
+            // Dùng required_if: Nếu type là select, checkbox hoặc radio thì BẮT BUỘC phải có mảng options
+            'options' => 'required_if:type,select,checkbox,radio|array|nullable',
             'options.*' => 'string',
 
             'is_required' => 'boolean'
@@ -38,7 +38,7 @@ class StoreCategoryAttributeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'options.required_if' => 'Kiểu select hoặc radio thì bắt buộc phải nhập danh sách các tùy chọn (options).',
+            'options.required_if' => 'Kiểu select, checkbox hoặc radio thì bắt buộc phải nhập danh sách các tùy chọn (options).',
             'key.alpha_dash' => 'Key chỉ được chứa chữ cái, số, dấu gạch ngang và gạch dưới (không có khoảng trắng hay tiếng Việt có dấu).'
         ];
     }
