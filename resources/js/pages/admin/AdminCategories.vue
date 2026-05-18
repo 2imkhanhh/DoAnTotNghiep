@@ -219,6 +219,7 @@ const toggleRow = (id) => {
   } else {
     expandedRows.value.push(id);
   }
+  sessionStorage.setItem('admin_expanded_categories', JSON.stringify(expandedRows.value));
 };
 
 const isExpanded = (id) => expandedRows.value.includes(id);
@@ -235,6 +236,7 @@ const filteredTree = computed(() => {
     // Auto-expand if children match search
     if (childrenMatches && !expandedRows.value.includes(parent.id)) {
         expandedRows.value.push(parent.id);
+        sessionStorage.setItem('admin_expanded_categories', JSON.stringify(expandedRows.value));
     }
     
     return parentMatches || childrenMatches;
@@ -333,7 +335,15 @@ const manageAttributes = (cat) => {
   router.push(`/admin/categories/${cat.id}/attributes`);
 };
 
-onMounted(fetchCategories);
+onMounted(async () => {
+  await fetchCategories();
+  const saved = sessionStorage.getItem('admin_expanded_categories');
+  if (saved) {
+    try {
+      expandedRows.value = JSON.parse(saved);
+    } catch (e) {}
+  }
+});
 </script>
 
 <style scoped>

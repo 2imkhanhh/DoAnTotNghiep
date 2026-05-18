@@ -318,6 +318,7 @@ onMounted(() => {
   gap: 0.5rem;
   text-decoration: none;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .btn-secondary:hover {
@@ -449,6 +450,8 @@ onMounted(() => {
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
+  overflow-y: auto;
+  padding: 2rem 1rem;
 }
 
 .modal-content {
@@ -458,6 +461,8 @@ onMounted(() => {
   border-radius: 1.5rem;
   padding: 2rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-header {
@@ -491,7 +496,8 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.form-group input,
+.form-group input[type="text"],
+.form-group input[type="number"],
 .form-group select {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -538,10 +544,26 @@ onMounted(() => {
 }
 
 .checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  display: block;
   cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0 0.75rem 0 0 !important;
+  cursor: pointer;
+  vertical-align: -2px !important;
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .modal-footer {
