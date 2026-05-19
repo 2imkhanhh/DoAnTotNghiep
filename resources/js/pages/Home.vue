@@ -154,10 +154,22 @@
                 <p>Hiện chưa có tin đăng nào được hiển thị.</p>
             </div>
 
-            <div v-if="posts.length > 0" class="text-center mt-8">
+            <div v-if="posts.length > 0" class="flex justify-center items-center gap-4 mt-8">
+                <!-- Nút Xem thêm tin khác -->
                 <button
-                    class="px-6 py-2 border-2 border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-colors">
-                    Xem thêm tin khác
+                    v-if="hasMore"
+                    @click="loadMorePosts"
+                    :disabled="loadingMore"
+                    class="btn-load-more">
+                    {{ loadingMore ? 'Đang tải...' : 'Xem thêm tin khác' }}
+                </button>
+
+                <!-- Nút Ẩn bớt -->
+                <button
+                    v-if="currentPage > 1"
+                    @click="collapsePosts"
+                    class="btn-collapse">
+                    Ẩn bớt tin
                 </button>
             </div>
         </section>
@@ -233,6 +245,9 @@ const categories = computed(() => {
 });
 const posts = ref([]);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
+const currentPage = ref(1);
+const hasMore = ref(true);
+const loadingMore = ref(false);
 
 const isFavorite = (postId) => {
     return favoriteIds.value.includes(Number(postId));
@@ -300,11 +315,40 @@ const toggleShowAllCategories = async () => {
 
 const fetchPosts = async () => {
     try {
-        const response = await axios.get('/api/posts?limit=8');
-        // Vì Backend dùng paginate nên data sẽ nằm trong response.data.data.data
-        posts.value = response.data.data.data;
+        const response = await axios.get('/api/posts?limit=8&page=1');
+        if (response.data.success) {
+            posts.value = response.data.data.data;
+            currentPage.value = response.data.data.current_page;
+            hasMore.value = response.data.data.current_page < response.data.data.last_page;
+        }
     } catch (error) {
         console.error('Lỗi khi lấy tin đăng:', error);
+    }
+};
+
+const loadMorePosts = async () => {
+    if (loadingMore.value || !hasMore.value) return;
+    loadingMore.value = true;
+    try {
+        const nextPage = currentPage.value + 1;
+        const response = await axios.get(`/api/posts?limit=8&page=${nextPage}`);
+        if (response.data.success) {
+            posts.value = [...posts.value, ...response.data.data.data];
+            currentPage.value = response.data.data.current_page;
+            hasMore.value = response.data.data.current_page < response.data.data.last_page;
+        }
+    } catch (error) {
+        console.error('Lỗi khi tải thêm tin đăng:', error);
+    } finally {
+        loadingMore.value = false;
+    }
+};
+
+const collapsePosts = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+        posts.value = posts.value.slice(0, currentPage.value * 8);
+        hasMore.value = true; // Chắc chắn còn trang tiếp theo để tải lại
     }
 };
 
@@ -372,4 +416,61 @@ onUnmounted(() => {
     clearInterval(slideInterval);
 });
 </script>
+
+<style scoped>
+.btn-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  border: 2px solid var(--color-primary, #020037);
+  background: transparent;
+  color: var(--color-primary, #020037);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-load-more:hover:not(:disabled) {
+  background: var(--color-primary, #020037);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
+  transform: translateY(-2px);
+}
+
+.btn-load-more:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-load-more:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  border: 2px solid var(--color-primary, #020037);
+  background: transparent;
+  color: var(--color-primary, #020037);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-collapse:hover {
+  background: var(--color-primary, #020037);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
+  transform: translateY(-2px);
+}
+
+.btn-collapse:active {
+  transform: translateY(0);
+}
+</style>
 

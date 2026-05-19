@@ -54,6 +54,14 @@ class PostController extends Controller
 
     public function index(Request $request)
     {
+        //sử dụng cú pháp ES6 để gộp mảng khi phân trang
+        /*
+            Giả sử mảng cũ là: A = [1, 2]
+            Mảng mới lấy về là: B = [3, 4]
+            Nếu bạn viết A = B thì mảng cũ sẽ bị đè mất và chỉ còn lại [3, 4].
+            Nhưng khi viết A = [...A, ...B], nó sẽ "rải" các phần tử ra thành A = [1, 2, 3, 4]. 
+            Nhờ đó, người dùng vẫn giữ nguyên các tin đã xem ở phía trên và xem thêm tin mới được nối dài xuống dưới.
+        */
         $limit = $request->get('limit', 8);
         $category_id = $request->get('category_id');
 
