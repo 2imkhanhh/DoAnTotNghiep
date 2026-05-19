@@ -62,19 +62,59 @@ class PostController extends Controller
             Nhưng khi viết A = [...A, ...B], nó sẽ "rải" các phần tử ra thành A = [1, 2, 3, 4]. 
             Nhờ đó, người dùng vẫn giữ nguyên các tin đã xem ở phía trên và xem thêm tin mới được nối dài xuống dưới.
         */
+
         $limit = $request->get('limit', 8);
         $category_id = $request->get('category_id');
+        $province_name = $request->get('province_name');
+        $price_min = $request->get('price_min');
+        $price_max = $request->get('price_max');
+        $sort = $request->get('sort', 'latest');
 
         $query = Post::with(['images', 'category', 'user'])
             // Thêm withExists kiểm tra yêu thích
             ->withExists(['favoritedBy as is_favorited' => function ($query) {
                 $query->where('user_id', auth('api')->id());
             }])
-            ->where('status', 1)
-            ->latest();
+            ->where('status', 1);
 
         if ($category_id) {
-            $query->where('category_id', $category_id);
+            $category = \App\Models\Category::with('children.children')->find($category_id);
+            if ($category) {
+                $categoryIds = [$category->id];
+                foreach ($category->children as $child) {
+                    $categoryIds[] = $child->id;
+                    if ($child->children) {
+                        foreach ($child->children as $grandchild) {
+                            $categoryIds[] = $grandchild->id;
+                        }
+                    }
+                }
+                $query->whereIn('category_id', $categoryIds);
+            } else {
+                $query->where('category_id', $category_id);
+            }
+        }
+
+        // Lọc theo tỉnh thành (Khu vực)
+        if ($province_name) {
+            $query->where('province_name', $province_name);
+        }
+
+        // Lọc theo khoảng giá
+        if ($price_min !== null && $price_min !== '') {
+            $query->where('price', '>=', $price_min);
+        }
+        if ($price_max !== null && $price_max !== '') {
+            $query->where('price', '<=', $price_max);
+        }
+
+        // Sắp xếp
+        if ($sort === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } else {
+            $query->latest();
         }
 
         $posts = $query->paginate($limit);

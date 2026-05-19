@@ -13,6 +13,16 @@ const routes = [
         component: () => import('./pages/PostDetail.vue'),
     },
     {
+        path: '/marketplace',
+        name: 'AllPosts',
+        component: () => import('./pages/CategoryPosts.vue'),
+    },
+    {
+        path: '/category/:slug',
+        name: 'CategoryPosts',
+        component: () => import('./pages/CategoryPosts.vue'),
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import('./pages/Login.vue'),
