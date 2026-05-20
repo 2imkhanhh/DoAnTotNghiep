@@ -8,8 +8,10 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\ConversationController;
 
 use App\Http\Controllers\Api\LocationController;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/locations/provinces', [LocationController::class, 'getProvinces']);
 Route::get('/locations/wards/{provinceCode}', [LocationController::class, 'getWards']);
@@ -42,6 +44,18 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/users/{id}/follow', [FollowController::class, 'toggleFollow']);
     Route::get('/users/{id}/followers', [FollowController::class, 'getFollowers']);
     Route::get('/users/{id}/followings', [FollowController::class, 'getFollowings']);
+
+    // Các routes Chat Real-time
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::post('/conversations', [ConversationController::class, 'store']);
+    Route::get('/conversations/{id}/messages', [ConversationController::class, 'messages']);
+    Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage']);
+    Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
+
+    // Route xác thực WebSockets bằng JWT
+    Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
+        return Broadcast::auth($request);
+    });
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
@@ -66,4 +80,5 @@ Route::get('/categories/featured', [CategoryController::class, 'getFeaturedCateg
 Route::get('/categories/{id}/attributes', [CategoryController::class, 'getAttributes']);
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{slug}', [PostController::class, 'show']);
+Route::get('/posts/id/{id}', [PostController::class, 'showById']);
 Route::get('/seller/{id}', [ProfileController::class, 'showPublic']);

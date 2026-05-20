@@ -15,13 +15,14 @@
     <!-- Nội dung chính của trang -->
     <main :class="[
       isAuthRoute ? 'w-full max-w-[480px] mt-16 relative' : 'grow w-full',
-      isAdminRoute ? 'h-screen overflow-hidden' : ''
+      isAdminRoute ? 'h-screen overflow-hidden' : '',
+      isChatRoute ? 'overflow-hidden' : ''
     ]">
       <router-view></router-view>
     </main>
 
     <!-- Footer cho các trang thường -->
-    <Footer v-if="!isAuthRoute && !isAdminRoute" />
+    <Footer v-if="!isAuthRoute && !isAdminRoute && !isChatRoute" />
   </div>
 </template>
 
@@ -39,6 +40,7 @@ const isAuthRoute = computed(() =>
 );
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'));
+const isChatRoute = computed(() => route.path === '/chat');
 </script>
 
 <style>

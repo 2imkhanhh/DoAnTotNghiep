@@ -43,6 +43,10 @@ export const useAuthStore = defineStore('auth', {
                     localStorage.setItem('refresh_token', response.data.refresh_token);
                     this.user = response.data.user;
                     this.isLoggedIn = true;
+                    // Khởi tạo lại kết nối Echo với token mới
+                    if (typeof window.initializeEcho === 'function') {
+                        window.initializeEcho();
+                    }
                     return { success: true };
                 }
             } catch (error) {
@@ -60,6 +64,14 @@ export const useAuthStore = defineStore('auth', {
             } catch (e) {
                 console.error('Logout error:', e);
             } finally {
+                // Ngắt kết nối Echo khi đăng xuất
+                if (window.Echo) {
+                    try {
+                        window.Echo.disconnect();
+                    } catch (e) {
+                        console.error('Error disconnecting Echo on logout:', e);
+                    }
+                }
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 this.user = null;

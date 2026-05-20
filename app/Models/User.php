@@ -109,6 +109,22 @@ class User extends Authenticatable implements JWTSubject
         return $this->followings()->where('followed_id', $userId)->exists();
     }
 
+    /**
+     * Các cuộc hội thoại với tư cách là người mua.
+     */
+    public function buyerConversations()
+    {
+        return $this->hasMany(Conversation::class, 'buyer_id');
+    }
+
+    /**
+     * Các cuộc hội thoại với tư cách là người bán.
+     */
+    public function sellerConversations()
+    {
+        return $this->hasMany(Conversation::class, 'seller_id');
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

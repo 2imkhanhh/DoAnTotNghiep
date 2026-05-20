@@ -30,8 +30,10 @@
                         title="Tin nhắn">
                         <div class="relative">
                             <span class="material-symbols-outlined">chat</span>
-                            <span
-                                class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] text-on-error font-bold">3</span>
+                            <span v-if="chatStore.unreadMessagesCount > 0"
+                                class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] text-on-error font-bold animate-pulse">
+                                {{ chatStore.unreadMessagesCount }}
+                            </span>
                         </div>
                     </router-link>
 
@@ -112,12 +114,27 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useChatStore } from '../stores/chat';
 
 const authStore = useAuthStore();
+const chatStore = useChatStore();
 
-onMounted(() => {
-    authStore.fetchUser();
+onMounted(async () => {
+    await authStore.fetchUser();
+    if (authStore.isLoggedIn) {
+        chatStore.fetchConversations();
+    }
+});
+
+// Theo dõi trạng thái đăng nhập để tải danh sách khi đổi tài khoản
+watch(() => authStore.isLoggedIn, (loggedIn) => {
+    if (loggedIn) {
+        chatStore.fetchConversations();
+    } else {
+        chatStore.unreadMessagesCount = 0;
+        chatStore.conversations = [];
+    }
 });
 </script>

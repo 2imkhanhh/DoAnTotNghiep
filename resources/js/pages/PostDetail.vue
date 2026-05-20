@@ -112,7 +112,7 @@
                   <span class="material-symbols-outlined">call</span>
                   {{ post.phone || post.user?.phone }}
                 </a>
-                <button class="btn-outline chat-btn">
+                <button @click="startConversation" class="btn-outline chat-btn">
                   <span class="material-symbols-outlined">chat</span>
                   Nhắn tin ngay
                 </button>
@@ -265,6 +265,32 @@ const toggleFavorite = async (postId) => {
     console.error('Lỗi khi thực hiện yêu thích:', error);
     const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện yêu thích';
     alert(msg);
+  }
+};
+
+const startConversation = async () => {
+  if (!authStore.isLoggedIn) {
+    alert('Vui lòng đăng nhập để gửi tin nhắn cho người bán');
+    router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  try {
+    const response = await axios.post('/api/conversations', {
+      post_id: post.value.id
+    });
+    if (response.data.success) {
+      router.push({
+        path: '/chat',
+        query: {
+          conversation_id: response.data.conversation_id,
+          attach_post_id: post.value.id
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Lỗi khi bắt đầu cuộc trò chuyện:', error);
+    alert(error.response?.data?.message || 'Không thể kết nối đến hộp thư nhắn tin');
   }
 };
 

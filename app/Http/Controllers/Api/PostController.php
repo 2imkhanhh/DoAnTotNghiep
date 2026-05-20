@@ -200,6 +200,32 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * Lấy thông tin rút gọn của bài đăng theo ID phục vụ đính kèm chat.
+     */
+    public function showById($id)
+    {
+        $post = Post::with(['images'])->find($id);
+
+        if (!$post) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
+        }
+
+        $primaryImage = $post->images->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $post->id,
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'price' => $post->price,
+                'status' => $post->status,
+                'image' => $primaryImage ? $primaryImage->image_path : null,
+            ]
+        ]);
+    }
+
     public function edit($id)
     {
         $post = Post::with(['images', 'category'])
