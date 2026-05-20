@@ -108,6 +108,16 @@ class PostController extends Controller
             $query->where('price', '<=', $price_max);
         }
 
+        // Lọc theo thuộc tính danh mục (specifications JSON)
+        $specs = $request->get('specs', []);
+        if (!empty($specs) && is_array($specs)) {
+            foreach ($specs as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $query->whereJsonContains("specifications->{$key}", $value);
+                }
+            }
+        }
+
         // Sắp xếp
         if ($sort === 'price_asc') {
             $query->orderBy('price', 'asc');

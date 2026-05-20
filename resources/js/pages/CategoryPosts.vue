@@ -106,23 +106,35 @@
           </div>
         </div>
 
-        <!-- Static mock filter pills matching the image design -->
-        <button class="filter-pill">
-          <span>Thiết bị</span>
-          <span class="material-symbols-outlined text-sm ml-1">keyboard_arrow_down</span>
-        </button>
-        <button class="filter-pill">
-          <span>Xuất xứ thương hiệu</span>
-          <span class="material-symbols-outlined text-sm ml-1">keyboard_arrow_down</span>
-        </button>
-        <button class="filter-pill">
-          <span>Tình trạng</span>
-          <span class="material-symbols-outlined text-sm ml-1">keyboard_arrow_down</span>
-        </button>
-        <button class="filter-pill">
-          <span>Đăng bởi</span>
-          <span class="material-symbols-outlined text-sm ml-1">keyboard_arrow_down</span>
-        </button>
+        <!-- Dynamic Category Attribute Filter Dropdowns -->
+        <div v-for="attr in categoryAttributes" :key="attr.key"
+          class="relative" :class="`attr-dropdown-${attr.key}`">
+          <button @click="toggleAttrDropdown(attr.key)"
+            class="filter-pill"
+            :class="{ 'active-filter': selectedSpecs[attr.key] }">
+            <span>{{ selectedSpecs[attr.key] || attr.name }}</span>
+            <span class="material-symbols-outlined text-sm ml-1 transition-transform"
+              :class="{ 'rotate-180': showAttrDropdowns[attr.key] }">keyboard_arrow_down</span>
+          </button>
+
+          <div v-if="showAttrDropdowns[attr.key]"
+            class="absolute left-0 mt-2 w-56 bg-white border border-outline-variant rounded-2xl shadow-xl z-30 overflow-hidden py-2"
+            @click.stop>
+            <div class="px-4 py-2 font-bold text-xs text-on-surface-variant uppercase tracking-wider">{{ attr.name }}</div>
+            <!-- Tất cả -->
+            <button @click="selectSpec(attr.key, null)" class="sort-option-btn">
+              <span class="text-xs font-semibold">Tất cả</span>
+              <span v-if="!selectedSpecs[attr.key]" class="material-symbols-outlined text-[20px] text-primary font-variation-fill">check_circle</span>
+              <span v-else class="material-symbols-outlined text-[20px] text-gray-300">radio_button_unchecked</span>
+            </button>
+            <!-- Các option -->
+            <button v-for="opt in attr.options" :key="opt" @click="selectSpec(attr.key, opt)" class="sort-option-btn">
+              <span class="text-xs font-semibold">{{ opt }}</span>
+              <span v-if="selectedSpecs[attr.key] === opt" class="material-symbols-outlined text-[20px] text-primary font-variation-fill">check_circle</span>
+              <span v-else class="material-symbols-outlined text-[20px] text-gray-300">radio_button_unchecked</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Row 2: Location shortcuts & Full Province Dropdown Select Box -->
@@ -350,6 +362,11 @@ const showProvinceDropdown = ref(false);
 const showCategoryDropdown = ref(false);
 const provinceSearchQuery = ref('');
 
+// Dynamic Category Attribute Filter states
+const categoryAttributes = ref([]); // Danh sách attribute có type=select của danh mục hiện tại
+const selectedSpecs = ref({}); // Giá trị đang chọn: { brand: 'Apple', condition: 'Mới' }
+const showAttrDropdowns = ref({}); // Trạng thái mở/đóng: { brand: false }
+
 // Full categories tree menu state (For Chotot sliding multi-level menu)
 const currentCategoryMenu = ref([]);
 const menuHistory = ref([]);
@@ -401,6 +418,7 @@ const togglePriceDropdown = () => {
   showSortDropdown.value = false;
   showProvinceDropdown.value = false;
   showCategoryDropdown.value = false;
+  showAttrDropdowns.value = {};
 };
 
 const toggleSortDropdown = () => {
@@ -408,6 +426,7 @@ const toggleSortDropdown = () => {
   showPriceDropdown.value = false;
   showProvinceDropdown.value = false;
   showCategoryDropdown.value = false;
+  showAttrDropdowns.value = {};
 };
 
 const toggleProvinceDropdown = () => {
@@ -415,7 +434,36 @@ const toggleProvinceDropdown = () => {
   showPriceDropdown.value = false;
   showSortDropdown.value = false;
   showCategoryDropdown.value = false;
+  showAttrDropdowns.value = {};
   provinceSearchQuery.value = '';
+};
+
+// Toggle a specific attribute dropdown
+const toggleAttrDropdown = (key) => {
+  const isOpen = showAttrDropdowns.value[key];
+  // Đóng tất cả dropdowns khác
+  showPriceDropdown.value = false;
+  showSortDropdown.value = false;
+  showProvinceDropdown.value = false;
+  showCategoryDropdown.value = false;
+  showAttrDropdowns.value = {};
+  // Toggle dropdown này
+  if (!isOpen) {
+    showAttrDropdowns.value[key] = true;
+  }
+};
+
+// Chọn một giá trị specification
+const selectSpec = (key, value) => {
+  if (value === null) {
+    const newSpecs = { ...selectedSpecs.value };
+    delete newSpecs[key];
+    selectedSpecs.value = newSpecs;
+  } else {
+    selectedSpecs.value = { ...selectedSpecs.value, [key]: value };
+  }
+  showAttrDropdowns.value = {};
+  reloadPosts();
 };
 
 // Manage multi-level Category Dropdown trigger and resets
@@ -551,6 +599,9 @@ const clearCategoryFilter = () => {
   categoryId.value = null;
   categoryName.value = 'Danh mục';
   subcategories.value = [];
+  categoryAttributes.value = [];
+  selectedSpecs.value = {};
+  showAttrDropdowns.value = {};
   showCategoryDropdown.value = false;
   router.push('/marketplace');
 };
@@ -559,6 +610,8 @@ const selectCategory = (cat) => {
   categoryId.value = cat.id;
   categoryName.value = cat.name;
   subcategories.value = cat.children || [];
+  selectedSpecs.value = {}; // Reset specs khi đổi danh mục
+  showAttrDropdowns.value = {};
   showCategoryDropdown.value = false;
   if (cat.slug) {
     router.push(`/category/${cat.slug}`);
@@ -579,6 +632,7 @@ const resetFilters = () => {
   maxPrice.value = null;
   minPriceInput.value = '';
   maxPriceInput.value = '';
+  selectedSpecs.value = {};
   reloadPosts();
 };
 
@@ -639,6 +693,28 @@ const findParentCategory = (cats, childId) => {
   return null;
 };
 
+// Load category attributes for filtering (only select-type with options)
+const loadCategoryAttributes = async (catId) => {
+  if (!catId) {
+    categoryAttributes.value = [];
+    selectedSpecs.value = {};
+    showAttrDropdowns.value = {};
+    return;
+  }
+  try {
+    const res = await axios.get(`/api/categories/${catId}/attributes`);
+    if (res.data.success) {
+      // Chỉ lấy attribute có type = 'select' và có options
+      categoryAttributes.value = res.data.data.filter(
+        a => a.type === 'select' && a.options && a.options.length > 0
+      );
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải thuộc tính danh mục:', error);
+    categoryAttributes.value = [];
+  }
+};
+
 // Load full provinces from local API (Exactly like PostCreate.vue)
 const loadProvincesData = async () => {
   try {
@@ -665,6 +741,8 @@ const loadCategoryData = async () => {
       categoryName.value = 'Tất cả danh mục';
       categoryId.value = null;
       subcategories.value = [];
+      categoryAttributes.value = [];
+      selectedSpecs.value = {};
       await fetchCategoryPosts();
       loading.value = false;
       return;
@@ -675,6 +753,7 @@ const loadCategoryData = async () => {
     if (currentCat) {
       categoryName.value = currentCat.name;
       categoryId.value = currentCat.id;
+      selectedSpecs.value = {}; // Reset khi đổi trang danh mục
 
       if (currentCat.children && currentCat.children.length > 0) {
         subcategories.value = currentCat.children;
@@ -687,7 +766,11 @@ const loadCategoryData = async () => {
         }
       }
 
-      await fetchCategoryPosts();
+      // Load attributes đồng thời với posts
+      await Promise.all([
+        loadCategoryAttributes(currentCat.id),
+        fetchCategoryPosts()
+      ]);
     } else {
       categoryName.value = 'Không tìm thấy danh mục';
     }
@@ -713,6 +796,12 @@ const buildQueryUrl = (page) => {
   if (maxPrice.value !== null) {
     url += `&price_max=${maxPrice.value}`;
   }
+  // Thêm specs vào query
+  Object.entries(selectedSpecs.value).forEach(([key, value]) => {
+    if (value !== null && value !== '') {
+      url += `&specs[${encodeURIComponent(key)}]=${encodeURIComponent(value)}`;
+    }
+  });
   return url;
 };
 
@@ -803,6 +892,12 @@ const handleOutsideClick = (event) => {
   if (showCategoryDropdown.value && !event.target.closest('.category-dropdown-wrapper')) {
     showCategoryDropdown.value = false;
   }
+  // Đóng các attr dropdowns khi click bên ngoài
+  Object.keys(showAttrDropdowns.value).forEach(key => {
+    if (showAttrDropdowns.value[key] && !event.target.closest(`.attr-dropdown-${key}`)) {
+      showAttrDropdowns.value[key] = false;
+    }
+  });
 };
 
 onMounted(() => {
