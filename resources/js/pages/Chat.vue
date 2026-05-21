@@ -90,7 +90,7 @@
               <img :src="chatStore.activeConversation.partner.avatar" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-outline-variant shrink-0">
               <div class="min-w-0">
                 <h3 class="font-bold text-on-surface text-sm sm:text-base truncate">{{ chatStore.activeConversation.partner.name }}</h3>
-                <button @click="viewPartnerProfile" class="text-xs text-primary hover:underline font-medium text-left">Xem trang cá nhân</button>
+                <button @click="viewPartnerProfile" class="text-xs text-primary hover:underline font-medium text-left cursor-pointer">Xem trang cá nhân</button>
               </div>
             </div>
 
@@ -215,7 +215,7 @@
               <button 
                 type="submit" 
                 :disabled="!newMessageText.trim() || sending"
-                class="p-2.5 bg-primary text-on-primary hover:bg-primary-container disabled:opacity-50 disabled:hover:bg-primary rounded-xl shadow-sm hover:shadow transition-all shrink-0 flex items-center justify-center"
+                class="p-2.5 bg-primary text-on-primary hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary rounded-xl shadow-sm hover:shadow transition-all shrink-0 flex items-center justify-center cursor-pointer"
               >
                 <span class="material-symbols-outlined text-sm font-bold">send</span>
               </button>
@@ -284,18 +284,19 @@ const viewPartnerProfile = () => {
 // Tải danh sách tin nhắn của cuộc hội thoại đang mở
 const fetchMessages = async (convId) => {
   loadingMessages.value = true;
+  messages.value = [];
   try {
     const response = await axios.get(`/api/conversations/${convId}/messages`);
     if (response.data.success) {
       messages.value = response.data.data;
-      nextTick(() => {
-        scrollToBottom();
-      });
     }
   } catch (error) {
     console.error('Lỗi khi tải lịch sử tin nhắn:', error);
   } finally {
     loadingMessages.value = false;
+    // Đợi DOM render xong danh sách tin nhắn rồi mới cuộn xuống dưới
+    await nextTick();
+    scrollToBottom();
   }
 };
 
@@ -505,6 +506,10 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('new-message-received', handleIncomingMessage);
+  // Reset cuộc trò chuyện đang mở khi rời khỏi trang chat
+  // Điều này ngăn handleIncomingMessage gọi markAsRead() nhầm
+  // cho các tin nhắn mới khi người dùng không còn xem chat
+  chatStore.setActiveConversation(null);
 });
 </script>
 

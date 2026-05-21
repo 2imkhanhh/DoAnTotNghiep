@@ -31,7 +31,7 @@
                         <div class="relative">
                             <span class="material-symbols-outlined">chat</span>
                             <span v-if="chatStore.unreadMessagesCount > 0"
-                                class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] text-on-error font-bold animate-pulse">
+                                class="absolute top-0 right-0 -mt-1 -mr-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] text-on-error font-bold">
                                 {{ chatStore.unreadMessagesCount }}
                             </span>
                         </div>
