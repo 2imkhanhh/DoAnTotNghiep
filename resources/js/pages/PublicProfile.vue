@@ -87,15 +87,15 @@
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden min-h-[600px]">
           <!-- Header Tin đăng -->
           <div class="p-6 border-b border-outline-variant bg-surface-container-low/10">
-            <h2 class="text-[22px] font-medium text-on-surface mb-5">Tất cả tin đăng ({{ posts.length }})</h2>
+            <h2 class="text-[22px] font-medium text-on-surface mb-5">Tất cả tin đăng ({{ (seller.active_count || 0) + (seller.sold_count || 0) }})</h2>
             <div class="flex flex-wrap gap-2.5">
-              <button @click="postFilter = 'active'"
+              <button @click="setTab('active')"
                 :class="['px-4 py-2 rounded-full text-sm transition-colors cursor-pointer', postFilter === 'active' ? 'bg-[#222222] text-white font-bold shadow-sm' : 'bg-[#F2F2F2] text-[#222222] font-medium hover:bg-[#E5E5E5]']">
-                Tin đang hoạt động ({{ posts.filter(p => p.status === 1).length }})
+                Tin đang hoạt động ({{ seller.active_count || 0 }})
               </button>
-              <button @click="postFilter = 'sold'"
+              <button @click="setTab('sold')"
                 :class="['px-4 py-2 rounded-full text-sm transition-colors cursor-pointer', postFilter === 'sold' ? 'bg-[#222222] text-white font-bold shadow-sm' : 'bg-[#F2F2F2] text-[#222222] font-medium hover:bg-[#E5E5E5]']">
-                Đã bán ({{ posts.filter(p => p.status === 2).length }})
+                Đã bán ({{ seller.sold_count || 0 }})
               </button>
             </div>
           </div>
@@ -165,6 +165,17 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Phân trang Load More -->
+            <div v-if="postState[postFilter].hasMore" class="flex justify-center items-center gap-4 mt-8">
+                <button
+                    @click="loadMorePosts"
+                    :disabled="loadingMore"
+                    class="w-full sm:w-auto px-6 py-2.5 rounded-full border-2 border-outline-variant text-[#222222] hover:border-primary hover:text-primary transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                    <span v-if="loadingMore" class="material-symbols-outlined animate-spin text-[20px]">refresh</span>
+                    {{ loadingMore ? 'Đang tải...' : 'Xem thêm tin khác' }}
+                </button>
             </div>
           </div>
 
@@ -297,9 +308,13 @@ const openFollowModal = async (type) => {
 };
 
 const seller = ref({});
-const posts = ref([]);
-const showFollowersModal = ref(false);
+const postState = ref({
+  active: { data: [], page: 1, hasMore: false },
+  sold: { data: [], page: 1, hasMore: false }
+});
 const postFilter = ref('active');
+const loadingMore = ref(false);
+const showFollowersModal = ref(false);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const isFavorite = (postId) => {
@@ -319,10 +334,16 @@ const fetchFavorites = async () => {
 };
 
 const filteredPosts = computed(() => {
-  if (postFilter.value === 'active') return posts.value.filter(p => p.status === 1);
-  if (postFilter.value === 'sold') return posts.value.filter(p => p.status === 2);
-  return posts.value;
+  return postState.value[postFilter.value].data;
 });
+
+const setTab = (tab) => {
+  if (postFilter.value === tab) return;
+  postFilter.value = tab;
+  if (postState.value[tab].data.length === 0) {
+    fetchSellerProfile(tab === 'active' ? 1 : 2, 1);
+  }
+};
 
 const toggleFollow = async () => {
   if (!authStore.isLoggedIn) {
@@ -350,15 +371,30 @@ const goToPost = (slug) => {
   router.push(`/post/${slug}`);
 };
 
-// Gọi API dữ liệu tin đăng và thông tin người bán thực tế
-const fetchSellerProfile = async () => {
-  const sellerId = route.params.id;
-  try {
-    const response = await axios.get(`/api/seller/${sellerId}`);
-    if (response.data.success) {
-      seller.value = response.data.data.user;
+const loadMorePosts = () => {
+  const tab = postFilter.value;
+  if (!postState.value[tab].hasMore || loadingMore.value) return;
+  
+  const statusId = tab === 'active' ? 1 : 2;
+  const nextPage = postState.value[tab].page + 1;
+  fetchSellerProfile(statusId, nextPage);
+};
 
-      posts.value = response.data.data.posts.map(post => {
+// Gọi API dữ liệu tin đăng và thông tin người bán thực tế
+const fetchSellerProfile = async (statusId = 1, page = 1) => {
+  const sellerId = route.params.id;
+  loadingMore.value = true;
+  try {
+    const response = await axios.get(`/api/seller/${sellerId}?status=${statusId}&page=${page}`);
+    if (response.data.success) {
+      // Cập nhật seller profile ở lần đầu
+      if (page === 1 && statusId === 1 && !seller.value.id) {
+        seller.value = response.data.data.user;
+        seller.value.active_count = response.data.data.active_count;
+        seller.value.sold_count = response.data.data.sold_count;
+      }
+
+      const formattedPosts = response.data.data.posts.data.map(post => {
         let imagePath = 'https://via.placeholder.com/400x300?text=No+Image';
         if (post.images && post.images.length > 0) {
           const primary = post.images.find(img => img.is_primary);
@@ -377,11 +413,28 @@ const fetchSellerProfile = async () => {
           status: post.status
         };
       });
+
+      const pagination = response.data.data.posts;
+      const type = statusId === 1 ? 'active' : 'sold';
+
+      if (page === 1) {
+        postState.value[type].data = formattedPosts;
+      } else {
+        postState.value[type].data = [...postState.value[type].data, ...formattedPosts];
+      }
+
+      postState.value[type].page = pagination.current_page;
+      postState.value[type].hasMore = pagination.current_page < pagination.last_page;
       
-      fetchReviews(1); // Fetch reviews sau khi có ID seller
+      // Fetch reviews sau khi load xong profile (chỉ gọi lần 1)
+      if (page === 1 && statusId === 1) {
+        fetchReviews(1);
+      }
     }
   } catch (error) {
     console.error('Lỗi khi tải thông tin người bán:', error);
+  } finally {
+    loadingMore.value = false;
   }
 };
 

@@ -90,17 +90,24 @@ class ProfileController extends Controller
             $user->is_followed = $currentUser->isFollowing($id);
         }
 
-        // Lấy danh sách bài đăng đang hiển thị (status = 1) và đã bán (status = 2)
+        // Đếm tổng số lượng
+        $activeCount = Post::where('user_id', $id)->where('status', 1)->count();
+        $soldCount = Post::where('user_id', $id)->where('status', 2)->count();
+
+        // Lấy danh sách bài đăng theo status có phân trang
+        $status = request('status', 1);
         $posts = Post::with(['category', 'images'])
             ->where('user_id', $id)
-            ->whereIn('status', [1, 2])
+            ->where('status', $status)
             ->latest()
-            ->get();
+            ->paginate(6);
 
         return response()->json([
             'success' => true,
             'data' => [
                 'user' => $user,
+                'active_count' => $activeCount,
+                'sold_count' => $soldCount,
                 'posts' => $posts
             ]
         ]);
