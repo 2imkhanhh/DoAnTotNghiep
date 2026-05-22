@@ -185,7 +185,7 @@
         <div
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden mt-8">
           <div class="p-5 px-6 border-b border-outline-variant bg-surface-container-low/10">
-            <h2 class="text-xl font-extrabold text-on-surface">Đánh giá từ người mua ({{ seller.reviews_count || 0 }})</h2>
+            <h2 class="text-xl font-extrabold text-on-surface">Đánh giá ({{ seller.reviews_count || 0 }})</h2>
           </div>
           <div class="p-6 space-y-6">
             <div v-if="reviews.length === 0" class="text-center py-16 text-on-surface-variant">
@@ -211,9 +211,21 @@
                       star </span>
                   </div>
 
-                  <p class="text-on-surface text-sm leading-relaxed whitespace-pre-line">
+                  <p class="text-on-surface text-sm leading-relaxed whitespace-pre-line mb-3">
                     {{ rev.comment }}
                   </p>
+
+                  <router-link v-if="rev.transaction && rev.transaction.post" :to="`/post/${rev.transaction.post.slug}`"
+                    class="flex items-center gap-3 group/post cursor-pointer">
+                    <img :src="rev.transaction.post.images && rev.transaction.post.images.length > 0 ? (rev.transaction.post.images.find(img => img.is_primary)?.image_path || rev.transaction.post.images[0].image_path) : 'https://via.placeholder.com/100x100?text=No+Image'" 
+                         alt="Product Image" class="w-12 h-12 rounded-lg object-cover bg-surface-container-low shrink-0" />
+                    <div class="flex-1 min-w-0">
+                      <h5 class="text-[15px] font-medium text-slate-800 line-clamp-1 group-hover/post:text-primary transition-colors">
+                        {{ rev.transaction.post.title }}
+                      </h5>
+                      <p class="text-[14px] font-semibold text-error mt-0.5">{{ formatPrice(rev.transaction.post.price) }}đ</p>
+                    </div>
+                  </router-link>
                 </div>
               </div>
             </div>

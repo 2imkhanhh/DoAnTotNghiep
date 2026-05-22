@@ -16,7 +16,7 @@ class ReviewController extends Controller
         $reviews = Review::where('reviewed_user_id', $userId)
             ->with(['reviewer' => function($q) {
                 $q->select('id', 'name', 'avatar');
-            }])
+            }, 'transaction.post.images'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
