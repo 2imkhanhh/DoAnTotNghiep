@@ -64,10 +64,10 @@ class TransactionController extends Controller
 
         $transaction->update(['status' => 'completed']);
 
-        // Chuyển bài đăng thành đã bán (status 2 = sold)
+        // Chuyển bài đăng thành đã bán (status 3 = sold)
         $post = Post::find($transaction->post_id);
         if ($post) {
-            $post->update(['status' => 2]);
+            $post->update(['status' => 3]);
         }
 
         $transaction->load(['seller', 'buyer', 'post']);

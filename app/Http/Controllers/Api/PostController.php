@@ -181,6 +181,21 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
         }
 
+        // Phân quyền xem tin đăng theo trạng thái
+        $userId = auth('api')->id();
+        
+        if (in_array($post->status, [2, 3]) && $post->user_id != $userId) {
+            $isBuyer = \App\Models\Transaction::where('post_id', $post->id)
+                ->whereIn('status', ['trading', 'completed'])
+                ->where('buyer_id', $userId)
+                ->exists();
+                
+            if (!$isBuyer) {
+                $statusMsg = $post->status == 2 ? 'Sản phẩm này hiện đang bị ẩn' : 'Sản phẩm đã bán, bạn không có quyền xem';
+                return response()->json(['success' => false, 'message' => $statusMsg], 403);
+            }
+        }
+
         // Lấy tin đăng liên quan (cùng danh mục, trừ tin hiện tại)
         $relatedPosts = Post::with(['images', 'user'])
             // Thêm withExists kiểm tra yêu thích cho các bài viết liên quan bên dưới

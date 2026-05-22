@@ -209,6 +209,23 @@ const activeImage = ref(0);
 const loading = ref(true);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
+const getStatusClass = (status) => {
+  switch (Number(status)) {
+    case 1: return 'status-active';
+    case 2: return 'status-hidden';
+    case 3: return 'status-sold';
+    default: return '';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (Number(status)) {
+    case 1: return 'Hiển thị';
+    case 2: return 'Đã ẩn';
+    case 3: return 'Đã bán';
+    default: return 'Không xác định';
+  }
+};
 const prevImage = () => {
   if (!post.value || !post.value.images.length) return;
   if (activeImage.value === 0) {
@@ -1023,5 +1040,38 @@ onMounted(() => {
   .post-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Cập nhật style cho trạng thái hiển thị */
+.post-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.status-sold {
+  background-color: #ef4444; /* red-500 */
+  color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.status-hidden {
+  background-color: #64748b; /* slate-500 */
+  color: white;
+}
+
+.status-active {
+  background-color: #22c55e; /* green-500 */
+  color: white;
 }
 </style>

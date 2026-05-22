@@ -257,8 +257,8 @@
     <!-- Modal Đánh giá -->
     <ReviewModal
       :is-open="isReviewModalOpen"
-      :transaction-id="activeTransaction?.id"
-      :seller-id="chatStore.activeConversation?.partner?.id"
+      :transaction-id="transactionToReview?.id"
+      :seller-id="transactionToReview?.seller_id"
       @close="isReviewModalOpen = false"
       @success="onReviewSuccess"
     />
@@ -285,6 +285,7 @@ const loadingMessages = ref(false);
 const sending = ref(false);
 const showSidebarOnMobile = ref(true);
 const isReviewModalOpen = ref(false);
+const transactionToReview = ref(null);
 
 const scrollToWidget = (postId) => {
     const el = document.getElementById(`widget-post-${postId}`);
@@ -359,7 +360,8 @@ const handleCancelTransaction = async (transactionId) => {
     }
 };
 
-const showReviewModal = () => {
+const showReviewModal = (post) => {
+    transactionToReview.value = getActiveTransaction(post);
     isReviewModalOpen.value = true;
 };
 
@@ -627,8 +629,8 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('new-message-received', handleIncomingMessage);
   window.removeEventListener('transaction-updated-event', (e) => updateTransactionUI(e.detail));
-  if (chatStore.activeConversation) {
-    echoChannel.value?.leave(`chat.${chatStore.activeConversation.id}`);
+  if (chatStore.activeConversation && window.Echo) {
+    window.Echo.leaveChannel(`chat.${chatStore.activeConversation.id}`);
   }
   chatStore.setActiveConversation(null);
 });
