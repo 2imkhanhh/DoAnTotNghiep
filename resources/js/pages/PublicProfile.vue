@@ -22,10 +22,11 @@
             </div>
 
             <h2 class="font-bold text-xl text-on-surface truncate">{{ seller.name || 'Người bán' }}</h2>
-            <div class="flex items-center justify-center gap-1 mt-1 text-amber-500">
+            <div class="flex items-center justify-center gap-1 mt-1" :class="seller.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
               <span class="material-symbols-outlined font-variation-fill text-[18px]">star</span>
-              <span class="text-[14px] font-bold text-on-surface">{{ seller.rating || '5.0' }}</span>
-              <span class="text-[13px] text-on-surface-variant">({{ seller.reviews_count || 20 }} đánh giá)</span>
+              <span class="text-[14px] font-bold text-on-surface" v-if="seller.reviews_count > 0">{{ parseFloat(seller.average_rating).toFixed(1) }}</span>
+              <span class="text-[13px] font-medium" v-else>Chưa có đánh giá</span>
+              <span class="text-[13px] text-on-surface-variant" v-if="seller.reviews_count > 0">({{ seller.reviews_count }} đánh giá)</span>
             </div>
 
             <!-- Followers / Following -->
@@ -86,16 +87,15 @@
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden min-h-[600px]">
           <!-- Header Tin đăng -->
           <div class="p-6 border-b border-outline-variant bg-surface-container-low/10">
-            <h2 class="text-[22px] font-medium text-on-surface mb-5">Tất cả tin đăng ({{ posts.length +
-              (seller.sold_count || 0) }})</h2>
+            <h2 class="text-[22px] font-medium text-on-surface mb-5">Tất cả tin đăng ({{ posts.length }})</h2>
             <div class="flex flex-wrap gap-2.5">
               <button @click="postFilter = 'active'"
                 :class="['px-4 py-2 rounded-full text-sm transition-colors cursor-pointer', postFilter === 'active' ? 'bg-[#222222] text-white font-bold shadow-sm' : 'bg-[#F2F2F2] text-[#222222] font-medium hover:bg-[#E5E5E5]']">
-                Tin đang hoạt động ({{ posts.length }})
+                Tin đang hoạt động ({{ posts.filter(p => p.status === 1).length }})
               </button>
               <button @click="postFilter = 'sold'"
                 :class="['px-4 py-2 rounded-full text-sm transition-colors cursor-pointer', postFilter === 'sold' ? 'bg-[#222222] text-white font-bold shadow-sm' : 'bg-[#F2F2F2] text-[#222222] font-medium hover:bg-[#E5E5E5]']">
-                Đã bán ({{ seller.sold_count || 0 }})
+                Đã bán ({{ posts.filter(p => p.status === 2).length }})
               </button>
             </div>
           </div>
@@ -108,19 +108,26 @@
               <p class="text-sm mt-1">Các tin đăng thuộc mục này hiện đang trống.</p>
             </div>
 
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Tin đăng Card -->
-              <div v-for="item in filteredPosts" :key="item.id" @click="goToPost(item.slug)"
-                class="bg-surface-container rounded-2xl overflow-hidden border border-outline-variant hover:shadow-md transition-all cursor-pointer flex flex-col group">
-                <div class="relative aspect-4/3 bg-surface-container-high overflow-hidden shrink-0">
+            <div v-else class="flex flex-col gap-4">
+              <!-- Tin đăng Card Ngang -->
+              <div v-for="item in filteredPosts" :key="item.id" @click="item.status !== 2 ? goToPost(item.slug) : null"
+                class="bg-surface-container rounded-2xl overflow-hidden border border-outline-variant hover:shadow-md transition-all flex flex-col sm:flex-row group relative"
+                :class="item.status === 2 ? 'cursor-default' : 'cursor-pointer'">
+                <div class="relative w-full sm:w-[240px] sm:h-[180px] aspect-[4/3] sm:aspect-auto bg-surface-container-high overflow-hidden shrink-0">
                   <img :src="item.image" :alt="item.title"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                   <span
                     class="absolute top-3 left-3 bg-primary/95 text-on-primary text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                     {{ item.category }}
                   </span>
+                  
+                  <!-- Nhãn đã bán -->
+                  <div v-if="item.status === 2" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <span class="bg-surface-container-lowest text-on-surface px-3 py-1.5 rounded-full text-xs font-bold shadow-md">Đã bán</span>
+                  </div>
+
                   <!-- Nút yêu thích (Trái tim) -->
-                  <button v-if="!authStore.isLoggedIn || item.user_id !== authStore.user?.id"
+                  <button v-if="(!authStore.isLoggedIn || item.user_id !== authStore.user?.id) && item.status !== 2"
                     @click.stop="toggleFavorite(item.id)"
                     class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                     <!-- Ruột Đỏ -->
@@ -135,23 +142,23 @@
                     </span>
                   </button>
                 </div>
-                <div class="p-4 flex-1 flex flex-col justify-between">
+                <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between min-w-0">
                   <div>
                     <h4
-                      class="font-extrabold text-on-surface line-clamp-2 leading-snug group-hover:text-primary transition-colors"
+                      :class="['font-bold text-on-surface text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-primary transition-colors', item.status === 2 ? 'cursor-text' : '']"
                       :title="item.title">
                       {{ item.title }}
                     </h4>
-                    <p class="text-error font-black text-lg mt-2">{{ formatPrice(item.price) }}đ</p>
+                    <p :class="['text-error font-extrabold text-base sm:text-lg mt-1', item.status === 2 ? 'cursor-text' : '']">{{ formatPrice(item.price) }}đ</p>
                   </div>
 
                   <div
-                    class="mt-4 pt-3 border-t border-outline-variant flex items-center justify-between text-xs text-on-surface-variant">
+                    :class="['mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs text-on-surface-variant', item.status === 2 ? 'cursor-text' : '']">
                     <span class="flex items-center gap-1">
                       <span class="material-symbols-outlined text-sm">schedule</span>
                       {{ item.time }}
                     </span>
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1 truncate">
                       <span class="material-symbols-outlined text-sm">location_on</span>
                       {{ item.location }}
                     </span>
@@ -186,9 +193,11 @@
                     <span class="text-xs text-on-surface-variant">{{ formatTime(rev.created_at) }}</span>
                   </div>
 
-                  <div class="flex items-center gap-1 text-amber-500 mb-2">
-                    <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm font-variation-fill">
-                      {{ star <= rev.rating ? 'star' : 'star_outline' }} </span>
+                  <div class="flex items-center gap-1 mb-2">
+                    <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm"
+                          :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
+                          :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
+                      star </span>
                   </div>
 
                   <p class="text-on-surface text-sm leading-relaxed whitespace-pre-line">
@@ -310,8 +319,9 @@ const fetchFavorites = async () => {
 };
 
 const filteredPosts = computed(() => {
-  if (postFilter.value === 'active') return posts.value;
-  return []; // Mock data rỗng cho phần Đã bán (đợi API hoàn thiện lấy bài viết đã bán sau)
+  if (postFilter.value === 'active') return posts.value.filter(p => p.status === 1);
+  if (postFilter.value === 'sold') return posts.value.filter(p => p.status === 2);
+  return posts.value;
 });
 
 const toggleFollow = async () => {
@@ -363,7 +373,8 @@ const fetchSellerProfile = async () => {
           image: imagePath,
           time: formatTime(post.created_at),
           location: `${post.ward_name || ''}, ${post.province_name || ''}`.replace(/^,\s/, '') || 'Đang cập nhật',
-          slug: post.slug
+          slug: post.slug,
+          status: post.status
         };
       });
       

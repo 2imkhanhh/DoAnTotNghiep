@@ -90,10 +90,10 @@ class ProfileController extends Controller
             $user->is_followed = $currentUser->isFollowing($id);
         }
 
-        // Lấy danh sách bài đăng đang hiển thị (status = 1)
+        // Lấy danh sách bài đăng đang hiển thị (status = 1) và đã bán (status = 2)
         $posts = Post::with(['category', 'images'])
             ->where('user_id', $id)
-            ->where('status', 1)
+            ->whereIn('status', [1, 2])
             ->latest()
             ->get();
 

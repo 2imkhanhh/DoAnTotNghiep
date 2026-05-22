@@ -346,15 +346,17 @@
                     <span class="text-xs text-on-surface-variant">{{ rev.date }}</span>
                   </div>
 
-                  <div class="flex items-center gap-1 text-amber-500 mb-2">
-                    <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm font-variation-fill">
-                      {{ star <= rev.rating ? 'star' : 'star_outline' }} </span>
-                        <span class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <span
-                            class="text-primary hover:underline cursor-pointer font-bold">{{ rev.post_title
-                            }}</span></span>
+                  <div class="flex items-center gap-1 mb-2">
+                    <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm"
+                          :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
+                          :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
+                      star </span>
+                    <span class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <span
+                        class="text-primary hover:underline cursor-pointer font-bold">{{ rev.post_title
+                        }}</span></span>
                   </div>
 
-                  <p class="text-on-surface text-sm leading-relaxed mb-3">
+                  <p class="text-on-surface text-sm leading-relaxed mb-3 mt-2">
                     {{ rev.comment }}
                   </p>
 

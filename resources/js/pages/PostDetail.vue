@@ -128,9 +128,10 @@
                 </div>
                 <div class="seller-meta">
                   <h4 class="seller-name">{{ post.user?.name }}</h4>
-                  <div class="seller-rating">
-                    <span class="material-symbols-outlined filled">star</span>
-                    <span class="rating-text">{{ post.user?.rating || '5.0' }}</span>
+                  <div class="seller-rating" :class="post.user?.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
+                    <span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="rating-text font-medium" v-if="post.user?.reviews_count > 0">{{ parseFloat(post.user.average_rating).toFixed(1) }}</span>
+                    <span class="rating-text text-sm font-medium" v-else>Chưa có đánh giá</span>
                   </div>
                 </div>
                 <button class="view-profile" @click="goToSellerProfile">Xem trang</button>
@@ -142,7 +143,7 @@
                 </div>
                 <div class="stat-item">
                   <span class="label">Đánh giá</span>
-                  <span class="value">{{ post.user?.reviews_count || 20 }}</span>
+                  <span class="value">{{ post.user?.reviews_count || 0 }}</span>
                 </div>
               </div>
             </div>
