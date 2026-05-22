@@ -193,6 +193,16 @@
       </section>
     </div>
   </div>
+
+  <!-- Empty State / Error State -->
+  <div v-else class="min-h-[70vh] flex flex-col items-center justify-center px-4 bg-slate-50">
+    <img src="/images/empty.png" alt="Không tìm thấy" class="w-64 max-w-full mb-6 pointer-events-none" />
+    <h2 class="text-2xl font-bold text-[#222222] mb-3">Tin đăng không còn tồn tại</h2>
+    <p class="text-[15px] text-[#222222] mb-8 text-center max-w-md">Tin đăng này đã hết hạn hoặc đã bán. Hãy thử những tin đăng khác, bạn nhé.</p>
+    <router-link to="/" class="px-8 py-3 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-opacity">
+      Về trang chủ
+    </router-link>
+  </div>
 </template>
 
 <script setup>
