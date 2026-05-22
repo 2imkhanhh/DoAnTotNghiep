@@ -190,8 +190,9 @@ class PostController extends Controller
                 ->where('buyer_id', $userId)
                 ->exists();
                 
-            if (!$isBuyer) {
-                $statusMsg = $post->status == 2 ? 'Sản phẩm này hiện đang bị ẩn' : 'Sản phẩm đã bán, bạn không có quyền xem';
+            // Nếu không phải buyer, hoặc trạng thái là Bị từ chối (3)
+            if (!$isBuyer || $post->status == 3) {
+                $statusMsg = $post->status == 2 ? 'Sản phẩm đã bán, bạn không có quyền xem' : 'Sản phẩm đã bị từ chối duyệt';
                 return response()->json(['success' => false, 'message' => $statusMsg], 403);
             }
         }

@@ -211,18 +211,20 @@ const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const getStatusClass = (status) => {
   switch (Number(status)) {
+    case 0: return 'status-pending';
     case 1: return 'status-active';
-    case 2: return 'status-hidden';
-    case 3: return 'status-sold';
+    case 2: return 'status-sold';
+    case 3: return 'status-rejected';
     default: return '';
   }
 };
 
 const getStatusText = (status) => {
   switch (Number(status)) {
+    case 0: return 'Chờ duyệt';
     case 1: return 'Hiển thị';
-    case 2: return 'Đã ẩn';
-    case 3: return 'Đã bán';
+    case 2: return 'Đã bán';
+    case 3: return 'Bị từ chối';
     default: return 'Không xác định';
   }
 };
@@ -1051,9 +1053,9 @@ onMounted(() => {
 }
 
 .status-badge {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 0.25rem 0.6rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -1065,8 +1067,13 @@ onMounted(() => {
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
-.status-hidden {
-  background-color: #64748b; /* slate-500 */
+.status-pending {
+  background-color: #eab308; /* yellow-500 */
+  color: white;
+}
+
+.status-rejected {
+  background-color: #94a3b8; /* slate-400 */
   color: white;
 }
 

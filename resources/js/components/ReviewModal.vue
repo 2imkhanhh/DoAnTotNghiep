@@ -22,10 +22,10 @@
               @mouseenter="hoverRating = star"
               @mouseleave="hoverRating = 0"
               @click="form.rating = star"
-              class="text-4xl transition-all focus:outline-none"
+              class="text-4xl transition-all focus:outline-none cursor-pointer"
               :class="star <= (hoverRating || form.rating) ? 'text-amber-400' : 'text-outline-variant'"
             >
-              <span class="material-symbols-outlined" :class="{ 'fill-current': star <= (hoverRating || form.rating) }">star</span>
+              <span class="material-symbols-outlined" :style="star <= (hoverRating || form.rating) ? 'font-variation-settings: \'FILL\' 1;' : ''">star</span>
             </button>
           </div>
           <span class="text-xs font-bold" :class="ratingColor">{{ ratingText }}</span>
@@ -52,7 +52,7 @@
         <button 
           @click="close" 
           type="button"
-          class="px-4 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-full transition-colors"
+          class="px-4 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-full transition-colors cursor-pointer"
         >
           Hủy
         </button>
@@ -60,7 +60,7 @@
           @click="submit"
           :disabled="form.rating === 0 || loading"
           type="button"
-          class="px-6 py-2 text-sm font-bold bg-primary text-on-primary hover:bg-primary-container rounded-full shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-6 py-2 text-sm font-bold bg-primary text-on-primary hover:bg-primary-container rounded-full shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <span v-if="loading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
           {{ isEdit ? 'Cập nhật' : 'Gửi đánh giá' }}

@@ -151,21 +151,21 @@
                   <!-- Nút Thao tác Giao dịch -->
                   <div v-if="checkIsSeller(msg.post) || checkIsTradingWithPartner(getActiveTransaction(msg.post)) || (getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed')" class="flex items-center justify-end gap-2 p-2 bg-surface-container-lowest border-t border-outline-variant/50">
                     <template v-if="checkIsSeller(msg.post)">
-                      <button v-if="!getActiveTransaction(msg.post)" @click="handleStartTransaction(msg.post.id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm">
+                      <button v-if="!getActiveTransaction(msg.post)" @click="handleStartTransaction(msg.post.id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">
                         Bắt đầu giao dịch
                       </button>
                       <template v-else-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all">Hủy</button>
+                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
                         <span v-else-if="getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-green-500/10 text-green-600 font-bold px-2 py-1 rounded">Đã bán</span>
                       </template>
                       <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đang giao dịch với người khác</span>
                     </template>
                     <template v-else>
                       <template v-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all">Hủy</button>
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm">Đã nhận</button>
-                        <button v-else-if="getActiveTransaction(msg.post).status === 'completed'" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1">
-                          <span class="material-symbols-outlined text-[12px]">star</span> Đánh giá
+                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
+                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">Đã nhận</button>
+                        <button v-else-if="getActiveTransaction(msg.post).status === 'completed'" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
+                          <span class="material-symbols-outlined" style="font-size: 13px; font-variation-settings: 'FILL' 1;">star</span> Đánh giá
                         </button>
                       </template>
                       <span v-else-if="getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đã bán</span>
