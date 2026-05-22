@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useAuthStore } from './auth';
 import axios from 'axios';
 
 export const useChatStore = defineStore('chat', {
@@ -86,8 +87,28 @@ export const useChatStore = defineStore('chat', {
                 window.Echo.private(channelName)
                     .listen('.message.sent', (e) => {
                         this.handleIncomingMessage(e.message);
+                    })
+                    .listen('TransactionUpdated', (e) => {
+                        this.handleTransactionUpdated(e.transaction, conversation.id);
                     });
             });
+
+            // Lắng nghe channel cá nhân của user để nhận tin nhắn từ các cuộc trò chuyện MỚI
+            const authStore = useAuthStore();
+            if (authStore.user && authStore.user.id) {
+                const userChannelName = `App.Models.User.${authStore.user.id}`;
+                window.Echo.leave(userChannelName);
+                window.Echo.private(userChannelName)
+                    .listen('.message.sent', (e) => {
+                        // Nếu tin nhắn thuộc về cuộc trò chuyện chưa có trong danh sách
+                        const exists = this.conversations.find(c => Number(c.id) === Number(e.message.conversation_id));
+                        if (!exists) {
+                            this.fetchConversations();
+                        } else {
+                            this.handleIncomingMessage(e.message);
+                        }
+                    });
+            }
         },
 
         /**
@@ -97,6 +118,11 @@ export const useChatStore = defineStore('chat', {
             const conversation = this.conversations.find(c => Number(c.id) === Number(message.conversation_id));
             
             if (conversation) {
+                // Kiểm tra xem sự kiện tin nhắn này đã được xử lý chưa để tránh tính trùng lặp số đếm
+                if (conversation.latest_message && Number(conversation.latest_message.id) === Number(message.id)) {
+                    return;
+                }
+
                 // Đồng bộ thông tin bài viết mới nếu có thay đổi từ phía đối phương gửi đính kèm
                 if (message.conversation && message.conversation.post) {
                     const post = message.conversation.post;
@@ -106,8 +132,10 @@ export const useChatStore = defineStore('chat', {
                         title: post.title,
                         slug: post.slug,
                         price: post.price,
+                        user_id: post.user_id,
                         status: post.status,
-                        image: primaryImage
+                        image: primaryImage,
+                        transactions: post.transactions || []
                     };
                     
                     conversation.post = formattedPost;
@@ -148,6 +176,80 @@ export const useChatStore = defineStore('chat', {
                 // Nếu đây là một cuộc hội thoại hoàn toàn mới chưa có trong danh sách (người khác bắt đầu chat với mình)
                 // Tiến hành tải lại danh sách để cập nhật
                 this.fetchConversations();
+            }
+        },
+
+        /**
+         * Xử lý khi trạng thái giao dịch thay đổi.
+         */
+        handleTransactionUpdated(transaction, conversationId) {
+            const conversation = this.conversations.find(c => Number(c.id) === Number(conversationId));
+            if (conversation && conversation.post) {
+                if (!conversation.post.transactions) {
+                    conversation.post.transactions = [];
+                }
+                const index = conversation.post.transactions.findIndex(t => t.id === transaction.id);
+                if (index !== -1) {
+                    conversation.post.transactions[index] = transaction;
+                } else {
+                    conversation.post.transactions.push(transaction);
+                }
+
+                if (transaction.status === 'completed') {
+                    conversation.post.status = 2; // Đã bán
+                }
+
+                // Cập nhật lại UI nếu là activeConversation
+                if (this.activeConversation && Number(this.activeConversation.id) === Number(conversation.id)) {
+                    this.activeConversation.post = { ...conversation.post };
+                }
+            }
+        },
+
+        async startTransaction(conversationId, postId, buyerId) {
+            try {
+                const response = await axios.post('/api/transactions', {
+                    conversation_id: conversationId,
+                    post_id: postId,
+                    buyer_id: buyerId
+                });
+                if (response.data.success) {
+                    this.handleTransactionUpdated(response.data.data, conversationId);
+                }
+                return response.data;
+            } catch (error) {
+                console.error('Lỗi khi bắt đầu giao dịch:', error);
+                throw error;
+            }
+        },
+
+        async completeTransaction(conversationId, transactionId) {
+            try {
+                const response = await axios.put(`/api/transactions/${transactionId}/complete`, {
+                    conversation_id: conversationId
+                });
+                if (response.data.success) {
+                    this.handleTransactionUpdated(response.data.data, conversationId);
+                }
+                return response.data;
+            } catch (error) {
+                console.error('Lỗi khi hoàn thành giao dịch:', error);
+                throw error;
+            }
+        },
+
+        async cancelTransaction(conversationId, transactionId) {
+            try {
+                const response = await axios.put(`/api/transactions/${transactionId}/cancel`, {
+                    conversation_id: conversationId
+                });
+                if (response.data.success) {
+                    this.handleTransactionUpdated(response.data.data, conversationId);
+                }
+                return response.data;
+            } catch (error) {
+                console.error('Lỗi khi hủy giao dịch:', error);
+                throw error;
             }
         }
     }

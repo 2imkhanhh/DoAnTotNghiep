@@ -21,7 +21,7 @@ class ConversationController extends Controller
 
         $conversations = Conversation::where('buyer_id', $userId)
             ->orWhere('seller_id', $userId)
-            ->with(['buyer', 'seller', 'post.images', 'latestMessage'])
+            ->with(['buyer', 'seller', 'post.images', 'post.transactions', 'latestMessage'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -44,8 +44,10 @@ class ConversationController extends Controller
                     'title' => $conversation->post->title,
                     'slug' => $conversation->post->slug,
                     'price' => $conversation->post->price,
+                    'user_id' => $conversation->post->user_id,
                     'status' => $conversation->post->status,
                     'image' => $primaryImage ? $primaryImage->image_path : null,
+                    'transactions' => $conversation->post->transactions,
                 ];
             }
 
@@ -201,8 +203,8 @@ class ConversationController extends Controller
         // Cập nhật lại thời gian updated_at của Conversation để đẩy lên đầu danh sách
         $conversation->touch();
 
-        // Tải các thông tin liên quan để broadcast (eager load sender và conversation.post)
-        $message->load(['sender', 'conversation.post.images']);
+        // Tải các thông tin liên quan để broadcast
+        $message->load(['sender', 'conversation.post.images', 'conversation.post.transactions']);
 
         // Phát sự kiện broadcast qua WebSockets
         broadcast(new MessageSent($message))->toOthers();
@@ -216,8 +218,10 @@ class ConversationController extends Controller
                 'title' => $conversation->post->title,
                 'slug' => $conversation->post->slug,
                 'price' => $conversation->post->price,
+                'user_id' => $conversation->post->user_id,
                 'status' => $conversation->post->status,
                 'image' => $primaryImage ? $primaryImage->image_path : null,
+                'transactions' => $conversation->post->transactions,
             ];
         }
 

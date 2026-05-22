@@ -167,38 +167,41 @@
         <div
           class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden mt-8">
           <div class="p-5 px-6 border-b border-outline-variant bg-surface-container-low/10">
-            <h2 class="text-xl font-extrabold text-on-surface">Đánh giá từ người mua ({{ mockReviews.length }})</h2>
+            <h2 class="text-xl font-extrabold text-on-surface">Đánh giá từ người mua ({{ seller.reviews_count || 0 }})</h2>
           </div>
           <div class="p-6 space-y-6">
-            <div v-if="mockReviews.length === 0" class="text-center py-16 text-on-surface-variant">
+            <div v-if="reviews.length === 0" class="text-center py-16 text-on-surface-variant">
               <span class="material-symbols-outlined text-5xl mb-3 opacity-40">rate_review</span>
               <p class="font-bold text-lg">Chưa có đánh giá nào</p>
             </div>
 
-            <div v-else v-for="rev in mockReviews" :key="rev.id"
+            <div v-else v-for="rev in reviews" :key="rev.id"
               class="border-b border-outline-variant last:border-0 pb-6 last:pb-0">
               <div class="flex items-start gap-4">
-                <img :src="rev.reviewer_avatar"
+                <img :src="rev.reviewer.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.reviewer.name) + '&background=random'"
                   class="w-10 h-10 rounded-full object-cover shrink-0 border border-outline-variant" />
                 <div class="flex-1 text-left">
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                    <h4 class="font-bold text-on-surface text-sm sm:text-base">{{ rev.reviewer_name }}</h4>
-                    <span class="text-xs text-on-surface-variant">{{ rev.date }}</span>
+                    <h4 class="font-bold text-on-surface text-sm sm:text-base">{{ rev.reviewer.name }}</h4>
+                    <span class="text-xs text-on-surface-variant">{{ formatTime(rev.created_at) }}</span>
                   </div>
 
                   <div class="flex items-center gap-1 text-amber-500 mb-2">
                     <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm font-variation-fill">
                       {{ star <= rev.rating ? 'star' : 'star_outline' }} </span>
-                        <span class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng:
-                          <span class="text-primary font-bold">{{ rev.post_title }}</span>
-                        </span>
                   </div>
 
-                  <p class="text-on-surface text-sm leading-relaxed">
+                  <p class="text-on-surface text-sm leading-relaxed whitespace-pre-line">
                     {{ rev.comment }}
                   </p>
                 </div>
               </div>
+            </div>
+            
+            <div v-if="reviewsPagination && reviewsPagination.next_page_url" class="text-center pt-2">
+              <button @click="fetchReviews(reviewsPagination.current_page + 1)" class="text-sm font-bold text-primary hover:underline">
+                Xem thêm đánh giá
+              </button>
             </div>
           </div>
         </div>
@@ -363,6 +366,8 @@ const fetchSellerProfile = async () => {
           slug: post.slug
         };
       });
+      
+      fetchReviews(1); // Fetch reviews sau khi có ID seller
     }
   } catch (error) {
     console.error('Lỗi khi tải thông tin người bán:', error);
@@ -383,27 +388,25 @@ const formatTime = (dateString) => {
   return date.toLocaleDateString('vi-VN');
 };
 
-// Mock đánh giá chất lượng người bán từ khách hàng (hệ thống chưa có bảng review)
-const mockReviews = ref([
-  {
-    id: 1,
-    reviewer_name: 'Nguyễn Văn Hùng',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff',
-    rating: 5,
-    date: '12/05/2026',
-    post_title: 'iPhone 13 Pro Max 256GB Gold',
-    comment: 'Điện thoại dùng rất tốt, pin còn 92% đúng như mô tả. Người bán uy tín hỗ trợ ship nhanh, đóng gói rất cẩn thận 3 lớp chống sốc.'
-  },
-  {
-    id: 2,
-    reviewer_name: 'Trần Thị Lan',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Lan&background=10b981&color=fff',
-    rating: 5,
-    date: '08/05/2026',
-    post_title: 'MacBook Air M1 8GB/256GB Gray',
-    comment: 'Máy dùng siêu mượt, màn hình đẹp không vết trầy. Giao dịch nhanh chóng tại nhà, anh chủ siêu nhiệt tình test máy từ A-Z giúp mình.'
+const reviews = ref([]);
+const reviewsPagination = ref(null);
+
+const fetchReviews = async (page = 1) => {
+  if (!seller.value.id) return;
+  try {
+    const response = await axios.get(`/api/users/${seller.value.id}/reviews?page=${page}`);
+    if (response.data.success) {
+      if (page === 1) {
+        reviews.value = response.data.data.data;
+      } else {
+        reviews.value = [...reviews.value, ...response.data.data.data];
+      }
+      reviewsPagination.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách đánh giá:', error);
   }
-]);
+};
 
 onMounted(() => {
   // Lấy dữ liệu công khai từ backend thay vì truyền qua history state

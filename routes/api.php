@@ -56,6 +56,15 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
         return Broadcast::auth($request);
     });
+
+    // Các routes Giao dịch (Transaction)
+    Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'startTransaction']);
+    Route::put('/transactions/{id}/complete', [\App\Http\Controllers\Api\TransactionController::class, 'completeTransaction']);
+    Route::put('/transactions/{id}/cancel', [\App\Http\Controllers\Api\TransactionController::class, 'cancelTransaction']);
+
+    // Các routes Đánh giá (Review)
+    Route::post('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [\App\Http\Controllers\Api\ReviewController::class, 'update']);
 });
 
 // Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
@@ -82,3 +91,4 @@ Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{slug}', [PostController::class, 'show']);
 Route::get('/posts/id/{id}', [PostController::class, 'showById']);
 Route::get('/seller/{id}', [ProfileController::class, 'showPublic']);
+Route::get('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'index']);

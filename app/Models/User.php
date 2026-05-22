@@ -53,7 +53,7 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-    protected $appends = ['sold_count', 'reviews_count'];
+    protected $appends = ['sold_count', 'reviews_count', 'average_rating'];
 
     public function posts()
     {
@@ -67,9 +67,33 @@ class User extends Authenticatable implements JWTSubject
 
     public function getReviewsCountAttribute()
     {
-        // Hiện tại hệ thống chưa có bảng đánh giá, tạm thời lấy một con số (có thể kết hợp với sold_count) 
-        // để hiển thị trên giao diện Public Profile. Ở đây giả lập là 20.
-        return 20;
+        return $this->receivedReviews()->count();
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        $avg = $this->receivedReviews()->avg('rating');
+        return $avg ? round($avg, 1) : 0;
+    }
+
+    public function transactionsAsSeller()
+    {
+        return $this->hasMany(Transaction::class, 'seller_id');
+    }
+
+    public function transactionsAsBuyer()
+    {
+        return $this->hasMany(Transaction::class, 'buyer_id');
+    }
+
+    public function givenReviews()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    public function receivedReviews()
+    {
+        return $this->hasMany(Review::class, 'reviewed_user_id');
     }
 
     public function favoritePosts()

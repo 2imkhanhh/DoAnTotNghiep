@@ -63,4 +63,9 @@ class Post extends Model
     {
         return $this->hasMany(PostImage::class);
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }
