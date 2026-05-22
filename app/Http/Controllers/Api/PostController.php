@@ -327,6 +327,11 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng hoặc bạn không có quyền sửa'], 404);
         }
 
+        // Chặn sửa tin đã bán
+        if ($post->status == 2) {
+            return response()->json(['success' => false, 'message' => 'Tin đã bán không thể chỉnh sửa'], 403);
+        }
+
         DB::beginTransaction();
 
         try {

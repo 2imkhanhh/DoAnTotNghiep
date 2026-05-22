@@ -227,6 +227,13 @@ onMounted(async () => {
     const response = await axios.get(`/api/posts/${postId}/edit`);
     const post = response.data.data;
     
+    // Ngăn chặn sửa tin đã bán
+    if (post.status === 2) {
+      alert('Tin đăng này đã bán, không thể chỉnh sửa.');
+      router.push('/profile/posts');
+      return;
+    }
+    
     // Fill form
     form.title = post.title;
     form.description = post.description;

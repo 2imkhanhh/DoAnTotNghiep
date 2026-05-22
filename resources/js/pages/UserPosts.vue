@@ -63,7 +63,7 @@
                     class="btn-action bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" title="Đã bán">
                     <span class="material-symbols-outlined">check_circle</span>
                   </button>
-                  <router-link :to="`/post/edit/${post.id}`"
+                  <router-link v-if="post.status !== 2" :to="`/post/edit/${post.id}`"
                     class="btn-action bg-slate-50 text-slate-600 hover:bg-slate-800 hover:text-white" title="Sửa tin">
                     <span class="material-symbols-outlined">edit</span>
                   </router-link>
@@ -78,10 +78,6 @@
                 <span class="flex items-center gap-1">
                   <span class="material-symbols-outlined text-[16px]">schedule</span>
                   {{ formatDate(post.created_at) }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[16px]">visibility</span>
-                  128 lượt xem
                 </span>
               </div>
 
@@ -102,7 +98,7 @@
               class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-[18px]">check_circle</span> Đã bán
             </button>
-            <router-link :to="`/post/edit/${post.id}`"
+            <router-link v-if="post.status !== 2" :to="`/post/edit/${post.id}`"
               class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
               <span class="material-symbols-outlined text-[18px]">edit</span> Sửa
             </router-link>
