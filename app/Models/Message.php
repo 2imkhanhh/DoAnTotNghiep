@@ -12,6 +12,7 @@ class Message extends Model
         'sender_id',
         'message_text',
         'is_read',
+        'post_id',
     ];
 
     protected $casts = [
@@ -32,5 +33,12 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+    /**
+     * Bài đăng đính kèm tin nhắn này.
+     */
+    public function post(): BelongsTo
+    {
+        return $this->belongsTo(Post::class, 'post_id');
     }
 }

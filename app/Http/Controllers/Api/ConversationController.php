@@ -113,8 +113,8 @@ class ConversationController extends Controller
         if (!$conversation) {
             $conversation = Conversation::create([
                 'buyer_id' => $userId,
-                'seller_id' => $sellerId,
-                'post_id' => $postId
+                'seller_id' => $sellerId
+                // Không lưu post_id vào conversation nữa
             ]);
         }
 
@@ -141,13 +141,28 @@ class ConversationController extends Controller
             ], 403);
         }
 
-        // Lấy toàn bộ tin nhắn sắp xếp từ cũ đến mới
+        // Lấy toàn bộ tin nhắn sắp xếp từ cũ đến mới kèm thông tin sản phẩm đính kèm
         $messages = Message::where('conversation_id', $id)
-            ->with('sender')
+            ->with(['sender', 'post.images', 'post.transactions'])
             ->orderBy('created_at', 'asc')
             ->get();
 
         $data = $messages->map(function ($message) {
+            $postData = null;
+            if ($message->post) {
+                $primaryImage = $message->post->images->first();
+                $postData = [
+                    'id' => $message->post->id,
+                    'title' => $message->post->title,
+                    'slug' => $message->post->slug,
+                    'price' => $message->post->price,
+                    'user_id' => $message->post->user_id,
+                    'status' => $message->post->status,
+                    'image' => $primaryImage ? $primaryImage->image_path : null,
+                    'transactions' => $message->post->transactions,
+                ];
+            }
+
             return [
                 'id' => $message->id,
                 'conversation_id' => $message->conversation_id,
@@ -156,6 +171,7 @@ class ConversationController extends Controller
                 'message_text' => $message->message_text,
                 'is_read' => $message->is_read,
                 'created_at' => $message->created_at,
+                'post' => $postData
             ];
         });
 
@@ -186,42 +202,37 @@ class ConversationController extends Controller
             ], 403);
         }
 
-        // Nếu có tin đăng đính kèm mới, tiến hành cập nhật liên kết tin đăng của cuộc trò chuyện
-        if ($request->has('post_id') && $request->post_id != null) {
-            $conversation->post_id = $request->post_id;
-            $conversation->save();
-        }
-
-        // Tạo tin nhắn mới
+        // Tạo tin nhắn mới, có thể mang theo widget sản phẩm đính kèm
         $message = Message::create([
             'conversation_id' => $id,
             'sender_id' => $userId,
             'message_text' => $request->message_text,
-            'is_read' => false
+            'is_read' => false,
+            'post_id' => $request->has('post_id') ? $request->post_id : null
         ]);
 
         // Cập nhật lại thời gian updated_at của Conversation để đẩy lên đầu danh sách
         $conversation->touch();
 
         // Tải các thông tin liên quan để broadcast
-        $message->load(['sender', 'conversation.post.images', 'conversation.post.transactions']);
+        $message->load(['sender', 'post.images', 'post.transactions']);
 
         // Phát sự kiện broadcast qua WebSockets
         broadcast(new MessageSent($message))->toOthers();
 
         // Định dạng dữ liệu bài viết mới nếu có
         $postData = null;
-        if ($conversation->post) {
-            $primaryImage = $conversation->post->images->first();
+        if ($message->post) {
+            $primaryImage = $message->post->images->first();
             $postData = [
-                'id' => $conversation->post->id,
-                'title' => $conversation->post->title,
-                'slug' => $conversation->post->slug,
-                'price' => $conversation->post->price,
-                'user_id' => $conversation->post->user_id,
-                'status' => $conversation->post->status,
+                'id' => $message->post->id,
+                'title' => $message->post->title,
+                'slug' => $message->post->slug,
+                'price' => $message->post->price,
+                'user_id' => $message->post->user_id,
+                'status' => $message->post->status,
                 'image' => $primaryImage ? $primaryImage->image_path : null,
-                'transactions' => $conversation->post->transactions,
+                'transactions' => $message->post->transactions,
             ];
         }
 
@@ -235,7 +246,9 @@ class ConversationController extends Controller
                 'message_text' => $message->message_text,
                 'is_read' => $message->is_read,
                 'created_at' => $message->created_at,
+                'post' => $postData
             ],
+            // attached_post được trả về cho các client tương thích ngược
             'attached_post' => $postData
         ]);
     }
@@ -265,6 +278,57 @@ class ConversationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Đã đánh dấu đã đọc.'
+        ]);
+    }
+
+    /**
+     * Lấy danh sách các giao dịch chung giữa 2 người dùng của cuộc hội thoại này
+     */
+    public function activeTransactions($id)
+    {
+        $userId = auth()->id();
+        $conversation = Conversation::findOrFail($id);
+
+        if ($conversation->buyer_id !== $userId && $conversation->seller_id !== $userId) {
+            return response()->json(['success' => false], 403);
+        }
+
+        $partnerId = $conversation->buyer_id === $userId ? $conversation->seller_id : $conversation->buyer_id;
+
+        $transactions = \App\Models\Transaction::where(function($q) use ($userId, $partnerId) {
+                $q->where(function($query) use ($userId, $partnerId) {
+                    $query->where('buyer_id', $userId)->where('seller_id', $partnerId);
+                })->orWhere(function($query) use ($userId, $partnerId) {
+                    $query->where('buyer_id', $partnerId)->where('seller_id', $userId);
+                });
+            })
+            ->whereIn('status', ['trading', 'completed'])
+            ->with('post.images')
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->unique('post_id')
+            ->values(); // Đảm bảo trả về mảng chuẩn (indexed array) cho Vue
+
+        $data = $transactions->map(function ($transaction) {
+            $primaryImage = $transaction->post->images->first();
+            return [
+                'id' => $transaction->id,
+                'status' => $transaction->status,
+                'buyer_id' => $transaction->buyer_id,
+                'seller_id' => $transaction->seller_id,
+                'post' => [
+                    'id' => $transaction->post->id,
+                    'title' => $transaction->post->title,
+                    'slug' => $transaction->post->slug,
+                    'price' => $transaction->post->price,
+                    'image' => $primaryImage ? $primaryImage->image_path : null,
+                ]
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
         ]);
     }
 }

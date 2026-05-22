@@ -6,6 +6,7 @@ export const useChatStore = defineStore('chat', {
     state: () => ({
         conversations: [],
         activeConversation: null,
+        activeTransactions: [], // Danh sách các giao dịch đang diễn ra giữa 2 người (để hiển thị trên Header)
         unreadMessagesCount: 0,
         loading: false,
     }),
@@ -41,8 +42,27 @@ export const useChatStore = defineStore('chat', {
          */
         async setActiveConversation(conversation) {
             this.activeConversation = conversation;
-            if (conversation && conversation.unread_messages_count > 0) {
-                await this.markAsRead(conversation.id);
+            if (conversation) {
+                if (conversation.unread_messages_count > 0) {
+                    await this.markAsRead(conversation.id);
+                }
+                await this.fetchActiveTransactions(conversation.id);
+            } else {
+                this.activeTransactions = [];
+            }
+        },
+
+        /**
+         * Lấy danh sách giao dịch đang diễn ra chung giữa 2 người
+         */
+        async fetchActiveTransactions(conversationId) {
+            try {
+                const response = await axios.get(`/api/conversations/${conversationId}/active-transactions`);
+                if (response.data.success) {
+                    this.activeTransactions = response.data.data;
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách giao dịch đa nhiệm:', error);
             }
         },
 
@@ -123,25 +143,20 @@ export const useChatStore = defineStore('chat', {
                     return;
                 }
 
-                // Đồng bộ thông tin bài viết mới nếu có thay đổi từ phía đối phương gửi đính kèm
-                if (message.conversation && message.conversation.post) {
-                    const post = message.conversation.post;
-                    const primaryImage = post.images && post.images.length > 0 ? post.images[0].image_path : null;
-                    const formattedPost = {
+                // Chuẩn hóa dữ liệu Widget đính kèm trong tin nhắn (Hybrid model)
+                if (message.post) {
+                    const post = message.post;
+                    post.image = post.images && post.images.length > 0 ? post.images[0].image_path : null;
+                    post.transactions = post.transactions || [];
+                    
+                    // Cập nhật hình ảnh thu nhỏ cho cuộc trò chuyện ở Sidebar
+                    conversation.post = {
                         id: post.id,
                         title: post.title,
                         slug: post.slug,
                         price: post.price,
-                        user_id: post.user_id,
-                        status: post.status,
-                        image: primaryImage,
-                        transactions: post.transactions || []
+                        image: post.image
                     };
-                    
-                    conversation.post = formattedPost;
-                    if (this.activeConversation && Number(this.activeConversation.id) === Number(conversation.id)) {
-                        this.activeConversation.post = formattedPost;
-                    }
                 }
 
                 // Cập nhật tin nhắn mới nhất
@@ -183,26 +198,11 @@ export const useChatStore = defineStore('chat', {
          * Xử lý khi trạng thái giao dịch thay đổi.
          */
         handleTransactionUpdated(transaction, conversationId) {
-            const conversation = this.conversations.find(c => Number(c.id) === Number(conversationId));
-            if (conversation && conversation.post) {
-                if (!conversation.post.transactions) {
-                    conversation.post.transactions = [];
-                }
-                const index = conversation.post.transactions.findIndex(t => t.id === transaction.id);
-                if (index !== -1) {
-                    conversation.post.transactions[index] = transaction;
-                } else {
-                    conversation.post.transactions.push(transaction);
-                }
-
-                if (transaction.status === 'completed') {
-                    conversation.post.status = 2; // Đã bán
-                }
-
-                // Cập nhật lại UI nếu là activeConversation
-                if (this.activeConversation && Number(this.activeConversation.id) === Number(conversation.id)) {
-                    this.activeConversation.post = { ...conversation.post };
-                }
+            // Do mô hình mới quản lý nhiều giao dịch, ta chỉ cần gọi API nạp lại danh sách giao dịch nếu đang mở đúng phòng chat này
+            if (this.activeConversation && Number(this.activeConversation.id) === Number(conversationId)) {
+                this.fetchActiveTransactions(conversationId);
+                const event = new CustomEvent('transaction-updated-event', { detail: transaction });
+                window.dispatchEvent(event);
             }
         },
 

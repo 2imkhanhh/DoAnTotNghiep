@@ -51,6 +51,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/conversations/{id}/messages', [ConversationController::class, 'messages']);
     Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage']);
     Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
+    Route::get('/conversations/{id}/active-transactions', [ConversationController::class, 'activeTransactions']);
 
     // Route xác thực WebSockets bằng JWT
     Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
