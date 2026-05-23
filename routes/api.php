@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\ConversationController;
 
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\ChatbotController;
 use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/locations/provinces', [LocationController::class, 'getProvinces']);
@@ -93,3 +94,6 @@ Route::get('/posts/{slug}', [PostController::class, 'show']);
 Route::get('/posts/id/{id}', [PostController::class, 'showById']);
 Route::get('/seller/{id}', [ProfileController::class, 'showPublic']);
 Route::get('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'index']);
+
+// Route cho Chatbot
+Route::post('/chatbot/chat', [ChatbotController::class, 'chat']);
