@@ -75,10 +75,6 @@
                   <span>{{ post.province_name }}</span>
                 </div>
               </div>
-              <div class="meta-item">
-                <span class="material-symbols-outlined">visibility</span>
-                1,234 lượt xem
-              </div>
             </div>
 
             <div class="section">

@@ -260,15 +260,14 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               <!-- Average Score -->
               <div class="text-center md:border-r border-outline-variant py-4">
-                <div class="text-5xl font-black text-on-surface mb-2">4.8</div>
-                <div class="flex justify-center gap-1 mb-2 text-amber-500">
-                  <span class="material-symbols-outlined font-variation-fill">star</span>
-                  <span class="material-symbols-outlined font-variation-fill">star</span>
-                  <span class="material-symbols-outlined font-variation-fill">star</span>
-                  <span class="material-symbols-outlined font-variation-fill">star</span>
-                  <span class="material-symbols-outlined font-variation-fill">star_half</span>
+                <div class="text-5xl font-black text-on-surface mb-2">{{ reviewStats.avg }}</div>
+                <div class="flex justify-center gap-1 mb-2">
+                  <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm"
+                        :class="star <= Math.round(reviewStats.avg) ? 'text-amber-500' : 'text-outline-variant'"
+                        :style="star <= Math.round(reviewStats.avg) ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
+                    star </span>
                 </div>
-                <p class="text-xs text-on-surface-variant">Trung bình trên 156 đánh giá</p>
+                <p class="text-xs text-on-surface-variant">Trung bình trên {{ reviewStats.total }} đánh giá</p>
               </div>
 
               <!-- Stars Breakdown -->
@@ -277,41 +276,41 @@
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">5 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 85%"></div>
+                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[5] / reviewStats.total * 100) : 0) + '%' }"></div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">85%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[5] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 4 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">4 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 10%"></div>
+                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[4] / reviewStats.total * 100) : 0) + '%' }"></div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">10%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[4] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 3 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">3 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 3%"></div>
+                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[3] / reviewStats.total * 100) : 0) + '%' }"></div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">3%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[3] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 2 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">2 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 1%"></div>
+                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[2] / reviewStats.total * 100) : 0) + '%' }"></div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">1%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[2] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 1 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">1 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 1%"></div>
+                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[1] / reviewStats.total * 100) : 0) + '%' }"></div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">1%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[1] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
               </div>
             </div>
@@ -319,7 +318,7 @@
 
           <!-- Filter Options -->
           <div class="px-6 sm:px-8 py-4 border-b border-outline-variant flex flex-wrap gap-2">
-            <button v-for="filter in ratingFilters" :key="filter.value" @click="currentRatingFilter = filter.value"
+            <button v-for="filter in dynamicRatingFilters" :key="filter.value" @click="currentRatingFilter = filter.value"
               :class="['px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer border',
                 currentRatingFilter === filter.value
                   ? 'bg-primary text-on-primary border-primary shadow-sm'
@@ -338,12 +337,12 @@
             <div v-else v-for="rev in filteredReviews" :key="rev.id"
               class="border-b border-outline-variant last:border-0 pb-6 last:pb-0">
               <div class="flex items-start gap-4">
-                <img :src="rev.reviewer_avatar"
+                <img :src="rev.reviewer?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.reviewer?.name) + '&background=random'"
                   class="w-10 h-10 rounded-full object-cover shrink-0 border border-outline-variant" />
                 <div class="flex-1">
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                    <h4 class="font-bold text-on-surface text-sm sm:text-base">{{ rev.reviewer_name }}</h4>
-                    <span class="text-xs text-on-surface-variant">{{ rev.date }}</span>
+                    <h4 class="font-bold text-on-surface text-sm sm:text-base">{{ rev.reviewer?.name }}</h4>
+                    <span class="text-xs text-on-surface-variant">{{ formatTime(rev.created_at) }}</span>
                   </div>
 
                   <div class="flex items-center gap-1 mb-2">
@@ -351,36 +350,15 @@
                           :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
                           :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
                       star </span>
-                    <span class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <span
-                        class="text-primary hover:underline cursor-pointer font-bold">{{ rev.post_title
-                        }}</span></span>
+                    <span v-if="rev.transaction && rev.transaction.post" class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <router-link
+                        :to="`/post/${rev.transaction.post.slug}`" class="text-primary hover:underline cursor-pointer font-bold">{{ rev.transaction.post.title
+                        }}</router-link></span>
                   </div>
 
                   <p class="text-on-surface text-sm leading-relaxed mb-3 mt-2">
                     {{ rev.comment }}
                   </p>
 
-                  <!-- Seller Response (if any) -->
-                  <div v-if="rev.reply"
-                    class="bg-surface-container p-3 rounded-xl border border-outline-variant text-xs sm:text-sm mt-2 relative">
-                    <div class="absolute top-3 left-4 w-1.5 h-1.5 bg-primary rounded-full"></div>
-                    <div class="pl-4">
-                      <div class="flex items-center gap-2 mb-1">
-                        <span class="font-bold text-on-surface">Phản hồi của bạn</span>
-                        <span class="text-[10px] text-on-surface-variant font-medium">{{ rev.reply_date }}</span>
-                      </div>
-                      <p class="text-on-surface-variant leading-relaxed">
-                        {{ rev.reply }}
-                      </p>
-                    </div>
-                  </div>
-                  <div v-else class="mt-2 flex justify-end">
-                    <button @click="openReplyModal(rev)"
-                      class="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
-                      <span class="material-symbols-outlined text-sm">reply</span>
-                      Phản hồi đánh giá
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -509,67 +487,77 @@ const ratingFilters = [
   { label: '1 Sao (1)', value: '1' }
 ];
 
-const mockReviews = ref([
-  {
-    id: 1,
-    reviewer_name: 'Nguyễn Văn Hùng',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+Hung&background=3b82f6&color=fff',
-    rating: 5,
-    date: '12/05/2026',
-    post_title: 'iPhone 13 Pro Max 256GB Gold',
-    comment: 'Điện thoại dùng rất tốt, pin còn 92% đúng như chủ thớt mô tả. Ngoại hình đẹp keng xà beng, chủ shop hỗ trợ ship cod nhanh cực kỳ, đóng gói cẩn thận 3 lớp chống sốc luôn. Rất uy tín nha mọi người!',
-    reply: 'Cảm ơn bác Hùng đã tin tưởng ủng hộ shop nhé! Có vấn đề gì cần hỗ trợ cứ nhắn tin trực tiếp cho em nha.',
-    reply_date: '12/05/2026'
-  },
-  {
-    id: 2,
-    reviewer_name: 'Trần Thị Lan',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Lan&background=10b981&color=fff',
-    rating: 5,
-    date: '08/05/2026',
-    post_title: 'MacBook Air M1 8GB/256GB Gray',
-    comment: 'Máy dùng siêu mượt, bàn phím và màn hình không một vết xước. Giao dịch trực tiếp tại nhà nhanh gọn lẹ, anh chủ nhiệt tình test máy giúp mình từ A-Z. Rất recommend mua đồ cũ ở đây!',
-    reply: null,
-    reply_date: null
-  },
-  {
-    id: 3,
-    reviewer_name: 'Lê Minh Tuấn',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Le+Minh+Tuan&background=f59e0b&color=fff',
-    rating: 4,
-    date: '30/04/2026',
-    post_title: 'Xe máy Honda Wave Alpha 2021',
-    comment: 'Xe chạy êm, máy zin. Chỉ có lốp xe hơi mòn tí phải đi thay nhưng với giá này thì quá hời rồi. Bác bán hàng vui tính, bớt cho mình 200k tiền xăng xe đi lại nữa.',
-    reply: 'Cảm ơn bạn đã phản hồi! Do xe cũng đi được một thời gian nên lốp hơi mòn, mình đã chủ động bớt lộc xăng xe để bạn làm lại lốp rồi nhé. Chúc bạn vạn dặm bình an!',
-    reply_date: '30/04/2026'
-  },
-  {
-    id: 4,
-    reviewer_name: 'Phạm Thanh Sơn',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Pham+Thanh+Son&background=ef4444&color=fff',
-    rating: 3,
-    date: '15/04/2026',
-    post_title: 'Tai nghe Bluetooth Sony WH-1000XM4',
-    comment: 'Tai nghe chất âm tốt, chống ồn đỉnh. Tuy nhiên đệm da hơi sờn nhẹ ở góc mà trong tin đăng chưa nói rõ. Nhưng giao dịch nhanh nên vẫn vote 4 sao trừ 1 sao ngoại hình.',
-    reply: 'Dạ shop xin lỗi vì sơ sót không chụp kỹ góc sờn đó nhé ạ. Lần sau shop sẽ lưu ý mô tả chi tiết hơn. Cảm ơn phản hồi đóng góp của bạn!',
-    reply_date: '16/04/2026'
-  },
-  {
-    id: 5,
-    reviewer_name: 'Hoàng Ngọc Ánh',
-    reviewer_avatar: 'https://ui-avatars.com/api/?name=Hoang+Ngoc+Anh&background=ec4899&color=fff',
-    rating: 5,
-    date: '02/04/2026',
-    post_title: 'Tủ lạnh Samsung Inverter 236L',
-    comment: 'Tủ lạnh chạy cực êm, không ồn tí nào, làm lạnh nhanh. Giao hàng hỗ trợ khiêng lên tận lầu 3 giúp mình luôn, quá nhiệt tình luôn ạ. 10 điểm không có nhưng!',
-    reply: null,
-    reply_date: null
+const reviews = ref([]);
+const reviewsPagination = ref(null);
+
+const fetchReviews = async (page = 1) => {
+  if (!authStore.user?.id) return;
+  try {
+    const response = await axios.get(`/api/users/${authStore.user.id}/reviews?page=${page}`);
+    if (response.data.success) {
+      if (page === 1) {
+        reviews.value = response.data.data.data;
+      } else {
+        reviews.value = [...reviews.value, ...response.data.data.data];
+      }
+      reviewsPagination.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải đánh giá:', error);
   }
-]);
+};
+
+watch(() => authStore.user, (user) => {
+  if (user) {
+    fetchReviews();
+  }
+}, { immediate: true });
+
+watch(activeTab, (tab) => {
+  if (tab === 'reviews' && reviews.value.length === 0) {
+    fetchReviews();
+  }
+});
 
 const filteredReviews = computed(() => {
-  if (currentRatingFilter.value === 'all') return mockReviews.value;
-  return mockReviews.value.filter(rev => rev.rating === parseInt(currentRatingFilter.value));
+  if (currentRatingFilter.value === 'all') return reviews.value;
+  return reviews.value.filter(rev => rev.rating === parseInt(currentRatingFilter.value));
+});
+
+const reviewStats = computed(() => {
+  const total = reviews.value.length;
+  if (total === 0) return { avg: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, total: 0 };
+  
+  let sum = 0;
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.value.forEach(r => {
+    sum += r.rating;
+    counts[r.rating] = (counts[r.rating] || 0) + 1;
+  });
+  
+  return {
+    avg: (sum / total).toFixed(1),
+    counts,
+    total
+  };
+});
+
+const formatTime = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN');
+};
+
+const dynamicRatingFilters = computed(() => {
+  const stats = reviewStats.value;
+  return [
+    { label: `Tất cả (${stats.total})`, value: 'all' },
+    { label: `5 Sao (${stats.counts[5]})`, value: '5' },
+    { label: `4 Sao (${stats.counts[4]})`, value: '4' },
+    { label: `3 Sao (${stats.counts[3]})`, value: '3' },
+    { label: `2 Sao (${stats.counts[2]})`, value: '2' },
+    { label: `1 Sao (${stats.counts[1]})`, value: '1' }
+  ];
 });
 
 const replyModal = ref({
