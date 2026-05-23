@@ -150,7 +150,7 @@ class ChatbotController extends Controller
                     $query->where('price', '<=', $maxPrice);
                 }
                 // Lấy thêm nhiều trường dữ liệu để AI có thể tư vấn chi tiết hơn
-                $productsData = $query->with('user:id,name')->take(5)->get([
+                $productsData = $query->with(['user:id,name', 'images'])->take(5)->get([
                     'id',
                     'user_id',
                     'title',
@@ -204,7 +204,44 @@ class ChatbotController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Chatbot Controller Exception: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Exception: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function history(Request $request)
+    {
+        $userId = auth('api')->id();
+        $sessionIdInput = $request->input('session_id');
+
+        $session = null;
+        if ($sessionIdInput) {
+            $session = ChatbotSession::where('session_id', $sessionIdInput)->first();
+        }
+
+        // Khôi phục session theo user nếu ở local storage bị mất
+        if (!$session && $userId) {
+            $session = ChatbotSession::where('user_id', $userId)->latest()->first();
+        }
+
+        if (!$session) {
+            return response()->json(['status' => 'success', 'messages' => [], 'session_id' => null]);
+        }
+
+        $messages = $session->messages()->orderBy('created_at', 'asc')->get();
+        $formatted = [];
+        foreach ($messages as $msg) {
+            $formatted[] = [
+                'role' => $msg->role,
+                'content' => $msg->content,
+                'data' => is_string($msg->data) ? json_decode($msg->data, true) : $msg->data,
+                'hideAvatar' => false
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'messages' => $formatted,
+            'session_id' => $session->session_id
+        ]);
     }
 }

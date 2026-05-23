@@ -97,3 +97,4 @@ Route::get('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::c
 
 // Route cho Chatbot
 Route::post('/chatbot/chat', [ChatbotController::class, 'chat']);
+Route::get('/chatbot/history', [ChatbotController::class, 'history']);
