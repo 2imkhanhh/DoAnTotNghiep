@@ -23,6 +23,9 @@
 
     <!-- Footer cho các trang thường -->
     <Footer v-if="!isAuthRoute && !isAdminRoute && !isChatRoute" />
+
+    <!-- AI Chatbot Widget (Hiển thị Global) -->
+    <ChatbotWidget v-if="!isAuthRoute && !isAdminRoute" />
   </div>
 </template>
 
@@ -31,6 +34,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
+import ChatbotWidget from "./components/ChatbotWidget.vue";
 
 const route = useRoute();
 const isAuthRoute = computed(() =>

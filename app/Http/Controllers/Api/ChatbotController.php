@@ -92,7 +92,7 @@ class ChatbotController extends Controller
                             'parameters' => [
                                 'type' => 'OBJECT',
                                 'properties' => [
-                                    'keyword' => ['type' => 'STRING', 'description' => 'Từ khoá sản phẩm'],
+                                    'keyword' => ['type' => 'STRING', 'description' => 'Từ khoá cốt lõi ngắn gọn nhất để tìm sản phẩm (vd: "máy tính", "điện thoại"). TUYỆT ĐỐI KHÔNG chứa các từ hỏi như "có", "không", "nào", "bộ", "chiếc".'],
                                     'max_price' => ['type' => 'NUMBER', 'description' => 'Mức giá tối đa (VNĐ). Vd: 10 triệu -> 10000000']
                                 ],
                                 'required' => ['keyword']
@@ -113,7 +113,11 @@ class ChatbotController extends Controller
 
             if (!$response1->successful()) {
                 Log::error('Gemini API Error: ' . $response1->body());
-                return response()->json(['status' => 'error', 'message' => 'Lỗi kết nối tới AI'], 500);
+                return response()->json([
+                    'status' => 'success',
+                    'reply' => 'Hệ thống AI đã hết lượt dùng trong ngày. Vui lòng tạo một API Key mới (từ nick Google khác) và dán vào file .env nhé!',
+                    'session_id' => $session->session_id
+                ]);
             }
 
             $result1 = $response1->json();
@@ -137,7 +141,7 @@ class ChatbotController extends Controller
             // NẾU CÓ GỌI HÀM
             else {
                 $args = $functionCall['args'];
-                $keyword = $args['keyword'] ?? '';
+                $keyword = trim($args['keyword'] ?? '');
                 $maxPrice = $args['max_price'] ?? null;
 
                 // Query DB
@@ -179,7 +183,8 @@ class ChatbotController extends Controller
                     $result2 = $response2->json();
                     $botFinalReply = $result2['candidates'][0]['content']['parts'][0]['text'] ?? 'Đã có lỗi khi tóm tắt sản phẩm.';
                 } else {
-                    $botFinalReply = "Xin lỗi, đã xảy ra lỗi khi tìm kiếm sản phẩm.";
+                    Log::error('Gemini API Error Vòng 2: ' . $response2->body());
+                    $botFinalReply = 'Hệ thống AI đang quá tải do vượt quá giới hạn API. Vui lòng đợi khoảng 1 phút rồi thử lại nhé!';
                 }
             }
 

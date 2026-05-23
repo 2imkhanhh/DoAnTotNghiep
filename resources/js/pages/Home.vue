@@ -208,11 +208,6 @@
         </section>
     </div>
 
-    <!-- Floating Chatbot Button -->
-    <div class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-primary-container hover:text-on-primary-container transition-colors z-50"
-        title="Chatbot Hỗ trợ">
-        <span class="material-symbols-outlined">forum</span>
-    </div>
 </template>
 
 <script setup>
