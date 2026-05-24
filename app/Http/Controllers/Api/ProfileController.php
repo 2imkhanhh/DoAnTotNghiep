@@ -32,18 +32,32 @@ class ProfileController extends Controller
     {
         // Lấy ID của user đang đăng nhập
         $userId = auth('api')->id();
+        $user = auth('api')->user();
 
-        // GỌI TRỰC TIẾP TỪ MODEL 
-        User::where('id', $userId)->update($request->only([
+        $data = $request->only([
             'name',
             'phone',
             'address',
             'province_id',
             'province_name',
             'ward_id',
-            'ward_name',
-            'avatar'
-        ]));
+            'ward_name'
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            // Xóa ảnh cũ nếu nó là file trong storage (thư mục images)
+            if ($user->avatar && str_starts_with($user->avatar, '/storage/images/')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $user->avatar));
+            }
+
+            $file = $request->file('avatar');
+            $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('images', $filename, 'public');
+            $data['avatar'] = '/storage/' . $path;
+        }
+
+        // GỌI TRỰC TIẾP TỪ MODEL 
+        User::where('id', $userId)->update($data);
 
         // Lấy lại thông tin user sau khi đã update để trả về cho Frontend
         $updatedUser = User::withCount(['followers', 'followings'])->find($userId);

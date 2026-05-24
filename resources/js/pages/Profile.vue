@@ -26,14 +26,20 @@
             <div class="flex justify-center gap-12 mt-6 mb-2">
               <button @click="openFollowModal('followers')" type="button"
                 class="text-center cursor-pointer focus:outline-none group">
-                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.followers_count || 0 }}</div>
-                <div class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">Người theo dõi</div>
+                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{
+                  profileData.followers_count || 0 }}</div>
+                <div
+                  class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">
+                  Người theo dõi</div>
               </button>
 
               <button @click="openFollowModal('following')" type="button"
                 class="text-center cursor-pointer focus:outline-none group">
-                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{ profileData.followings_count || 0 }}</div>
-                <div class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">Đang theo dõi</div>
+                <div class="font-extrabold text-2xl text-on-surface group-hover:text-primary transition-colors">{{
+                  profileData.followings_count || 0 }}</div>
+                <div
+                  class="text-[12px] font-medium text-on-surface-variant group-hover:text-primary transition-colors mt-0.5">
+                  Đang theo dõi</div>
               </button>
             </div>
           </div>
@@ -166,6 +172,8 @@
                         class="px-4 py-2 bg-surface-container-high text-on-surface text-sm font-bold rounded-lg border border-outline-variant hover:bg-surface-dim transition-all cursor-pointer">
                         Chọn ảnh mới
                       </button>
+                      <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/jpeg, image/png"
+                        hidden />
                     </div>
                   </div>
                   <p v-if="errors.avatar" class="text-xs text-error mt-1 px-1">{{ errors.avatar[0] }}</p>
@@ -263,8 +271,8 @@
                 <div class="text-5xl font-black text-on-surface mb-2">{{ reviewStats.avg }}</div>
                 <div class="flex justify-center gap-1 mb-2">
                   <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm"
-                        :class="star <= Math.round(reviewStats.avg) ? 'text-amber-500' : 'text-outline-variant'"
-                        :style="star <= Math.round(reviewStats.avg) ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
+                    :class="star <= Math.round(reviewStats.avg) ? 'text-amber-500' : 'text-outline-variant'"
+                    :style="star <= Math.round(reviewStats.avg) ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
                     star </span>
                 </div>
                 <p class="text-xs text-on-surface-variant">Trung bình trên {{ reviewStats.total }} đánh giá</p>
@@ -276,41 +284,56 @@
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">5 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[5] / reviewStats.total * 100) : 0) + '%' }"></div>
+                    <div class="bg-amber-500 h-full rounded-full"
+                      :style="{ width: (reviewStats.total ? (reviewStats.counts[5] / reviewStats.total * 100) : 0) + '%' }">
+                    </div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[5] / reviewStats.total * 100) : 0 }}%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ?
+                    Math.round(reviewStats.counts[5] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 4 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">4 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[4] / reviewStats.total * 100) : 0) + '%' }"></div>
+                    <div class="bg-amber-500 h-full rounded-full"
+                      :style="{ width: (reviewStats.total ? (reviewStats.counts[4] / reviewStats.total * 100) : 0) + '%' }">
+                    </div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[4] / reviewStats.total * 100) : 0 }}%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ?
+                    Math.round(reviewStats.counts[4] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 3 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">3 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[3] / reviewStats.total * 100) : 0) + '%' }"></div>
+                    <div class="bg-amber-500 h-full rounded-full"
+                      :style="{ width: (reviewStats.total ? (reviewStats.counts[3] / reviewStats.total * 100) : 0) + '%' }">
+                    </div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[3] / reviewStats.total * 100) : 0 }}%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ?
+                    Math.round(reviewStats.counts[3] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 2 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">2 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[2] / reviewStats.total * 100) : 0) + '%' }"></div>
+                    <div class="bg-amber-500 h-full rounded-full"
+                      :style="{ width: (reviewStats.total ? (reviewStats.counts[2] / reviewStats.total * 100) : 0) + '%' }">
+                    </div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[2] / reviewStats.total * 100) : 0 }}%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ?
+                    Math.round(reviewStats.counts[2] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
                 <!-- 1 star -->
                 <div class="flex items-center gap-4">
                   <span class="text-xs font-bold text-on-surface-variant w-10">1 sao</span>
                   <div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" :style="{ width: (reviewStats.total ? (reviewStats.counts[1] / reviewStats.total * 100) : 0) + '%' }"></div>
+                    <div class="bg-amber-500 h-full rounded-full"
+                      :style="{ width: (reviewStats.total ? (reviewStats.counts[1] / reviewStats.total * 100) : 0) + '%' }">
+                    </div>
                   </div>
-                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ? Math.round(reviewStats.counts[1] / reviewStats.total * 100) : 0 }}%</span>
+                  <span class="text-xs text-on-surface-variant w-8 text-right font-bold">{{ reviewStats.total ?
+                    Math.round(reviewStats.counts[1] / reviewStats.total * 100) : 0 }}%</span>
                 </div>
               </div>
             </div>
@@ -318,7 +341,8 @@
 
           <!-- Filter Options -->
           <div class="px-6 sm:px-8 py-4 border-b border-outline-variant flex flex-wrap gap-2">
-            <button v-for="filter in dynamicRatingFilters" :key="filter.value" @click="currentRatingFilter = filter.value"
+            <button v-for="filter in dynamicRatingFilters" :key="filter.value"
+              @click="currentRatingFilter = filter.value"
               :class="['px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer border',
                 currentRatingFilter === filter.value
                   ? 'bg-primary text-on-primary border-primary shadow-sm'
@@ -331,13 +355,14 @@
           <div class="p-6 sm:p-8 space-y-6">
             <div v-if="filteredReviews.length === 0" class="text-center py-12 text-on-surface-variant">
               <span class="material-symbols-outlined text-4xl mb-2 opacity-40">rate_review</span>
-              <p class="font-medium">Chưa có đánh giá nào cho mức điểm này</p>
+              <p class="font-medium">Chưa có đánh giá.</p>
             </div>
 
             <div v-else v-for="rev in filteredReviews" :key="rev.id"
               class="border-b border-outline-variant last:border-0 pb-6 last:pb-0">
               <div class="flex items-start gap-4">
-                <img :src="rev.reviewer?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.reviewer?.name) + '&background=random'"
+                <img
+                  :src="rev.reviewer?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(rev.reviewer?.name) + '&background=random'"
                   class="w-10 h-10 rounded-full object-cover shrink-0 border border-outline-variant" />
                 <div class="flex-1">
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
@@ -347,11 +372,13 @@
 
                   <div class="flex items-center gap-1 mb-2">
                     <span v-for="star in 5" :key="star" class="material-symbols-outlined text-sm"
-                          :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
-                          :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
+                      :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
+                      :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
                       star </span>
-                    <span v-if="rev.transaction && rev.transaction.post" class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <router-link
-                        :to="`/post/${rev.transaction.post.slug}`" class="text-primary hover:underline cursor-pointer font-bold">{{ rev.transaction.post.title
+                    <span v-if="rev.transaction && rev.transaction.post"
+                      class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <router-link
+                        :to="`/post/${rev.transaction.post.slug}`"
+                        class="text-primary hover:underline cursor-pointer font-bold">{{ rev.transaction.post.title
                         }}</router-link></span>
                   </div>
 
@@ -410,7 +437,8 @@
       @click.self="closeFollowModal">
       <div
         class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh] animate-fadeIn">
-        <div class="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
+        <div
+          class="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low/30">
           <h3 class="font-extrabold text-lg text-on-surface flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-xl">
               {{ followModal.type === 'followers' ? 'group' : 'person_add' }}
@@ -423,7 +451,8 @@
           </button>
         </div>
         <div class="p-3 overflow-y-auto grow custom-scrollbar">
-          <div v-if="followModal.isLoading" class="text-center py-10 text-on-surface-variant flex flex-col items-center justify-center">
+          <div v-if="followModal.isLoading"
+            class="text-center py-10 text-on-surface-variant flex flex-col items-center justify-center">
             <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">progress_activity</span>
             <p class="font-medium text-sm">Đang tải dữ liệu...</p>
           </div>
@@ -437,7 +466,8 @@
                 <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + user.name + '&background=random'"
                   class="w-12 h-12 rounded-full object-cover border border-outline-variant shrink-0" />
                 <div class="min-w-0">
-                  <div class="font-bold text-on-surface text-sm truncate w-24 sm:w-32" :title="user.name">{{ user.name }}</div>
+                  <div class="font-bold text-on-surface text-sm truncate w-24 sm:w-32" :title="user.name">{{ user.name
+                  }}</div>
                 </div>
               </div>
               <button v-if="followModal.type === 'following'" @click="unfollowUser(user.id)" type="button"
@@ -527,14 +557,14 @@ const filteredReviews = computed(() => {
 const reviewStats = computed(() => {
   const total = reviews.value.length;
   if (total === 0) return { avg: 0, counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, total: 0 };
-  
+
   let sum = 0;
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   reviews.value.forEach(r => {
     sum += r.rating;
     counts[r.rating] = (counts[r.rating] || 0) + 1;
   });
-  
+
   return {
     avg: (sum / total).toFixed(1),
     counts,
@@ -604,26 +634,26 @@ const openFollowModal = async (type) => {
   followModal.value.isLoading = true;
 
   try {
-      const endpoint = type === 'followers' ? `/api/users/${authStore.user?.id}/followers` : `/api/users/${authStore.user?.id}/followings`;
-      const response = await axios.get(endpoint);
-      if (response.data.success) {
-          let users = response.data.data;
-          
-          if (type === 'followers') {
-             const followingRes = await axios.get(`/api/users/${authStore.user?.id}/followings`);
-             const followingIds = followingRes.data.data.map(u => u.id);
-             users = users.map(user => ({
-                 ...user,
-                 isFollowing: followingIds.includes(user.id)
-             }));
-          }
-          
-          followModal.value.list = users;
+    const endpoint = type === 'followers' ? `/api/users/${authStore.user?.id}/followers` : `/api/users/${authStore.user?.id}/followings`;
+    const response = await axios.get(endpoint);
+    if (response.data.success) {
+      let users = response.data.data;
+
+      if (type === 'followers') {
+        const followingRes = await axios.get(`/api/users/${authStore.user?.id}/followings`);
+        const followingIds = followingRes.data.data.map(u => u.id);
+        users = users.map(user => ({
+          ...user,
+          isFollowing: followingIds.includes(user.id)
+        }));
       }
+
+      followModal.value.list = users;
+    }
   } catch (error) {
-      console.error('Lỗi khi lấy danh sách theo dõi:', error);
+    console.error('Lỗi khi lấy danh sách theo dõi:', error);
   } finally {
-      followModal.value.isLoading = false;
+    followModal.value.isLoading = false;
   }
 };
 
@@ -633,28 +663,28 @@ const closeFollowModal = () => {
 
 const unfollowUser = async (userId) => {
   try {
-      const response = await axios.post(`/api/users/${userId}/follow`);
-      if (response.data.success) {
-          followModal.value.list = followModal.value.list.filter(u => u.id !== userId);
-          if (profileData.value.followings_count > 0) profileData.value.followings_count--;
-          showToast('Đã hủy theo dõi người dùng!');
-      }
+    const response = await axios.post(`/api/users/${userId}/follow`);
+    if (response.data.success) {
+      followModal.value.list = followModal.value.list.filter(u => u.id !== userId);
+      if (profileData.value.followings_count > 0) profileData.value.followings_count--;
+      showToast('Đã hủy theo dõi người dùng!');
+    }
   } catch (error) {
-      console.error('Lỗi khi thao tác:', error);
+    console.error('Lỗi khi thao tác:', error);
   }
 };
 
 const followBackUser = async (userId) => {
   try {
-      const response = await axios.post(`/api/users/${userId}/follow`);
-      if (response.data.success) {
-          const user = followModal.value.list.find(u => u.id === userId);
-          if (user) user.isFollowing = true;
-          profileData.value.followings_count++;
-          showToast('Đã theo dõi người dùng!');
-      }
+    const response = await axios.post(`/api/users/${userId}/follow`);
+    if (response.data.success) {
+      const user = followModal.value.list.find(u => u.id === userId);
+      if (user) user.isFollowing = true;
+      profileData.value.followings_count++;
+      showToast('Đã theo dõi người dùng!');
+    }
   } catch (error) {
-      console.error('Lỗi khi thao tác:', error);
+    console.error('Lỗi khi thao tác:', error);
   }
 };
 
