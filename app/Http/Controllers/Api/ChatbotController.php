@@ -66,9 +66,28 @@ class ChatbotController extends Controller
 
         $contents = [];
         foreach ($historyMessages as $msg) {
+            $text = $msg->content;
+
+            // Nhồi thêm thông tin chi tiết sản phẩm vào bộ nhớ của AI để nó tự tư vấn tiếp mà không cần tìm kiếm lại
+            if ($msg->role === 'model' && $msg->data) {
+                $dataArr = is_string($msg->data) ? json_decode($msg->data, true) : $msg->data;
+                if (!empty($dataArr)) {
+                    // Lọc bớt các trường không cần thiết để tiết kiệm token
+                    $memoryData = array_map(function ($p) {
+                        return [
+                            'title' => $p['title'],
+                            'price' => $p['price'],
+                            'description' => $p['description'] ?? '',
+                            'specifications' => $p['specifications'] ?? ''
+                        ];
+                    }, $dataArr);
+                    $text .= "\n\n[Dữ liệu ẩn trong bộ nhớ: " . json_encode($memoryData, JSON_UNESCAPED_UNICODE) . "]";
+                }
+            }
+
             $contents[] = [
                 'role' => $msg->role, // 'user' hoặc 'model'
-                'parts' => [['text' => $msg->content]]
+                'parts' => [['text' => $text]]
             ];
         }
 
@@ -80,7 +99,16 @@ class ChatbotController extends Controller
             'systemInstruction' => [
                 'role' => 'system',
                 'parts' => [
-                    ['text' => 'Bạn là trợ lý ảo thân thiện của website bán đồ cũ 2Hand. HÃY LUÔN SỬ DỤNG hàm search_posts nếu khách có nhu cầu mua/tìm sản phẩm. Khi có kết quả từ hàm, hãy tóm tắt lịch sự. Nếu khách hỏi những thứ không liên quan đến đồ cũ, hãy từ chối khéo léo.']
+                    ['text' => 'Bạn là trợ lý ảo thân thiện của website bán đồ cũ Chợ Đồ Cũ UTT. 
+                                Dưới đây là các thông tin chung của sàn giao dịch để bạn dùng khi khách hỏi:
+                                - Địa chỉ cơ sở chính: Số 54 Triều Khúc, Thanh Xuân, Hà Nội (Trường Đại học Công nghệ Giao thông Vận tải).
+                                - Cách đăng bán sản phẩm: Người dùng cần Đăng nhập -> Chọn nút "Đăng tin" -> Điền thông tin, hình ảnh và giá cả -> Chờ quản trị viên duyệt bài.
+                                - Hình thức giao dịch: Nền tảng chỉ đóng vai trò kết nối người mua và người bán. Hai bên tự liên hệ để thương lượng cách xem hàng và thanh toán trực tiếp.
+
+                                Quy tắc xử lý:
+                                1. Khi khách CẦN TÌM MỚI một sản phẩm, HÃY LUÔN SỬ DỤNG hàm search_posts. Khi có kết quả, CHỈ giới thiệu các sản phẩm ĐÚNG loại khách cần (VD: khách tìm laptop tuyệt đối không đưa iPad vào).
+                                2. Khi khách HỎI THÊM CHI TIẾT về sản phẩm bạn vừa giới thiệu, KHÔNG CẦN GỌI HÀM search_posts nữa, hãy đọc phần [Dữ liệu ẩn trong bộ nhớ] ở câu trả lời trước của bạn để lấy thông tin tư vấn cho khách.
+                                3. Luôn trả lời ngắn gọn, thân thiện. Hãy dựa vào "các thông tin chung" ở trên để hướng dẫn khách khi họ hỏi về quy định hay cách hoạt động của sàn. Nếu khách hỏi ngoài lề (làm thơ, tính toán, thông tin xã hội...), hãy từ chối khéo léo.']
                 ]
             ],
             'tools' => [
@@ -93,7 +121,8 @@ class ChatbotController extends Controller
                                 'type' => 'OBJECT',
                                 'properties' => [
                                     'keyword' => ['type' => 'STRING', 'description' => 'Từ khoá cốt lõi ngắn gọn nhất để tìm sản phẩm (vd: "máy tính", "điện thoại"). TUYỆT ĐỐI KHÔNG chứa các từ hỏi như "có", "không", "nào", "bộ", "chiếc".'],
-                                    'max_price' => ['type' => 'NUMBER', 'description' => 'Mức giá tối đa (VNĐ). Vd: 10 triệu -> 10000000']
+                                    'max_price' => ['type' => 'NUMBER', 'description' => 'Mức giá tối đa (VNĐ). Vd: 10 triệu -> 10000000'],
+                                    'location' => ['type' => 'STRING', 'description' => 'Địa điểm, tên tỉnh thành, quận huyện khách muốn tìm (vd: "Nghệ An", "Hà Nội"). Trả về chuỗi rỗng nếu khách không nhắc đến địa điểm.']
                                 ],
                                 'required' => ['keyword']
                             ]
@@ -143,12 +172,33 @@ class ChatbotController extends Controller
                 $args = $functionCall['args'];
                 $keyword = trim($args['keyword'] ?? '');
                 $maxPrice = $args['max_price'] ?? null;
+                $location = trim($args['location'] ?? '');
 
-                // Query DB
-                $query = Post::where('status', 1)->where('title', 'like', "%{$keyword}%");
+                // Query DB: Tách từ khóa để tìm linh hoạt hơn (VD: "loa jbl" -> tìm cả "loa" và "jbl")
+                $query = Post::where('status', 1);
+                $words = array_filter(explode(' ', $keyword));
+                if (!empty($words)) {
+                    $query->where(function ($q) use ($words) {
+                        foreach ($words as $word) {
+                            $q->where(function ($subQ) use ($word) {
+                                $subQ->where('title', 'like', "%{$word}%")
+                                    ->orWhereHas('category', function ($catQuery) use ($word) {
+                                        $catQuery->where('name', 'like', "%{$word}%");
+                                    });
+                            });
+                        }
+                    });
+                }
                 if ($maxPrice) {
                     $query->where('price', '<=', $maxPrice);
                 }
+                if ($location) {
+                    $query->where(function ($q) use ($location) {
+                        $q->where('province_name', 'like', "%{$location}%")
+                          ->orWhere('ward_name', 'like', "%{$location}%");
+                    });
+                }
+                
                 // Lấy thêm nhiều trường dữ liệu để AI có thể tư vấn chi tiết hơn
                 $productsData = $query->with(['user:id,name', 'images'])->take(5)->get([
                     'id',
@@ -242,6 +292,42 @@ class ChatbotController extends Controller
             'status' => 'success',
             'messages' => $formatted,
             'session_id' => $session->session_id
+        ]);
+    }
+
+    public function reset(Request $request)
+    {
+        $userId = auth('api')->id();
+        $sessionIdInput = $request->input('session_id');
+
+        // Nếu có session_id, tiến hành xoá phiên chat hiện tại
+        if ($sessionIdInput) {
+            $oldSession = ChatbotSession::where('session_id', $sessionIdInput)->first();
+            if ($oldSession) {
+                $oldSession->messages()->delete();
+                $oldSession->delete();
+            }
+        }
+
+        // Đảm bảo xoá luôn TẤT CẢ các phiên chat cũ nếu người dùng ĐÃ ĐĂNG NHẬP
+        // Tránh việc History lấy lại session_id cũ từ user_id
+        if ($userId) {
+            $userSessions = ChatbotSession::where('user_id', $userId)->get();
+            foreach ($userSessions as $s) {
+                $s->messages()->delete();
+                $s->delete();
+            }
+        }
+
+        // Tạo phiên làm việc mới
+        $newSession = ChatbotSession::create([
+            'session_id' => (string) Str::uuid(),
+            'user_id' => $userId
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'session_id' => $newSession->session_id
         ]);
     }
 }

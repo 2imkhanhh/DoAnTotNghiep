@@ -18,10 +18,16 @@
             </span>
           </div>
         </div>
-        <button @click="isOpen = false"
-          class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors cursor-pointer">
-          <span class="material-symbols-outlined text-[20px]">expand_more</span>
-        </button>
+        <div class="flex items-center gap-1">
+          <button @click="resetChat" title="Làm mới"
+            class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">sync</span>
+          </button>
+          <button @click="isOpen = false" title="Thu nhỏ"
+            class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">remove</span>
+          </button>
+        </div>
       </div>
 
       <!-- Messages Area -->
@@ -91,16 +97,20 @@
       </div>
 
       <!-- Input Area -->
-      <div class="p-2.5 bg-white border-t border-outline-variant z-10">
+      <div class="p-2.5 bg-white border-t border-outline-variant z-10 flex flex-col gap-1.5">
         <form @submit.prevent="sendMessage" class="flex items-center gap-2 relative">
           <input v-model="newMessage" type="text" placeholder="Nhập câu hỏi..."
             class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-full py-2 pl-4 pr-10 text-[13px] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-inner transition-shadow"
-            :disabled="isLoading" />
+            :disabled="isLoading"
+            @focus="scrollToBottom" />
           <button type="submit" :disabled="!newMessage.trim() || isLoading"
             class="absolute right-1 w-8 h-8 flex items-center justify-center rounded-full bg-primary text-on-primary disabled:opacity-50 disabled:bg-gray-300 hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-[16px]">send</span>
           </button>
         </form>
+        <div class="text-left text-[10px] text-gray-500 font-medium">
+          Thông tin chỉ mang tính tham khảo, được tư vấn bởi Trí Tuệ Nhân Tạo.
+        </div>
       </div>
     </div>
 
@@ -154,7 +164,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import axios from 'axios';
 
 const isOpen = ref(false);
@@ -169,6 +179,13 @@ const messages = ref([
 const newMessage = ref('');
 const isLoading = ref(false);
 const messagesContainer = ref(null);
+
+// Tự động lướt xuống cuối khi mở ô chatbot
+watch(isOpen, (newVal) => {
+  if (newVal) {
+    scrollToBottom();
+  }
+});
 
 // Danh sách các câu thoại sẽ tự động thay đổi ở Bubble
 const bubbleTexts = [
@@ -197,6 +214,27 @@ const getPrimaryImage = (product) => {
   }
   // Dùng ảnh SVG mặc định mã hóa sẵn (Không cần gọi mạng)
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="%23cbd5e1"><rect width="100" height="100" fill="%23f1f5f9"/><path d="M50 20 L20 40 L20 70 L50 90 L80 70 L80 40 Z" fill="%23e2e8f0" stroke="%2394a3b8" stroke-width="2"/><path d="M50 20 L50 55 M20 40 L50 55 L80 40" stroke="%2394a3b8" stroke-width="2" fill="none"/></svg>`;
+};
+
+const resetChat = async () => {
+  // Nếu chỉ có 2 tin nhắn chào mừng mặc định, tức là đoạn chat đã mới tinh rồi -> Không gửi request lên server nữa
+  if (messages.value.length <= 2) return;
+
+  // Tiến hành xoá luôn giao diện
+  messages.value = [
+    { role: 'model', content: 'Xin chào Anh/Chị! Em là trợ lý AI của Chợ Đồ Cũ UTT', hideAvatar: true },
+    { role: 'model', content: 'Em rất sẵn lòng hỗ trợ Anh/Chị 😊', hideAvatar: false }
+  ];
+
+  try {
+    const sessionId = localStorage.getItem('chatbot_session_id');
+    const response = await axios.post('/api/chatbot/reset', { session_id: sessionId });
+    if (response.data.status === 'success') {
+      localStorage.setItem('chatbot_session_id', response.data.session_id);
+    }
+  } catch (error) {
+    console.error('Lỗi khi reset chat:', error);
+  }
 };
 
 const scrollToBottom = async () => {
