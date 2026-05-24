@@ -50,7 +50,7 @@
               <div class="flex justify-between items-start gap-4">
                 <div class="flex-1">
                   <span class="text-[12px] font-bold text-primary tracking-wider">{{ post.category?.name
-                    }}</span>
+                  }}</span>
                   <h3
                     class="text-lg font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-primary transition-colors">
                     {{ post.title }}</h3>
@@ -111,10 +111,23 @@
 
         <!-- Pagination -->
         <div v-if="pagination.last_page > 1" class="flex justify-center mt-12 gap-2">
-          <button v-for="page in pagination.last_page" :key="page" @click="fetchPosts(page)"
-            :class="['w-10 h-10 rounded-lg font-bold transition-all',
-              pagination.current_page === page ? 'bg-primary text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100']">
-            {{ page }}
+          <button :disabled="pagination.current_page === 1" @click="fetchPosts(pagination.current_page - 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+
+          <template v-for="(page, index) in visiblePages" :key="index">
+            <span v-if="page === '...'" class="w-10 h-10 flex items-center justify-center text-slate-400">...</span>
+            <button v-else @click="fetchPosts(page)"
+              :class="['w-10 h-10 rounded-lg font-bold transition-all cursor-pointer',
+                pagination.current_page === page ? 'bg-primary text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100']">
+              {{ page }}
+            </button>
+          </template>
+
+          <button :disabled="pagination.current_page === pagination.last_page" @click="fetchPosts(pagination.current_page + 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>

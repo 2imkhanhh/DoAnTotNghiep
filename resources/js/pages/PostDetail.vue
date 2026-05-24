@@ -96,7 +96,7 @@
               <div class="specs-grid">
                 <div v-for="(val, key) in post.specifications" :key="key" class="spec-row">
                   <span class="spec-label">{{ getAttributeName(post, key) }}</span>
-                  <span class="spec-value">{{ Array.isArray(val) ? val.join(', ') : val }}</span>
+                  <span class="spec-value">{{ Array.isArray(val) ? val.filter(Boolean).join(', ') : val }}</span>
                 </div>
               </div>
             </div>

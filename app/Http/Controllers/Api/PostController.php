@@ -385,11 +385,14 @@ class PostController extends Controller
                 $img->delete();
             }
 
+            // Reset tất cả is_primary về false
+            $post->images()->update(['is_primary' => false]);
+
+            $primary_new_index = $request->get('primary_new_file_index', -1);
+            $primary_image_id = $request->get('primary_image_id');
+
             // Xử lý hình ảnh mới (nếu có)
             if ($request->hasFile('images')) {
-                // Kiểm tra xem đã có ảnh bìa chưa
-                $hasPrimary = $post->images()->where('is_primary', true)->exists();
-
                 foreach ($request->file('images') as $index => $file) {
                     $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('images', $filename, 'public');
@@ -397,10 +400,14 @@ class PostController extends Controller
                     PostImage::create([
                         'post_id' => $post->id,
                         'image_path' => '/storage/' . $path,
-                        // Nếu chưa có ảnh bìa và đây là ảnh đầu tiên trong đống mới -> làm ảnh bìa
-                        'is_primary' => (!$hasPrimary && $index === 0) ? true : false,
+                        'is_primary' => ($primary_new_index != -1 && $primary_new_index == $index),
                     ]);
                 }
+            }
+
+            // Set primary cho ảnh cũ nếu được chọn
+            if ($primary_image_id) {
+                $post->images()->where('id', $primary_image_id)->update(['is_primary' => true]);
             }
 
             // 3. Đảm bảo luôn có đúng 1 ảnh làm ảnh bìa (is_primary = true)

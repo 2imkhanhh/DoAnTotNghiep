@@ -23,16 +23,28 @@
                 </label>
                 <label class="flex flex-col relative">
                     <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Mật khẩu</span>
-                    <input v-model="form.password"
-                        class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
-                        placeholder="Tạo mật khẩu an toàn" required type="password" />
+                    <div class="relative w-full">
+                        <input v-model="form.password"
+                            class="w-full h-14 bg-surface-container-highest border-none rounded-lg pl-4 pr-12 py-3 focus:ring-0 focus:outline-none"
+                            placeholder="Tạo mật khẩu an toàn" required :type="showPassword ? 'text' : 'password'" />
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none flex items-center justify-center">
+                            <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                    </div>
                 </label>
                 <label class="flex flex-col relative">
                     <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Xác nhận mật
                         khẩu</span>
-                    <input v-model="form.password_confirmation"
-                        class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
-                        placeholder="Nhập lại mật khẩu" required type="password" />
+                    <div class="relative w-full">
+                        <input v-model="form.password_confirmation"
+                            class="w-full h-14 bg-surface-container-highest border-none rounded-lg pl-4 pr-12 py-3 focus:ring-0 focus:outline-none"
+                            placeholder="Nhập lại mật khẩu" required :type="showConfirmPassword ? 'text' : 'password'" />
+                        <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none flex items-center justify-center">
+                            <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                    </div>
                 </label>
             </div>
 
@@ -41,7 +53,7 @@
             </div>
 
             <button :disabled="isLoading"
-                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 type="submit">
                 <span>{{ isLoading ? 'Đang xử lý...' : 'Tạo tài khoản' }}</span>
                 <span v-if="!isLoading" class="material-symbols-outlined">arrow_forward</span>
@@ -71,6 +83,8 @@ const form = reactive({
 
 const errorMessage = ref('');
 const isLoading = ref(false);
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const handleRegister = async () => {
     errorMessage.value = '';

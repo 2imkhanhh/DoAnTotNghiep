@@ -93,13 +93,23 @@
         </table>
 
         <!-- Pagination -->
-        <div v-if="pagination.total > pagination.per_page" class="pagination">
-          <button :disabled="pagination.current_page === 1" @click="changePage(pagination.current_page - 1)">
+        <div v-if="pagination.last_page > 1" class="flex justify-center my-6 gap-2">
+          <button :disabled="pagination.current_page === 1" @click="changePage(pagination.current_page - 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
-          <span class="page-info">Trang {{ pagination.current_page }} / {{ pagination.last_page }}</span>
-          <button :disabled="pagination.current_page === pagination.last_page"
-            @click="changePage(pagination.current_page + 1)">
+
+          <template v-for="(page, index) in visiblePages" :key="index">
+            <span v-if="page === '...'" class="w-10 h-10 flex items-center justify-center text-slate-400">...</span>
+            <button v-else @click="changePage(page)"
+              :class="['w-10 h-10 rounded-lg font-bold transition-all border cursor-pointer',
+                pagination.current_page === page ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50']">
+              {{ page }}
+            </button>
+          </template>
+
+          <button :disabled="pagination.current_page === pagination.last_page" @click="changePage(pagination.current_page + 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
             <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
@@ -150,7 +160,7 @@
                   <span class="material-symbols-outlined">location_on</span>
                   {{ (selectedPost.ward_name || selectedPost.province_name) ? `${selectedPost.ward_name ?
                     selectedPost.ward_name + ', ' : ''}${selectedPost.province_name || ''}` : (selectedPost.address ||
-                  'Đang cập nhật') }}
+                      'Đang cập nhật') }}
                 </p>
 
                 <div class="info-section">
@@ -218,7 +228,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
 
@@ -265,6 +275,37 @@ const statusTabs = ref([
   { label: 'Đã bán', value: '2', count: null },
   { label: 'Bị từ chối', value: '3', count: null },
 ]);
+
+const visiblePages = computed(() => {
+  const current = pagination.value.current_page;
+  const last = pagination.value.last_page;
+  const delta = 2;
+  const left = current - delta;
+  const right = current + delta + 1;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (let i = 1; i <= last; i++) {
+    if (i == 1 || i == last || i >= left && i < right) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
+});
 
 const fetchPosts = async (page = 1) => {
   loading.value = true;

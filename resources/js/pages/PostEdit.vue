@@ -18,13 +18,22 @@
             <h2 class="card-title"><span class="material-symbols-outlined">image</span> Hình ảnh sản phẩm</h2>
             <div class="image-upload-wrapper">
               <div class="image-grid">
-                <div v-for="(img, index) in postImages" :key="index" class="image-item">
+                <div v-for="(img, index) in postImages" :key="index" class="image-item" @click="triggerReplaceImage(index)" style="cursor: pointer;" title="Nhấn để thay đổi ảnh">
                   <img :src="img.path" alt="Preview" />
                   <div v-if="index === 0" class="main-badge">Ảnh bìa</div>
-                  <button type="button" @click="removeImage(index)" class="remove-btn">
+                  <div class="replace-overlay">
+                    <button type="button" @click.stop="setAsCover(index)" v-if="index !== 0" class="cover-btn" title="Đặt làm ảnh bìa">
+                      <span class="material-symbols-outlined">star</span>
+                    </button>
+                    <button type="button" @click.stop="triggerReplaceImage(index)" class="edit-btn" title="Thay đổi ảnh">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                  </div>
+                  <button type="button" @click.stop="removeImage(index)" class="remove-btn" title="Xóa ảnh">
                     <span class="material-symbols-outlined">close</span>
                   </button>
                 </div>
+                <input type="file" ref="replaceImageInput" accept="image/*" @change="executeReplaceImage" hidden />
                 <label v-if="postImages.length < 6" class="upload-btn">
                   <input type="file" multiple accept="image/*" @change="handleImageUpload" hidden />
                   <span class="material-symbols-outlined">add_a_photo</span>
@@ -174,6 +183,9 @@ import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
+const postImages = ref([]);
+const replaceImageInput = ref(null);
+const replacingIndex = ref(null);
 const loading = ref(true);
 const submitting = ref(false);
 const errors = ref({});
@@ -378,6 +390,36 @@ const removeImage = (index) => {
   postImages.value.splice(index, 1);
 };
 
+const setAsCover = (index) => {
+  if (index === 0) return;
+  const img = postImages.value[index];
+  postImages.value.splice(index, 1);
+  postImages.value.unshift(img);
+};
+
+const triggerReplaceImage = (index) => {
+  replacingIndex.value = index;
+  replaceImageInput.value.click();
+};
+
+const executeReplaceImage = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const idx = replacingIndex.value;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    postImages.value[idx] = {
+      id: null,
+      path: e.target.result,
+      file: file
+    };
+    event.target.value = '';
+    replacingIndex.value = null;
+  };
+  reader.readAsDataURL(file);
+};
+
 const submitUpdate = async () => {
   submitting.value = true;
   errors.value = {};
@@ -405,6 +447,18 @@ const submitUpdate = async () => {
   // Append remaining old image IDs
   const remainingOldIds = postImages.value.filter(img => img.id !== null).map(img => img.id);
   formData.append('remaining_images', JSON.stringify(remainingOldIds));
+
+  // Determine primary image
+  if (postImages.value.length > 0) {
+    const primaryImg = postImages.value[0];
+    if (primaryImg.id !== null) {
+      formData.append('primary_image_id', primaryImg.id);
+    } else {
+      // Find its index in the newFiles array
+      const primaryNewIndex = newFiles.indexOf(primaryImg.file);
+      formData.append('primary_new_file_index', primaryNewIndex);
+    }
+  }
 
   try {
     const postId = route.params.id;
@@ -585,6 +639,56 @@ const submitUpdate = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.replace-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 0.5rem;
+}
+
+.image-item:hover .replace-overlay {
+  opacity: 1;
+}
+
+.replace-overlay button {
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.replace-overlay .cover-btn {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.replace-overlay .cover-btn:hover {
+  transform: scale(1.1);
+}
+
+.replace-overlay .edit-btn {
+  background: white;
+  color: var(--color-primary);
+}
+
+.replace-overlay .edit-btn:hover {
+  transform: scale(1.1);
 }
 
 .main-badge {

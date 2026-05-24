@@ -22,9 +22,15 @@
                             Quên mật khẩu?
                         </router-link>
                     </div>
-                    <input v-model="password"
-                        class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
-                        placeholder="Nhập mật khẩu" required type="password" />
+                    <div class="relative w-full">
+                        <input v-model="password"
+                            class="w-full h-14 bg-surface-container-highest border-none rounded-lg pl-4 pr-12 py-3 focus:ring-0 focus:outline-none"
+                            placeholder="Nhập mật khẩu" required :type="showPassword ? 'text' : 'password'" />
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none flex items-center justify-center">
+                            <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                        </button>
+                    </div>
                 </label>
             </div>
 
@@ -33,7 +39,7 @@
             </div>
 
             <button :disabled="isLoading"
-                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                class="w-full h-14 mt-4 bg-linear-to-r from-primary to-primary-container text-on-primary font-bold text-lg rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 type="submit">
                 <span>{{ isLoading ? 'Đang xử lý...' : 'Đăng nhập' }}</span>
                 <span v-if="!isLoading" class="material-symbols-outlined">arrow_forward</span>
@@ -60,6 +66,7 @@ const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
 const isLoading = ref(false);
+const showPassword = ref(false);
 
 const handleLogin = async () => {
     errorMessage.value = '';
