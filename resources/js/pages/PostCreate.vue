@@ -61,7 +61,7 @@
           <div class="form-group">
             <label class="field-label">Tiêu đề tin đăng *</label>
             <input v-model="form.title" type="text" class="input-field"
-              placeholder="Ví dụ: iPhone 13 Pro Max màu xanh 128GB" required />
+              placeholder="Ví dụ: iPhone 16 Pro Max màu xanh 128GB" required />
             <p v-if="errors.title" class="error-text">{{ errors.title[0] }}</p>
           </div>
 
@@ -118,7 +118,8 @@
 
             <div class="form-group">
               <label class="field-label">Số điện thoại *</label>
-              <input v-model="form.phone" type="tel" pattern="0[0-9]{9}" maxlength="10" class="input-field" placeholder="Nhập số điện thoại (10 chữ số)" required />
+              <input v-model="form.phone" type="tel" pattern="0[0-9]{9}" maxlength="10" class="input-field"
+                placeholder="Nhập số điện thoại (10 chữ số)" required />
               <p v-if="errors.phone" class="error-text">{{ errors.phone[0] }}</p>
             </div>
           </div>
@@ -311,10 +312,10 @@ const submitPost = async () => {
 
   try {
     const token = localStorage.getItem('access_token');
-    await axios.post('/api/posts', formData, {
+    const response = await axios.post('/api/posts', formData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Đăng tin thành công! Tin của bạn đang được chờ duyệt');
+    alert(response.data.message || 'Đăng tin thành công!');
     router.push('/');
   } catch (err) {
     if (err.response?.data?.errors) errors.value = err.response.data.errors;

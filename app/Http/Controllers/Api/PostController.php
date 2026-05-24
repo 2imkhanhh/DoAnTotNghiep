@@ -269,6 +269,13 @@ class PostController extends Controller
             $data['user_id'] = auth('api')->id(); // Lấy ID người đang đăng nhập
             $data['slug'] = Str::slug($request->title) . '-' . time(); // Thêm time() để đảm bảo slug không bao giờ trùng
 
+            // Nếu là admin thì duyệt luôn (status = 1), ngược lại là chờ duyệt (status = 0)
+            if (auth('api')->user()->isAdmin()) {
+                $data['status'] = 1;
+            } else {
+                $data['status'] = 0;
+            }
+
             // 2. Xử lý cái cột JSON (specifications)
             // Vì Frontend gửi qua form-data nên nó là 1 chuỗi string, ta phải dịch nó sang Array cho Laravel hiểu
             if ($request->has('specifications') && $request->specifications != null) {
@@ -302,9 +309,13 @@ class PostController extends Controller
             // Load lại tin đăng kèm theo ảnh vừa tạo để trả về cho Frontend
             $post->load('images');
 
+            $message = auth('api')->user()->isAdmin() 
+                ? 'Đăng tin thành công!' 
+                : 'Đăng tin thành công! Tin của bạn đang chờ duyệt.';
+
             return response()->json([
                 'success' => true,
-                'message' => 'Đăng tin thành công! Tin của bạn đang chờ duyệt.',
+                'message' => $message,
                 'data' => $post
             ], 201);
         } catch (\Exception $e) {
@@ -337,8 +348,12 @@ class PostController extends Controller
         try {
             $data = $request->validated();
 
-            // Tự động reset trạng thái về chờ duyệt khi sửa
-            $data['status'] = 0;
+            // Tự động reset trạng thái về chờ duyệt khi sửa (nếu không phải admin)
+            if (auth('api')->user()->isAdmin()) {
+                $data['status'] = 1;
+            } else {
+                $data['status'] = 0;
+            }
             $data['reject_reason'] = null;
 
             // Cập nhật slug nếu tiêu đề thay đổi
@@ -400,9 +415,13 @@ class PostController extends Controller
 
             DB::commit();
 
+            $message = auth('api')->user()->isAdmin() 
+                ? 'Cập nhật tin đăng thành công!' 
+                : 'Cập nhật tin đăng thành công! Tin của bạn đang chờ duyệt lại.';
+
             return response()->json([
                 'success' => true,
-                'message' => 'Cập nhật tin đăng thành công! Tin của bạn đang chờ duyệt lại.',
+                'message' => $message,
                 'data' => $post->load('images')
             ]);
         } catch (\Exception $e) {
