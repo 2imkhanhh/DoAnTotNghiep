@@ -23,4 +23,4 @@ Schedule::call(function () {
         // Xóa phiên làm việc
         $session->delete();
     }
-})->daily()->purpose('Dọn dẹp rác Chatbot từ khách vãng lai');
+})->daily()->description('Dọn dẹp rác Chatbot từ khách vãng lai');
