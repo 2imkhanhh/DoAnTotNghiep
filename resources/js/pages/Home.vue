@@ -6,8 +6,31 @@
             <!-- Slider Wrapper -->
             <div class="flex w-full h-full transition-transform duration-700 ease-in-out"
                 :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
-                <!-- Slide 1 -->
-                <div class="min-w-full h-full relative">
+                <!-- Dynamic Slides -->
+                <div v-for="(banner, index) in banners" :key="banner.id" class="min-w-full h-full relative">
+                    <img :src="banner.image_path" class="w-full h-full object-cover"
+                        :alt="banner.title || 'Banner'">
+                    <div v-if="banner.title || banner.description || banner.link"
+                        class="absolute inset-0 bg-linear-to-r from-black/80 to-transparent flex flex-col justify-center px-10 sm:px-20">
+                        <h1 v-if="banner.title" class="text-white text-3xl sm:text-5xl font-extrabold mb-4 max-w-xl leading-tight">
+                            {{ banner.title }}
+                        </h1>
+                        <p v-if="banner.description" class="text-gray-200 text-lg mb-8 max-w-md">
+                            {{ banner.description }}
+                        </p>
+                        <router-link v-if="banner.link && banner.link.startsWith('/')" :to="banner.link"
+                            class="inline-block bg-primary text-on-primary font-bold py-3 px-8 rounded-full shadow hover:bg-primary-container hover:text-on-primary-container transition-colors w-max">
+                            Khám phá ngay
+                        </router-link>
+                        <a v-else-if="banner.link" :href="banner.link" target="_blank" rel="noopener noreferrer"
+                            class="inline-block bg-primary text-on-primary font-bold py-3 px-8 rounded-full shadow hover:bg-primary-container hover:text-on-primary-container transition-colors w-max">
+                            Khám phá ngay
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Fallback Slide nếu không có banner nào -->
+                <div v-if="banners.length === 0" class="min-w-full h-full relative">
                     <img src="/images/banners/banner1.jpg" class="w-full h-full object-cover"
                         alt="Banner Săn đồ công nghệ">
                     <div
@@ -19,36 +42,6 @@
                         <a href="#explore"
                             class="inline-block bg-primary text-on-primary font-bold py-3 px-8 rounded-full shadow hover:bg-primary-container hover:text-on-primary-container transition-colors w-max">
                             Khám phá ngay
-                        </a>
-                    </div>
-                </div>
-                <!-- Slide 2 -->
-                <div class="min-w-full h-full relative">
-                    <img src="/images/banners/banner2.jpg" class="w-full h-full object-cover" alt="Banner Thời trang">
-                    <div
-                        class="absolute inset-0 bg-linear-to-r from-black/80 to-transparent flex flex-col justify-center px-10 sm:px-20">
-                        <h1 class="text-white text-3xl sm:text-5xl font-extrabold mb-4 max-w-xl leading-tight">Thời
-                            trang phong cách<br>Thanh lý tủ đồ</h1>
-                        <p class="text-gray-200 text-lg mb-8 max-w-md">Mua bán quần áo, phụ kiện đồ cũ thời trang với
-                            giá cực tốt. Bảo vệ môi trường.</p>
-                        <a href="#explore"
-                            class="inline-block bg-primary text-on-primary font-bold py-3 px-8 rounded-full shadow hover:bg-primary-container hover:text-on-primary-container transition-colors w-max">
-                            Xem bộ sưu tập
-                        </a>
-                    </div>
-                </div>
-                <!-- Slide 3 -->
-                <div class="min-w-full h-full relative">
-                    <img src="/images/banners/banner3.jpg" class="w-full h-full object-cover" alt="Banner Nội thất">
-                    <div
-                        class="absolute inset-0 bg-linear-to-r from-black/80 to-transparent flex flex-col justify-center px-10 sm:px-20">
-                        <h1 class="text-white text-3xl sm:text-5xl font-extrabold mb-4 max-w-xl leading-tight">Nội thất
-                            gia đình<br>Tiết kiệm chi phí</h1>
-                        <p class="text-gray-200 text-lg mb-8 max-w-md">Sang nhượng bàn ghế, tủ giường đồ cũ cực đẹp cho
-                            không gian của bạn.</p>
-                        <a href="#explore"
-                            class="inline-block bg-primary text-on-primary font-bold py-3 px-8 rounded-full shadow hover:bg-primary-container hover:text-on-primary-container transition-colors w-max">
-                            Trang trí nhà cửa
                         </a>
                     </div>
                 </div>
@@ -66,7 +59,7 @@
 
             <!-- Slider Indicators -->
             <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                <div v-for="index in 3" :key="index" @click="goToSlide(index - 1)"
+                <div v-for="index in totalSlides" :key="index" @click="goToSlide(index - 1)"
                     :class="['w-3 h-3 rounded-full cursor-pointer transition-colors', currentSlide === index - 1 ? 'bg-white' : 'bg-white/50']">
                 </div>
             </div>
@@ -217,7 +210,8 @@ import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
 const currentSlide = ref(0);
-const totalSlides = 3;
+const banners = ref([]);
+const totalSlides = computed(() => Math.max(1, banners.value.length));
 let slideInterval = null;
 const showAllCategories = ref(false);
 const allCategories = ref([]);
@@ -289,6 +283,17 @@ const fetchCategories = async () => {
         featuredCategories.value = response.data.data;
     } catch (error) {
         console.error('Lỗi khi lấy danh mục nổi bật:', error);
+    }
+};
+
+const fetchBanners = async () => {
+    try {
+        const response = await axios.get('/api/banners/active');
+        if (response.data.success) {
+            banners.value = response.data.data;
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy banner:', error);
     }
 };
 
@@ -401,7 +406,9 @@ const resetAutoSlide = () => {
 };
 
 onMounted(() => {
-    startAutoSlide();
+    fetchBanners().then(() => {
+        startAutoSlide();
+    });
     fetchCategories();
     fetchPosts();
     fetchFavorites();

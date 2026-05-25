@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\ConversationController;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/locations/provinces', [LocationController::class, 'getProvinces']);
@@ -60,29 +63,43 @@ Route::group(['middleware' => 'auth:api'], function () {
     });
 
     // Các routes Giao dịch (Transaction)
-    Route::post('/transactions', [\App\Http\Controllers\Api\TransactionController::class, 'startTransaction']);
-    Route::put('/transactions/{id}/complete', [\App\Http\Controllers\Api\TransactionController::class, 'completeTransaction']);
-    Route::put('/transactions/{id}/cancel', [\App\Http\Controllers\Api\TransactionController::class, 'cancelTransaction']);
+    Route::post('/transactions', [TransactionController::class, 'startTransaction']);
+    Route::put('/transactions/{id}/complete', [TransactionController::class, 'completeTransaction']);
+    Route::put('/transactions/{id}/cancel', [TransactionController::class, 'cancelTransaction']);
 
     // Các routes Đánh giá (Review)
-    Route::post('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
-    Route::put('/reviews/{id}', [\App\Http\Controllers\Api\ReviewController::class, 'update']);
+    Route::post('/users/{id}/reviews', [ReviewController::class, 'store']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 });
 
-// Nhóm route quản trị (Admin) - Đưa ra ngoài prefix 'auth' để URL ngắn gọn hơn
+// Nhóm route quản trị (Admin)
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
+    
+    // Category Admin Routes
+    Route::get('/admin/categories', [CategoryController::class, 'indexAll']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
-
+    
+    // Category Attribute Admin Routes
     Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
-    Route::put('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'updateAttribute']);
-    Route::delete('/categories/{id}/attributes/{attribute_id}', [CategoryController::class, 'destroyAttribute']);
-
+    Route::put('/categories/attributes/{id}', [CategoryController::class, 'updateAttribute']);
+    Route::delete('/categories/attributes/{id}', [CategoryController::class, 'destroyAttribute']);
+    
+    // Admin Posts Management
     Route::get('/admin/posts', [PostController::class, 'adminIndex']);
-    Route::put('/posts/{id}/status', [PostController::class, 'updateStatus']);
-    Route::delete('/posts/{id}', [PostController::class, 'destroy']);
+    Route::put('/admin/posts/{id}/status', [PostController::class, 'updateStatus']);
+
+    // Admin Banners Management
+    Route::get('/admin/banners', [BannerController::class, 'index']);
+    Route::post('/admin/banners', [BannerController::class, 'store']);
+    Route::post('/admin/banners/{id}', [BannerController::class, 'update']);
+    Route::delete('/admin/banners/{id}', [BannerController::class, 'destroy']);
+    Route::patch('/admin/banners/{id}/toggle-active', [BannerController::class, 'toggleActive']);
+    Route::post('/admin/banners/update-order', [BannerController::class, 'updateOrder']);
 });
+
+Route::delete('/posts/{id}', [PostController::class, 'destroy']);
 
 Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLink']);
 Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']);
@@ -93,9 +110,12 @@ Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{slug}', [PostController::class, 'show']);
 Route::get('/posts/id/{id}', [PostController::class, 'showById']);
 Route::get('/seller/{id}', [ProfileController::class, 'showPublic']);
-Route::get('/users/{id}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'index']);
+Route::get('/users/{id}/reviews', [ReviewController::class, 'index']);
 
 // Route cho Chatbot
 Route::post('/chatbot/chat', [ChatbotController::class, 'chat']);
 Route::get('/chatbot/history', [ChatbotController::class, 'history']);
 Route::post('/chatbot/reset', [ChatbotController::class, 'reset']);
+
+// Banners
+Route::get('/banners/active', [BannerController::class, 'active']);

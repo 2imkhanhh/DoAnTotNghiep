@@ -110,6 +110,12 @@ const routes = [
         name: 'AdminPosts',
         component: () => import('./pages/admin/AdminPosts.vue'),
         meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/banners',
+        name: 'AdminBanners',
+        component: () => import('./pages/admin/AdminBanners.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
 ];
 

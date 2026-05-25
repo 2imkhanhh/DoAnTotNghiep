@@ -20,6 +20,10 @@
           <span class="material-symbols-outlined">article</span>
           <span class="nav-label">Tin đăng</span>
         </router-link>
+        <router-link to="/admin/banners" class="nav-item">
+          <span class="material-symbols-outlined">view_carousel</span>
+          <span class="nav-label">Banner</span>
+        </router-link>
         <router-link to="/admin/users" class="nav-item">
           <span class="material-symbols-outlined">group</span>
           <span class="nav-label">Người dùng</span>
