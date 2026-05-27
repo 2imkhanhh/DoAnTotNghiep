@@ -18,14 +18,17 @@
             <h2 class="card-title"><span class="material-symbols-outlined">image</span> Hình ảnh sản phẩm</h2>
             <div class="image-upload-wrapper">
               <div class="image-grid">
-                <div v-for="(img, index) in postImages" :key="index" class="image-item" @click="triggerReplaceImage(index)" style="cursor: pointer;" title="Nhấn để thay đổi ảnh">
+                <div v-for="(img, index) in postImages" :key="index" class="image-item"
+                  @click="triggerReplaceImage(index)" style="cursor: pointer;" title="Nhấn để thay đổi ảnh">
                   <img :src="img.path" alt="Preview" />
                   <div v-if="index === 0" class="main-badge">Ảnh bìa</div>
                   <div class="replace-overlay">
-                    <button type="button" @click.stop="setAsCover(index)" v-if="index !== 0" class="cover-btn" title="Đặt làm ảnh bìa">
+                    <button type="button" @click.stop="setAsCover(index)" v-if="index !== 0" class="cover-btn"
+                      title="Đặt làm ảnh bìa">
                       <span class="material-symbols-outlined">star</span>
                     </button>
-                    <button type="button" @click.stop="triggerReplaceImage(index)" class="edit-btn" title="Thay đổi ảnh">
+                    <button type="button" @click.stop="triggerReplaceImage(index)" class="edit-btn"
+                      title="Thay đổi ảnh">
                       <span class="material-symbols-outlined">edit</span>
                     </button>
                   </div>
@@ -122,19 +125,20 @@
 
             <div class="info-grid mb-6">
               <div class="form-group">
-              <label class="field-label">Giá bán *</label>
-              <div class="price-input-wrapper">
-                <span class="currency-icon material-symbols-outlined">payments</span>
-                <input :value="formattedPrice" @input="handlePriceInput" type="text" placeholder="Ví dụ: 5.000.000"
-                  class="input-field with-icon" required>
-                <span class="currency-unit">VNĐ</span>
+                <label class="field-label">Giá bán *</label>
+                <div class="price-input-wrapper">
+                  <span class="currency-icon material-symbols-outlined">payments</span>
+                  <input :value="formattedPrice" @input="handlePriceInput" type="text" placeholder="Ví dụ: 5.000.000"
+                    class="input-field with-icon" required>
+                  <span class="currency-unit">VNĐ</span>
+                </div>
+                <p v-if="errors.price" class="error-text">{{ errors.price[0] }}</p>
               </div>
-              <p v-if="errors.price" class="error-text">{{ errors.price[0] }}</p>
-            </div>
 
               <div class="form-group">
                 <label class="field-label">Số điện thoại *</label>
-                <input v-model="form.phone" type="tel" pattern="0[0-9]{9}" maxlength="10" class="input-field" placeholder="Nhập số điện thoại (10 chữ số)" required />
+                <input v-model="form.phone" type="tel" pattern="0[0-9]{9}" maxlength="10" class="input-field"
+                  placeholder="Nhập số điện thoại (10 chữ số)" required />
                 <p v-if="errors.phone" class="error-text">{{ errors.phone[0] }}</p>
               </div>
             </div>
@@ -152,7 +156,8 @@
 
               <div class="form-group">
                 <label class="field-label">Phường / Xã *</label>
-                <select v-model="form.ward_id" @change="onWardChange" class="input-field" :disabled="!form.province_id" required>
+                <select v-model="form.ward_id" @change="onWardChange" class="input-field" :disabled="!form.province_id"
+                  required>
                   <option value="">Chọn Phường/Xã</option>
                   <option v-for="w in wards" :key="w.code" :value="w.code">{{ w.name }}</option>
                 </select>
@@ -237,14 +242,14 @@ onMounted(async () => {
     // 2. Fetch the post details
     const response = await axios.get(`/api/posts/${postId}/edit`);
     const post = response.data.data;
-    
+
     // Ngăn chặn sửa tin đã bán
     if (post.status === 2) {
       alert('Tin đăng này đã bán, không thể chỉnh sửa.');
       router.push('/profile/posts');
       return;
     }
-    
+
     // Fill form
     form.title = post.title;
     form.description = post.description;
@@ -298,12 +303,12 @@ const onProvinceChange = async () => {
   form.ward_id = '';
   form.ward_name = '';
   wards.value = [];
-  
+
   if (!form.province_id) {
     form.province_name = '';
     return;
   }
-  
+
   const selected = provinces.value.find(p => p.code === form.province_id);
   form.province_name = selected ? selected.name : '';
 
@@ -422,7 +427,7 @@ const executeReplaceImage = (event) => {
 const submitUpdate = async () => {
   submitting.value = true;
   errors.value = {};
-  
+
   const formData = new FormData();
   formData.append('_method', 'PUT'); // Trick for Laravel form-data PUT
   formData.append('title', form.title);
@@ -436,7 +441,7 @@ const submitUpdate = async () => {
   formData.append('phone', form.phone);
   formData.append('category_id', form.category_id);
   formData.append('specifications', JSON.stringify(form.specifications));
-  
+
   // Append new files
   const newFiles = postImages.value.filter(img => img.file !== null).map(img => img.file);
   newFiles.forEach((file, index) => {
@@ -464,7 +469,7 @@ const submitUpdate = async () => {
     const response = await axios.post(`/api/posts/${postId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-    
+
     if (response.data.success) {
       alert(response.data.message);
       router.push('/profile/posts');
@@ -858,11 +863,15 @@ const submitUpdate = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 600px) {
-  .attr-grid, .info-grid {
+
+  .attr-grid,
+  .info-grid {
     grid-template-columns: 1fr;
   }
 }
