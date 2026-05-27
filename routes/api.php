@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\ConversationController;
 
 use App\Http\Controllers\Api\LocationController;
@@ -98,6 +99,11 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/admin/banners/{id}', [BannerController::class, 'update']);
     Route::delete('/admin/banners/{id}', [BannerController::class, 'destroy']);
     Route::patch('/admin/banners/{id}/toggle-active', [BannerController::class, 'toggleActive']);
+
+    // Admin Users
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::patch('/admin/users/{id}/toggle-role', [AdminUserController::class, 'toggleRole']);
+    Route::patch('/admin/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
 });
 
 Route::delete('/posts/{id}', [PostController::class, 'destroy']);
