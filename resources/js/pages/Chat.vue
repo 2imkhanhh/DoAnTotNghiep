@@ -111,7 +111,10 @@
                           'text-amber-600': t.status === 'trading',
                           'text-green-600': t.status === 'completed'
                       }">
-                        {{ t.status === 'requested' ? (t.seller_id === authStore.user?.id ? 'Đang chờ' : 'Đã gửi yêu cầu') : (t.status === 'trading' ? 'Đang giao dịch' : 'Đã bán') }}
+                        {{ 
+                          t.status === 'requested' ? (t.seller_id === authStore.user?.id ? 'Đang chờ' : 'Đã gửi yêu cầu') : 
+                          (t.status === 'trading' ? 'Đang giao dịch' : (t.seller_id === authStore.user?.id ? 'Đã bán' : 'Đã mua')) 
+                        }}
                       </span>
                     </div>
                   </div>
@@ -178,9 +181,19 @@
                           <button @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
                           <button @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">Đã nhận</button>
                         </template>
-                        <button v-else-if="getActiveTransaction(msg.post).status === 'completed'" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
-                          <span class="material-symbols-outlined" style="font-size: 13px; font-variation-settings: 'FILL' 1;">star</span> Đánh giá
-                        </button>
+                        <template v-else-if="getActiveTransaction(msg.post).status === 'completed'">
+                          <button v-if="!getActiveTransaction(msg.post).review" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
+                            <span class="material-symbols-outlined" style="font-size: 13px; font-variation-settings: 'FILL' 1;">star</span> Đánh giá
+                          </button>
+                          <template v-else>
+                            <button @click="showReviewModal(msg.post, true)" class="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-surface-container-high transition-all shadow-sm flex items-center gap-1 cursor-pointer">
+                              <span class="material-symbols-outlined" style="font-size: 13px;">visibility</span> Xem
+                            </button>
+                            <button v-if="canEditReview(getActiveTransaction(msg.post).review)" @click="showReviewModal(msg.post, false)" class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
+                              <span class="material-symbols-outlined" style="font-size: 13px;">edit</span> Sửa
+                            </button>
+                          </template>
+                        </template>
                       </template>
                       <span v-else-if="getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đã bán</span>
                       <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Có người khác đang giao dịch</span>
@@ -274,6 +287,8 @@
       :is-open="isReviewModalOpen"
       :transaction-id="transactionToReview?.id"
       :seller-id="transactionToReview?.seller_id"
+      :existing-review="transactionToReview?.review"
+      :read-only="isReviewModalReadOnly"
       @close="isReviewModalOpen = false"
       @success="onReviewSuccess"
     />
@@ -407,13 +422,26 @@ const handleCancelTransaction = async (transactionId) => {
     }
 };
 
-const showReviewModal = (post) => {
+const isReviewModalReadOnly = ref(false);
+
+const showReviewModal = (post, readOnly = false) => {
     transactionToReview.value = getActiveTransaction(post);
+    isReviewModalReadOnly.value = readOnly;
     isReviewModalOpen.value = true;
 };
 
-const onReviewSuccess = () => {
-    // Có thể cập nhật local state nếu cần
+const canEditReview = (review) => {
+    if (!review) return false;
+    const reviewDate = new Date(review.created_at);
+    const now = new Date();
+    const diffHours = (now - reviewDate) / (1000 * 60 * 60);
+    return diffHours <= 24;
+};
+
+const onReviewSuccess = (review) => {
+    if (transactionToReview.value) {
+        transactionToReview.value.review = review;
+    }
 };
 
 const messagesContainer = ref(null);

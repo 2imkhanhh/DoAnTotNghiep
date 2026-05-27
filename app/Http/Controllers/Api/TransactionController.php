@@ -41,7 +41,7 @@ class TransactionController extends Controller
             'status' => 'requested'
         ]);
 
-        $transaction->load(['seller', 'buyer', 'post']);
+        $transaction->load(['seller', 'buyer', 'post', 'review']);
 
         broadcast(new TransactionUpdated($transaction, $request->conversation_id))->toOthers();
 
@@ -77,7 +77,7 @@ class TransactionController extends Controller
 
         $transaction->update(['status' => 'trading']);
 
-        $transaction->load(['seller', 'buyer', 'post']);
+        $transaction->load(['seller', 'buyer', 'post', 'review']);
 
         broadcast(new TransactionUpdated($transaction, $request->conversation_id))->toOthers();
 
@@ -105,7 +105,7 @@ class TransactionController extends Controller
             $post->update(['status' => 2]);
         }
 
-        $transaction->load(['seller', 'buyer', 'post']);
+        $transaction->load(['seller', 'buyer', 'post', 'review']);
         broadcast(new TransactionUpdated($transaction, $request->conversation_id))->toOthers();
 
         return response()->json(['success' => true, 'data' => $transaction]);
@@ -126,7 +126,7 @@ class TransactionController extends Controller
 
         $transaction->update(['status' => 'cancelled']);
 
-        $transaction->load(['seller', 'buyer', 'post']);
+        $transaction->load(['seller', 'buyer', 'post', 'review']);
         broadcast(new TransactionUpdated($transaction, $request->conversation_id))->toOthers();
 
         return response()->json(['success' => true, 'data' => $transaction]);

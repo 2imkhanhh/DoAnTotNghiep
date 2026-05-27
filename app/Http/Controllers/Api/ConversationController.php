@@ -143,7 +143,7 @@ class ConversationController extends Controller
 
         // Lấy toàn bộ tin nhắn sắp xếp từ cũ đến mới kèm thông tin sản phẩm đính kèm
         $messages = Message::where('conversation_id', $id)
-            ->with(['sender', 'post.images', 'post.transactions'])
+            ->with(['sender', 'post.images', 'post.transactions.review'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -215,7 +215,7 @@ class ConversationController extends Controller
         $conversation->touch();
 
         // Tải các thông tin liên quan để broadcast
-        $message->load(['sender', 'post.images', 'post.transactions']);
+        $message->load(['sender', 'post.images', 'post.transactions.review']);
 
         // Phát sự kiện broadcast qua WebSockets
         broadcast(new MessageSent($message))->toOthers();
@@ -303,7 +303,7 @@ class ConversationController extends Controller
                 });
             })
             ->whereIn('status', ['requested', 'trading', 'completed'])
-            ->with('post.images')
+            ->with(['post.images', 'review'])
             ->orderBy('updated_at', 'desc')
             ->get()
             ->unique('post_id')
@@ -316,6 +316,7 @@ class ConversationController extends Controller
                 'status' => $transaction->status,
                 'buyer_id' => $transaction->buyer_id,
                 'seller_id' => $transaction->seller_id,
+                'review' => $transaction->review,
                 'post' => [
                     'id' => $transaction->post->id,
                     'title' => $transaction->post->title,
