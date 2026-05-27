@@ -501,6 +501,7 @@ const authStore = useAuthStore();
 
 const activeTab = ref('info');
 const fileInput = ref(null);
+const avatarFile = ref(null);
 const loading = ref(false);
 const passwordLoading = ref(false);
 const errors = ref({});
@@ -815,6 +816,8 @@ const handleFileUpload = (event) => {
     return;
   }
 
+  avatarFile.value = file;
+
   const reader = new FileReader();
   reader.onload = (e) => {
     profileData.value.avatar = e.target.result; // Base64 string
@@ -827,9 +830,36 @@ const updateProfile = async () => {
   errors.value = {};
 
   try {
-    const response = await axios.put('/api/auth/profile', profileData.value);
+    let response;
+    
+    if (avatarFile.value) {
+      const formData = new FormData();
+      formData.append('_method', 'PUT');
+      if (profileData.value.name) formData.append('name', profileData.value.name);
+      if (profileData.value.phone) formData.append('phone', profileData.value.phone);
+      if (profileData.value.address) formData.append('address', profileData.value.address);
+      if (profileData.value.province_id) formData.append('province_id', profileData.value.province_id);
+      if (profileData.value.province_name) formData.append('province_name', profileData.value.province_name);
+      if (profileData.value.ward_id) formData.append('ward_id', profileData.value.ward_id);
+      if (profileData.value.ward_name) formData.append('ward_name', profileData.value.ward_name);
+      formData.append('avatar', avatarFile.value);
+      
+      response = await axios.post('/api/auth/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    } else {
+      const dataToSend = { ...profileData.value };
+      if (dataToSend.avatar && dataToSend.avatar.startsWith('data:image')) {
+        delete dataToSend.avatar;
+      }
+      response = await axios.put('/api/auth/profile', dataToSend);
+    }
+
     const updatedUser = response.data.data;
     profileData.value = updatedUser;
+    avatarFile.value = null;
 
     // QUAN TRỌNG: Cập nhật Store để Header thay đổi ngay lập tức
     authStore.setUser(updatedUser);
