@@ -842,7 +842,9 @@ const updateProfile = async () => {
       if (profileData.value.province_name) formData.append('province_name', profileData.value.province_name);
       if (profileData.value.ward_id) formData.append('ward_id', profileData.value.ward_id);
       if (profileData.value.ward_name) formData.append('ward_name', profileData.value.ward_name);
-      formData.append('avatar', avatarFile.value);
+      if (avatarFile.value) {
+        formData.append('avatar', avatarFile.value);
+      }
       
       response = await axios.post('/api/auth/profile', formData, {
         headers: {
@@ -851,9 +853,7 @@ const updateProfile = async () => {
       });
     } else {
       const dataToSend = { ...profileData.value };
-      if (dataToSend.avatar && dataToSend.avatar.startsWith('data:image')) {
-        delete dataToSend.avatar;
-      }
+      delete dataToSend.avatar;
       response = await axios.put('/api/auth/profile', dataToSend);
     }
 

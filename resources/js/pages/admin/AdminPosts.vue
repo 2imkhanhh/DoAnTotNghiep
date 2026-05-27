@@ -381,7 +381,7 @@ const updateStatus = async (post, status, reason = null) => {
   }
 
   try {
-    const response = await axios.put(`/api/posts/${post.id}/status`, {
+    const response = await axios.put(`/api/admin/posts/${post.id}/status`, {
       status,
       reason: reason
     });

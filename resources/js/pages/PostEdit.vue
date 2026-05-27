@@ -194,7 +194,6 @@ const categories = ref([]);
 const childCategories = ref([]);
 const selectedParentId = ref('');
 const attributes = ref([]);
-const postImages = ref([]);
 
 // Administrative Units
 const provinces = ref([]);
