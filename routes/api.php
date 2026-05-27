@@ -63,7 +63,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     });
 
     // Các routes Giao dịch (Transaction)
-    Route::post('/transactions', [TransactionController::class, 'startTransaction']);
+    Route::post('/transactions/request', [TransactionController::class, 'requestTransaction']);
+    Route::put('/transactions/{id}/start', [TransactionController::class, 'startTransaction']);
     Route::put('/transactions/{id}/complete', [TransactionController::class, 'completeTransaction']);
     Route::put('/transactions/{id}/cancel', [TransactionController::class, 'cancelTransaction']);
 

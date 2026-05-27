@@ -106,8 +106,12 @@
                     <img :src="t.post.image || 'https://images.unsplash.com/photo-1584438784894-089d6a128f3e?q=80&w=100'" class="w-7 h-7 rounded border border-outline-variant/50 object-cover">
                     <div class="flex flex-col pr-2">
                       <span class="text-[9px] font-bold truncate max-w-[70px] text-on-surface">{{ t.post.title }}</span>
-                      <span class="text-[9px] font-bold" :class="t.status === 'trading' ? 'text-amber-600' : 'text-green-600'">
-                        {{ t.status === 'trading' ? 'Đang giao dịch' : 'Đã bán' }}
+                      <span class="text-[9px] font-bold" :class="{
+                          'text-orange-500': t.status === 'requested',
+                          'text-amber-600': t.status === 'trading',
+                          'text-green-600': t.status === 'completed'
+                      }">
+                        {{ t.status === 'requested' ? (t.seller_id === authStore.user?.id ? 'Đang chờ' : 'Đã gửi yêu cầu') : (t.status === 'trading' ? 'Đang giao dịch' : 'Đã bán') }}
                       </span>
                     </div>
                   </div>
@@ -149,26 +153,37 @@
                     </div>
                   </div>
                   <!-- Nút Thao tác Giao dịch -->
-                  <div v-if="checkIsSeller(msg.post) || checkIsTradingWithPartner(getActiveTransaction(msg.post)) || (getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed')" class="flex items-center justify-end gap-2 p-2 bg-surface-container-lowest border-t border-outline-variant/50">
+                  <div v-if="!checkIsSeller(msg.post) || getActiveTransaction(msg.post)" class="flex items-center justify-end gap-2 p-2 bg-surface-container-lowest border-t border-outline-variant/50">
                     <template v-if="checkIsSeller(msg.post)">
-                      <button v-if="!getActiveTransaction(msg.post)" @click="handleStartTransaction(msg.post.id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">
-                        Bắt đầu giao dịch
-                      </button>
-                      <template v-else-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
+                      <template v-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
+                        <button v-if="getActiveTransaction(msg.post).status === 'requested'" @click="handleStartTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">
+                          Chấp nhận giao dịch
+                        </button>
+                        <button v-else-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
                         <span v-else-if="getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-green-500/10 text-green-600 font-bold px-2 py-1 rounded">Đã bán</span>
                       </template>
                       <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đang giao dịch với người khác</span>
                     </template>
                     <template v-else>
-                      <template v-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
-                        <button v-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">Đã nhận</button>
+                      <template v-if="!getActiveTransaction(msg.post)">
+                        <button @click="handleRequestTransaction(msg.post.id)" class="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all shadow-sm cursor-pointer">
+                          Yêu cầu mua
+                        </button>
+                      </template>
+                      <template v-else-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
+                        <span v-if="getActiveTransaction(msg.post).status === 'requested'" class="text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-1 rounded border border-orange-200">
+                          Đã gửi yêu cầu mua
+                        </span>
+                        <template v-else-if="getActiveTransaction(msg.post).status === 'trading'">
+                          <button @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
+                          <button @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">Đã nhận</button>
+                        </template>
                         <button v-else-if="getActiveTransaction(msg.post).status === 'completed'" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
                           <span class="material-symbols-outlined" style="font-size: 13px; font-variation-settings: 'FILL' 1;">star</span> Đánh giá
                         </button>
                       </template>
                       <span v-else-if="getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đã bán</span>
+                      <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Có người khác đang giao dịch</span>
                     </template>
                   </div>
                 </div>
@@ -297,7 +312,7 @@ const scrollToWidget = (postId) => {
 };
 
 const getActiveTransaction = (post) => {
-    return post?.transactions?.find(t => t.status === 'trading' || t.status === 'completed');
+    return post?.transactions?.find(t => t.status === 'requested' || t.status === 'trading' || t.status === 'completed');
 };
 
 const checkIsSeller = (post) => {
@@ -330,10 +345,42 @@ const updateTransactionUI = (transaction) => {
     }
 };
 
-const handleStartTransaction = async (postId) => {
-    if (confirm('Bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
+const handleRequestTransaction = async (postId) => {
+    try {
+        await chatStore.requestTransaction(chatStore.activeConversation.id, postId);
+        // Gửi kèm một tin nhắn để thông báo cho người bán
+        const response = await axios.post(`/api/conversations/${chatStore.activeConversation.id}/messages`, {
+            message_text: 'Tôi muốn mua sản phẩm này',
+            post_id: null
+        });
+        if (response.data.success) {
+            messages.value.push(response.data.data);
+            const currentConv = chatStore.conversations.find(c => Number(c.id) === Number(chatStore.activeConversation.id));
+            if (currentConv) {
+                currentConv.latest_message = {
+                    id: response.data.data.id,
+                    message_text: response.data.data.message_text,
+                    sender_id: response.data.data.sender_id,
+                    is_read: false,
+                    created_at: response.data.data.created_at
+                };
+                chatStore.conversations = [
+                    currentConv,
+                    ...chatStore.conversations.filter(c => Number(c.id) !== Number(currentConv.id))
+                ];
+            }
+            await nextTick();
+            scrollToBottom();
+        }
+    } catch (error) {
+        alert(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu mua.');
+    }
+};
+
+const handleStartTransaction = async (transactionId) => {
+    if (confirm('Chấp nhận yêu cầu và bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
         try {
-            await chatStore.startTransaction(chatStore.activeConversation.id, postId, chatStore.activeConversation.partner.id);
+            await chatStore.startTransaction(chatStore.activeConversation.id, transactionId);
         } catch (error) {
             alert(error.response?.data?.message || 'Có lỗi xảy ra khi bắt đầu giao dịch.');
         }

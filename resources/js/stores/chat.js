@@ -206,12 +206,26 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        async startTransaction(conversationId, postId, buyerId) {
+        async requestTransaction(conversationId, postId) {
             try {
-                const response = await axios.post('/api/transactions', {
+                const response = await axios.post('/api/transactions/request', {
                     conversation_id: conversationId,
-                    post_id: postId,
-                    buyer_id: buyerId
+                    post_id: postId
+                });
+                if (response.data.success) {
+                    this.handleTransactionUpdated(response.data.data, conversationId);
+                }
+                return response.data;
+            } catch (error) {
+                console.error('Lỗi khi yêu cầu giao dịch:', error);
+                throw error;
+            }
+        },
+
+        async startTransaction(conversationId, transactionId) {
+            try {
+                const response = await axios.put(`/api/transactions/${transactionId}/start`, {
+                    conversation_id: conversationId
                 });
                 if (response.data.success) {
                     this.handleTransactionUpdated(response.data.data, conversationId);

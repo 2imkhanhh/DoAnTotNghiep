@@ -4,7 +4,8 @@
       <!-- Header -->
       <div class="p-4 border-b border-outline-variant flex items-center justify-between">
         <h3 class="text-lg font-bold text-on-surface">Đánh giá người bán</h3>
-        <button @click="close" class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
+        <button @click="close"
+          class="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -15,17 +16,12 @@
         <div class="flex flex-col items-center gap-2">
           <span class="text-sm font-medium text-on-surface-variant">Chất lượng sản phẩm & Dịch vụ</span>
           <div class="flex gap-2">
-            <button 
-              v-for="star in 5" 
-              :key="star"
-              type="button"
-              @mouseenter="hoverRating = star"
-              @mouseleave="hoverRating = 0"
-              @click="form.rating = star"
+            <button v-for="star in 5" :key="star" type="button" @mouseenter="hoverRating = star"
+              @mouseleave="hoverRating = 0" @click="form.rating = star"
               class="text-4xl transition-all focus:outline-none cursor-pointer"
-              :class="star <= (hoverRating || form.rating) ? 'text-amber-400' : 'text-outline-variant'"
-            >
-              <span class="material-symbols-outlined" :style="star <= (hoverRating || form.rating) ? 'font-variation-settings: \'FILL\' 1;' : ''">star</span>
+              :class="star <= (hoverRating || form.rating) ? 'text-amber-400' : 'text-outline-variant'">
+              <span class="material-symbols-outlined"
+                :style="star <= (hoverRating || form.rating) ? 'font-variation-settings: \'FILL\' 1;' : ''">star</span>
             </button>
           </div>
           <span class="text-xs font-bold" :class="ratingColor">{{ ratingText }}</span>
@@ -33,14 +29,10 @@
 
         <!-- Comment Textarea -->
         <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-on-surface">Nhận xét của bạn (Tùy chọn)</label>
-          <textarea 
-            v-model="form.comment"
-            rows="3"
-            maxlength="500"
+          <label class="text-sm font-medium text-on-surface">Nhận xét</label>
+          <textarea v-model="form.comment" rows="3" maxlength="500"
             placeholder="Chia sẻ trải nghiệm của bạn về người bán này..."
-            class="w-full bg-surface-container border border-outline-variant text-on-surface text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
-          ></textarea>
+            class="w-full bg-surface-container border border-outline-variant text-on-surface text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"></textarea>
           <div class="text-right text-[10px] text-on-surface-variant">
             {{ form.comment.length }}/500
           </div>
@@ -49,19 +41,12 @@
 
       <!-- Footer -->
       <div class="p-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3">
-        <button 
-          @click="close" 
-          type="button"
-          class="px-4 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-full transition-colors cursor-pointer"
-        >
+        <button @click="close" type="button"
+          class="px-4 py-2 text-sm font-bold text-on-surface-variant hover:bg-surface-container rounded-full transition-colors cursor-pointer">
           Hủy
         </button>
-        <button 
-          @click="submit"
-          :disabled="form.rating === 0 || loading"
-          type="button"
-          class="px-6 py-2 text-sm font-bold bg-primary text-on-primary hover:bg-primary-container rounded-full shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
+        <button @click="submit" :disabled="form.rating === 0 || loading" type="button"
+          class="px-6 py-2 text-sm font-bold bg-primary text-on-primary hover:bg-primary-container rounded-full shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
           <span v-if="loading" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
           {{ isEdit ? 'Cập nhật' : 'Gửi đánh giá' }}
         </button>
@@ -109,7 +94,7 @@ watch(() => props.isOpen, (newVal) => {
 
 const ratingText = computed(() => {
   const score = hoverRating.value || form.value.rating;
-  switch(score) {
+  switch (score) {
     case 1: return 'Rất tệ';
     case 2: return 'Tệ';
     case 3: return 'Bình thường';
@@ -133,7 +118,7 @@ const close = () => {
 
 const submit = async () => {
   if (form.value.rating === 0) return;
-  
+
   loading.value = true;
   try {
     let response;

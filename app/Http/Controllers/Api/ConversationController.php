@@ -302,7 +302,7 @@ class ConversationController extends Controller
                     $query->where('buyer_id', $partnerId)->where('seller_id', $userId);
                 });
             })
-            ->whereIn('status', ['trading', 'completed'])
+            ->whereIn('status', ['requested', 'trading', 'completed'])
             ->with('post.images')
             ->orderBy('updated_at', 'desc')
             ->get()

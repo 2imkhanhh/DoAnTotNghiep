@@ -11,36 +11,71 @@ use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
-    // Người bán bắt đầu giao dịch
-    public function startTransaction(Request $request)
+    // Người mua yêu cầu mua sản phẩm
+    public function requestTransaction(Request $request)
     {
         $request->validate([
             'post_id' => 'required|exists:posts,id',
-            'buyer_id' => 'required|exists:users,id',
             'conversation_id' => 'required'
         ]);
 
         $post = Post::findOrFail($request->post_id);
 
-        if ($post->user_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện trên bài đăng này.'], 403);
+        if ($post->user_id === Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Bạn không thể tự yêu cầu mua bài đăng của chính mình.'], 403);
         }
 
-        // Kiểm tra xem bài đăng đã có giao dịch nào đang diễn ra hoặc đã xong chưa
+        // Kiểm tra xem bài đăng đã có giao dịch nào đang diễn ra, hoàn thành, hoặc đang yêu cầu chưa
         $existing = Transaction::where('post_id', $post->id)
-            ->whereIn('status', ['trading', 'completed'])
+            ->whereIn('status', ['requested', 'trading', 'completed'])
             ->first();
 
         if ($existing) {
-            return response()->json(['success' => false, 'message' => 'Bài đăng này đang có giao dịch khác hoặc đã được bán.'], 400);
+            return response()->json(['success' => false, 'message' => 'Bài đăng này đang có giao dịch khác, đã được bán hoặc đã có người yêu cầu.'], 400);
         }
 
         $transaction = Transaction::create([
             'post_id' => $post->id,
-            'seller_id' => Auth::id(),
-            'buyer_id' => $request->buyer_id,
-            'status' => 'trading'
+            'seller_id' => $post->user_id,
+            'buyer_id' => Auth::id(),
+            'status' => 'requested'
         ]);
+
+        $transaction->load(['seller', 'buyer', 'post']);
+
+        broadcast(new TransactionUpdated($transaction, $request->conversation_id))->toOthers();
+
+        return response()->json(['success' => true, 'data' => $transaction]);
+    }
+
+    // Người bán chấp nhận yêu cầu và bắt đầu giao dịch
+    public function startTransaction(Request $request, $id)
+    {
+        $request->validate([
+            'conversation_id' => 'required'
+        ]);
+
+        $transaction = Transaction::findOrFail($id);
+
+        if ($transaction->seller_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện trên giao dịch này.'], 403);
+        }
+
+        if ($transaction->status !== 'requested') {
+            return response()->json(['success' => false, 'message' => 'Giao dịch không ở trạng thái yêu cầu mua.'], 400);
+        }
+
+        // Kiểm tra xem bài đăng có giao dịch trading/completed khác không (đề phòng conflict)
+        $existing = Transaction::where('post_id', $transaction->post_id)
+            ->whereIn('status', ['trading', 'completed'])
+            ->where('id', '!=', $transaction->id)
+            ->first();
+
+        if ($existing) {
+            return response()->json(['success' => false, 'message' => 'Bài đăng này đã được bán hoặc đang giao dịch với người khác.'], 400);
+        }
+
+        $transaction->update(['status' => 'trading']);
 
         $transaction->load(['seller', 'buyer', 'post']);
 
