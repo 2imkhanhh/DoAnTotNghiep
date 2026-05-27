@@ -241,6 +241,7 @@
     <div v-else>
       <div v-if="posts.length > 0" class="flex flex-col mt-2">
         <div v-for="post in posts" :key="post.id"
+          @click="router.push(`/post/${post.slug}`)"
           class="group py-4 px-3 -mx-3 border-b border-slate-200 transition-all duration-300 ease-out flex flex-row gap-4 relative cursor-pointer hover:bg-white hover:shadow-xl hover:shadow-slate-200/60 hover:-translate-y-1 hover:border-transparent hover:z-10 rounded-2xl">
 
           <!-- Left Side Image -->
@@ -281,7 +282,7 @@
               <!-- Favorite Heart Button -->
               <div class="flex items-center gap-2 shrink-0 ml-4 relative z-20">
                 <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id"
-                  @click.prevent="toggleFavorite(post.id)"
+                  @click.prevent.stop="toggleFavorite(post.id)"
                   class="w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 active:scale-95 group/heart">
                   <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute',
                     isFavorite(post.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">

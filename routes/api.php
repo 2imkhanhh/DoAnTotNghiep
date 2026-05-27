@@ -93,10 +93,10 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     // Admin Banners Management
     Route::get('/admin/banners', [BannerController::class, 'index']);
     Route::post('/admin/banners', [BannerController::class, 'store']);
+    Route::post('/admin/banners/update-order', [BannerController::class, 'updateOrder']);
     Route::post('/admin/banners/{id}', [BannerController::class, 'update']);
     Route::delete('/admin/banners/{id}', [BannerController::class, 'destroy']);
     Route::patch('/admin/banners/{id}/toggle-active', [BannerController::class, 'toggleActive']);
-    Route::post('/admin/banners/update-order', [BannerController::class, 'updateOrder']);
 });
 
 Route::delete('/posts/{id}', [PostController::class, 'destroy']);

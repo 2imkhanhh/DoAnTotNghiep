@@ -94,13 +94,14 @@
 
             <div v-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 <div v-for="post in posts" :key="post.id"
-                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group">
-                    <router-link :to="`/post/${post.slug}`" class="relative h-48 w-full overflow-hidden block">
+                    @click="router.push(`/post/${post.slug}`)"
+                    class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group cursor-pointer">
+                    <router-link :to="`/post/${post.slug}`" @click.stop class="relative h-48 w-full overflow-hidden block">
                         <img :src="getPrimaryImage(post)" :alt="post.title"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         
                         <!-- Favorite Button -->
-                        <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click.prevent="toggleFavorite(post.id)" 
+                        <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click.prevent.stop="toggleFavorite(post.id)" 
                             class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                             <!-- 1. Ruột Đỏ (Nằm dưới, chỉ hiện khi yêu thích) -->
                             <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute', 
@@ -120,7 +121,7 @@
                         </span>
                     </router-link>
                     <div class="p-4 flex flex-col grow">
-                        <router-link :to="`/post/${post.slug}`"
+                        <router-link :to="`/post/${post.slug}`" @click.stop
                             class="font-bold text-on-surface line-clamp-2 mb-2 hover:text-primary transition-colors h-12">
                             {{ post.title }}
                         </router-link>
@@ -205,9 +206,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const currentSlide = ref(0);
 const banners = ref([]);
@@ -378,12 +381,12 @@ const formatTime = (dateString) => {
 };
 
 const nextSlide = () => {
-    currentSlide.value = (currentSlide.value + 1) % totalSlides;
+    currentSlide.value = (currentSlide.value + 1) % totalSlides.value;
     resetAutoSlide();
 };
 
 const prevSlide = () => {
-    currentSlide.value = (currentSlide.value - 1 + totalSlides) % totalSlides;
+    currentSlide.value = (currentSlide.value - 1 + totalSlides.value) % totalSlides.value;
     resetAutoSlide();
 };
 
@@ -396,7 +399,7 @@ const goToSlide = (index) => {
 
 const startAutoSlide = () => {
     slideInterval = setInterval(() => {
-        currentSlide.value = (currentSlide.value + 1) % totalSlides;
+        currentSlide.value = (currentSlide.value + 1) % totalSlides.value;
     }, 5000);
 };
 
