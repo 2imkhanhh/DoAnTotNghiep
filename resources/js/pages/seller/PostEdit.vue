@@ -1,5 +1,6 @@
 <template>
-  <div class="post-edit-page animate-in fade-in">
+  <SellerLayout title="Sửa tin đăng">
+    <div class="post-edit-page animate-in fade-in">
     <div class="container">
       <div v-if="loading" class="loading-state">
         <span class="spinner"></span>
@@ -179,12 +180,14 @@
       </div>
     </div>
   </div>
+  </SellerLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
+import SellerLayout from '../../components/seller/SellerLayout.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -246,7 +249,7 @@ onMounted(async () => {
     // Ngăn chặn sửa tin đã bán
     if (post.status === 2) {
       alert('Tin đăng này đã bán, không thể chỉnh sửa.');
-      router.push('/profile/posts');
+      router.push('/seller-center/posts');
       return;
     }
 
@@ -295,7 +298,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch post:', error);
     alert('Không thể tải dữ liệu tin đăng');
-    router.push('/profile/posts');
+    router.push('/seller-center/posts');
   }
 });
 
@@ -472,7 +475,7 @@ const submitUpdate = async () => {
 
     if (response.data.success) {
       alert(response.data.message);
-      router.push('/profile/posts');
+      router.push('/seller-center/posts');
     }
   } catch (err) {
     if (err.response?.data?.errors) errors.value = err.response.data.errors;

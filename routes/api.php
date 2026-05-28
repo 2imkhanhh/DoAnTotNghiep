@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\ConversationController;
+use App\Http\Controllers\Api\SellerController;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ChatbotController;
@@ -72,6 +73,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Các routes Đánh giá (Review)
     Route::post('/users/{id}/reviews', [ReviewController::class, 'store']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update']);
+
+    // --- Kênh Người Bán (Seller Center) ---
+    Route::get('/seller/dashboard/stats', [SellerController::class, 'dashboardStats']);
+    Route::get('/seller/transactions', [SellerController::class, 'transactions']);
 });
 
 // Nhóm route quản trị (Admin)

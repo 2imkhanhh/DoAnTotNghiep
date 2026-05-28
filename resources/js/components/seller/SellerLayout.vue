@@ -1,50 +1,42 @@
 <template>
-  <div class="admin-container">
+  <div class="seller-container">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
       <div class="sidebar-header">
-        <span class="material-symbols-outlined logo-icon">shield_person</span>
-        <span class="logo-text">Admin Panel</span>
+        <span class="material-symbols-outlined logo-icon text-primary">storefront</span>
+        <span class="logo-text">Cửa hàng</span>
       </div>
 
       <nav class="sidebar-nav">
-        <router-link to="/admin/dashboard" class="nav-item">
+        <router-link to="/seller-center/dashboard" class="nav-item">
           <span class="material-symbols-outlined">dashboard</span>
-          <span class="nav-label">Tổng quan</span>
+          <span class="nav-label">Bảng điều khiển</span>
         </router-link>
-        <router-link to="/admin/categories" class="nav-item">
-          <span class="material-symbols-outlined">category</span>
-          <span class="nav-label">Danh mục</span>
+        <router-link to="/seller-center/posts" class="nav-item">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <span class="nav-label">Quản lý tin đăng</span>
         </router-link>
-        <router-link to="/admin/posts" class="nav-item">
-          <span class="material-symbols-outlined">article</span>
-          <span class="nav-label">Tin đăng</span>
+        <router-link to="/seller-center/post/create" class="nav-item">
+          <span class="material-symbols-outlined">add_circle</span>
+          <span class="nav-label">Đăng tin mới</span>
         </router-link>
-        <router-link to="/admin/banners" class="nav-item">
-          <span class="material-symbols-outlined">view_carousel</span>
-          <span class="nav-label">Banner</span>
-        </router-link>
-        <router-link to="/admin/users" class="nav-item">
-          <span class="material-symbols-outlined">group</span>
-          <span class="nav-label">Người dùng</span>
+        <router-link to="/seller-center/transactions" class="nav-item">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span class="nav-label">Quản lý đơn hàng</span>
         </router-link>
         <div class="nav-divider"></div>
-        <!-- <router-link to="/admin/settings" class="nav-item">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="nav-label">Cài đặt</span>
-        </router-link> -->
         <router-link to="/" class="nav-item">
-          <span class="material-symbols-outlined">home</span>
-          <span class="nav-label">Về trang chủ</span>
+          <span class="material-symbols-outlined">shopping_cart</span>
+          <span class="nav-label">Về kênh mua sắm</span>
         </router-link>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="admin-profile">
-          <img :src="authStore.avatarUrl" alt="Admin" class="admin-avatar">
-          <div class="admin-info">
-            <p class="admin-name">{{ authStore.user?.name }}</p>
-            <p class="admin-role">Quản trị viên</p>
+        <div class="seller-profile">
+          <img :src="authStore.avatarUrl" alt="Seller" class="seller-avatar">
+          <div class="seller-info">
+            <p class="seller-name">{{ authStore.user?.name }}</p>
+            <p class="seller-role">Người bán</p>
           </div>
         </div>
       </div>
@@ -60,10 +52,6 @@
           <h1 class="page-title">{{ title }}</h1>
         </div>
         <div class="topbar-right">
-          <div class="search-box">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Tìm kiếm...">
-          </div>
           <button class="icon-btn">
             <span class="material-symbols-outlined">notifications</span>
             <span class="dot"></span>
@@ -85,7 +73,7 @@ import { useAuthStore } from '../../stores/auth';
 defineProps({
   title: {
     type: String,
-    default: 'Bảng điều khiển'
+    default: 'Cửa hàng'
   }
 });
 
@@ -94,7 +82,7 @@ const isSidebarCollapsed = ref(false);
 </script>
 
 <style scoped>
-.admin-container {
+.seller-container {
   display: flex;
   height: 100vh;
   background-color: #f8fafc;
@@ -120,11 +108,12 @@ const isSidebarCollapsed = ref(false);
 }
 
 .sidebar-header {
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   overflow: hidden;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .logo-icon {
@@ -136,6 +125,7 @@ const isSidebarCollapsed = ref(false);
   font-size: 1.25rem;
   font-weight: 800;
   white-space: nowrap;
+  color: white;
 }
 
 .sidebar.collapsed .logo-text {
@@ -144,7 +134,7 @@ const isSidebarCollapsed = ref(false);
 
 .sidebar-nav {
   flex: 1;
-  padding: 0 0.75rem;
+  padding: 1rem 0.75rem;
 }
 
 .nav-item {
@@ -167,6 +157,7 @@ const isSidebarCollapsed = ref(false);
 .nav-item.router-link-active {
   background-color: #3b82f6;
   color: white;
+  font-weight: 600;
 }
 
 .nav-label {
@@ -189,35 +180,35 @@ const isSidebarCollapsed = ref(false);
   background: rgba(0, 0, 0, 0.2);
 }
 
-.admin-profile {
+.seller-profile {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-.admin-avatar {
+.seller-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 0.75rem;
+  border-radius: 50%;
   object-fit: cover;
 }
 
-.admin-info p {
+.seller-info p {
   margin: 0;
   white-space: nowrap;
 }
 
-.admin-name {
+.seller-name {
   font-weight: 600;
   font-size: 0.9rem;
 }
 
-.admin-role {
+.seller-role {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
 }
 
-.sidebar.collapsed .admin-info {
+.sidebar.collapsed .seller-info {
   display: none;
 }
 
@@ -259,40 +250,28 @@ const isSidebarCollapsed = ref(false);
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  position: relative;
 }
 
 .icon-btn:hover {
-  background: #f1f5f9;
-  color: #3b82f6;
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed);
+}
+
+.dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
 }
 
 .page-title {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
-}
-
-.search-box {
-  position: relative;
-  width: 300px;
-}
-
-.search-box span {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 1.2rem;
-}
-
-.search-box input {
-  width: 100%;
-  background: #f1f5f9;
-  border: 1px solid transparent;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  border-radius: 0.75rem;
-  font-size: 0.9rem;
 }
 
 .content-body {

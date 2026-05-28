@@ -64,27 +64,39 @@ const routes = [
         component: () => import('./pages/PublicProfile.vue'),
     },
     {
-        path: '/profile/posts',
-        name: 'UserPosts',
-        component: () => import('./pages/UserPosts.vue'),
-        meta: { requiresAuth: true }
-    },
-    {
         path: '/profile/favorites',
         name: 'UserFavorites',
         component: () => import('./pages/UserFavorites.vue'),
         meta: { requiresAuth: true }
     },
     {
-        path: '/post/create',
-        name: 'PostCreate',
-        component: () => import('./pages/PostCreate.vue'),
+        path: '/seller-center/dashboard',
+        name: 'SellerDashboard',
+        component: () => import('./pages/seller/SellerDashboard.vue'),
         meta: { requiresAuth: true }
     },
     {
-        path: '/post/edit/:id',
+        path: '/seller-center/posts',
+        name: 'SellerPosts',
+        component: () => import('./pages/seller/SellerPosts.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/seller-center/post/create',
+        name: 'PostCreate',
+        component: () => import('./pages/seller/PostCreate.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/seller-center/post/edit/:id',
         name: 'PostEdit',
-        component: () => import('./pages/PostEdit.vue'),
+        component: () => import('./pages/seller/PostEdit.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/seller-center/transactions',
+        name: 'SellerTransactions',
+        component: () => import('./pages/seller/SellerTransactions.vue'),
         meta: { requiresAuth: true }
     },
     {

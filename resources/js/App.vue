@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-surface flex flex-col font-sans text-on-surface"
     :class="{ 'items-center justify-center p-4': isAuthRoute }">
     <!-- Full Header cho các trang thường -->
-    <Header v-if="!isAuthRoute && !isAdminRoute" />
+    <Header v-if="!isAuthRoute && !isAdminRoute && !isSellerRoute" />
 
     <!-- Minimal Header cho trang Auth -->
     <header v-if="isAuthRoute" class="absolute top-0 left-0 w-full p-6 flex items-center z-10">
@@ -15,17 +15,17 @@
     <!-- Nội dung chính của trang -->
     <main :class="[
       isAuthRoute ? 'w-full max-w-[480px] mt-16 relative' : 'grow w-full',
-      isAdminRoute ? 'h-screen overflow-hidden' : '',
+      isAdminRoute || isSellerRoute ? 'h-screen overflow-hidden' : '',
       isChatRoute ? 'overflow-hidden' : ''
     ]">
       <router-view></router-view>
     </main>
 
     <!-- Footer cho các trang thường -->
-    <Footer v-if="!isAuthRoute && !isAdminRoute && !isChatRoute" />
+    <Footer v-if="!isAuthRoute && !isAdminRoute && !isSellerRoute && !isChatRoute" />
 
     <!-- AI Chatbot Widget (Hiển thị Global) -->
-    <ChatbotWidget v-if="!isAuthRoute && !isAdminRoute" />
+    <ChatbotWidget v-if="!isAuthRoute && !isAdminRoute && !isSellerRoute" />
   </div>
 </template>
 
@@ -44,6 +44,7 @@ const isAuthRoute = computed(() =>
 );
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'));
+const isSellerRoute = computed(() => route.path.startsWith('/seller-center'));
 const isChatRoute = computed(() => route.path === '/chat');
 </script>
 

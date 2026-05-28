@@ -43,7 +43,7 @@
                         <span class="material-symbols-outlined">notifications</span>
                     </router-link>
 
-                    <router-link to="/post/create"
+                    <router-link to="/seller-center/post/create"
                         class="hidden sm:flex items-center gap-1 font-bold text-primary hover:text-primary-container px-3 py-2 rounded-lg hover:bg-surface-container-low transition-colors">
                         <span class="material-symbols-outlined">add_circle</span>
                         Đăng tin
@@ -86,11 +86,12 @@
                                     <router-link v-if="authStore.isAdmin" to="/admin/dashboard"
                                         class="block px-4 py-2 text-sm text-primary font-bold hover:bg-surface-container-low hover:text-primary">Quản
                                         trị hệ thống</router-link>
-                                    <router-link to="/profile/posts"
-                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Quản
-                                        lý tin đăng</router-link>
+                                    <router-link to="/seller-center/dashboard"
+                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary font-bold text-primary">Cửa
+                                        hàng</router-link>
                                     <router-link to="/profile/favorites"
-                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Tin đăng yêu thích</router-link>
+                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Tin
+                                        đăng yêu thích</router-link>
                                     <router-link to="/settings"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Cài
                                         đặt</router-link>

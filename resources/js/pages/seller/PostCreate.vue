@@ -1,5 +1,6 @@
 <template>
-  <div class="post-create-page animate-in fade-in">
+  <SellerLayout title="Đăng tin mới">
+    <div class="post-create-page animate-in fade-in">
     <div class="container">
       <div class="form-header">
         <h1 class="title">Đăng tin mới</h1>
@@ -167,12 +168,14 @@
       </form>
     </div>
   </div>
+  </SellerLayout>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import SellerLayout from '../../components/seller/SellerLayout.vue';
 
 const router = useRouter();
 const categories = ref([]);
@@ -361,7 +364,7 @@ const submitPost = async () => {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     alert(response.data.message || 'Đăng tin thành công!');
-    router.push('/profile/posts');
+    router.push('/seller-center/posts');
   } catch (err) {
     if (err.response?.data?.errors) errors.value = err.response.data.errors;
     else alert('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'));

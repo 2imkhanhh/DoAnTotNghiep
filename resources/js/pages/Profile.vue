@@ -111,19 +111,6 @@
                   <p class="text-[10px] text-on-surface-variant mt-1 px-1">Email không thể thay đổi</p>
                 </div>
 
-                <!-- Phone -->
-                <div class="space-y-2">
-                  <label class="text-sm font-bold text-on-surface-variant px-1">Số điện thoại</label>
-                  <div class="relative">
-                    <span
-                      class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">call</span>
-                    <input v-model="profileData.phone" type="tel"
-                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      placeholder="Nhập số điện thoại">
-                  </div>
-                  <p v-if="errors.phone" class="text-xs text-error mt-1 px-1">{{ errors.phone[0] }}</p>
-                </div>
-
                 <!-- Administrative Units -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:col-span-2">
                   <div class="space-y-2">
@@ -155,8 +142,31 @@
                   </div>
                 </div>
 
+                <!-- Phone -->
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Số điện thoại</label>
+                  <div class="relative">
+                    <span
+                      class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">call</span>
+                    <input v-model="profileData.phone" type="tel"
+                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="Nhập số điện thoại">
+                  </div>
+                  <p v-if="errors.phone" class="text-xs text-error mt-1 px-1">{{ errors.phone[0] }}</p>
+                </div>
 
-
+                <!-- Specific Address -->
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Địa chỉ cụ thể</label>
+                  <div class="relative">
+                    <span
+                      class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">home</span>
+                    <input v-model="profileData.address" type="text"
+                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="Số nhà, tên ngõ, đường...">
+                  </div>
+                  <p v-if="errors.address" class="text-xs text-error mt-1 px-1">{{ errors.address[0] }}</p>
+                </div>
                 <!-- Avatar (File Upload) -->
                 <div class="space-y-2 sm:col-span-2">
                   <label class="text-sm font-bold text-on-surface-variant px-1">Ảnh đại diện</label>
