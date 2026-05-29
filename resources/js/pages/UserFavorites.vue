@@ -37,7 +37,7 @@
                 <span>{{ post.images.length }}</span>
               </span>
 
-              <span v-if="post.status === 2"
+              <span v-if="post.status === 'sold'"
                 class="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-sm z-10">
                 Đã bán
               </span>
@@ -245,3 +245,4 @@ onMounted(() => {
   animation-delay: 0.4s;
 }
 </style>
+

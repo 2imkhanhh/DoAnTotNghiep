@@ -64,8 +64,8 @@ class Post extends Model
         return $this->hasMany(PostImage::class);
     }
 
-    public function transactions()
+    public function orders()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Order::class);
     }
 }

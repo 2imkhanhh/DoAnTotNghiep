@@ -10,16 +10,16 @@ class Review extends Model
     use HasFactory;
 
     protected $fillable = [
-        'transaction_id',
+        'order_id',
         'reviewer_id',
         'reviewed_user_id',
         'rating',
         'comment',
     ];
 
-    public function transaction()
+    public function order()
     {
-        return $this->belongsTo(Transaction::class);
+        return $this->belongsTo(Order::class);
     }
 
     public function reviewer()

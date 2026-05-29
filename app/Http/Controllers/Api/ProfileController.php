@@ -105,11 +105,11 @@ class ProfileController extends Controller
         }
 
         // Đếm tổng số lượng
-        $activeCount = Post::where('user_id', $id)->where('status', 1)->count();
-        $soldCount = Post::where('user_id', $id)->where('status', 2)->count();
+        $activeCount = Post::where('user_id', $id)->where('status', 'active')->count();
+        $soldCount = Post::where('user_id', $id)->where('status', 'sold')->count();
 
-        // Lấy danh sách bài đăng theo status có phân trang
-        $status = request('status', 1);
+        // Get posts based on status filter (default to active)
+        $status = request('status', 'active');
         $posts = Post::with(['category', 'images'])
             ->where('user_id', $id)
             ->where('status', $status)

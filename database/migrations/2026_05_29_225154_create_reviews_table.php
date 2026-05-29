@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->foreignId('reviewer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('reviewed_user_id')->constrained('users')->onDelete('cascade');
             $table->tinyInteger('rating');
             $table->text('comment')->nullable();
             $table->timestamps();
 
-            // Đảm bảo mỗi giao dịch chỉ có duy nhất 1 review
-            $table->unique('transaction_id');
+            // Đảm bảo mỗi đơn hàng chỉ có duy nhất 1 review
+            $table->unique('order_id');
         });
     }
 

@@ -76,14 +76,14 @@ class User extends Authenticatable implements JWTSubject
         return $avg ? round($avg, 1) : 0;
     }
 
-    public function transactionsAsSeller()
+    public function ordersAsSeller()
     {
-        return $this->hasMany(Transaction::class, 'seller_id');
+        return $this->hasMany(Order::class, 'seller_id');
     }
 
-    public function transactionsAsBuyer()
+    public function ordersAsBuyer()
     {
-        return $this->hasMany(Transaction::class, 'buyer_id');
+        return $this->hasMany(Order::class, 'buyer_id');
     }
 
     public function givenReviews()

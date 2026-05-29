@@ -50,6 +50,12 @@
               <span class="material-symbols-outlined">person</span>
               <span>Thông tin cá nhân</span>
             </button>
+            <button @click="activeTab = 'orders'"
+              :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-1 cursor-pointer',
+                activeTab === 'orders' ? 'bg-primary text-on-primary font-bold shadow-md' : 'text-on-surface hover:bg-surface-container-low']">
+              <span class="material-symbols-outlined">shopping_bag</span>
+              <span>Đơn hàng mua</span>
+            </button>
             <button @click="activeTab = 'password'"
               :class="['w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-1 cursor-pointer',
                 activeTab === 'password' ? 'bg-primary text-on-primary font-bold shadow-md' : 'text-on-surface hover:bg-surface-container-low']">
@@ -199,6 +205,86 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div v-if="activeTab === 'orders'"
+          class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div class="p-6 sm:p-8 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 class="text-2xl font-bold text-on-surface">Đơn hàng mua</h1>
+              <p class="text-on-surface-variant">Quản lý và theo dõi các đơn hàng bạn đã mua</p>
+            </div>
+            <!-- Filter Status -->
+            <select v-model="buyerOrderFilter" @change="fetchBuyerOrders(1)" class="bg-surface-container border border-outline-variant rounded-xl px-4 py-2 text-sm font-bold focus:outline-none">
+              <option value="">Tất cả</option>
+              <option value="pending">Chờ xác nhận</option>
+              <option value="shipping">Đang giao</option>
+              <option value="delivered">Đã giao</option>
+              <option value="rejected">Bị từ chối</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+          </div>
+
+          <div class="p-6 sm:p-8 space-y-6">
+            <div v-if="buyerOrdersLoading" class="text-center py-12">
+              <span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>
+            </div>
+            
+            <div v-else-if="buyerOrders.length === 0" class="text-center py-12 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-2 opacity-40">shopping_bag</span>
+              <p class="font-medium">Chưa có đơn hàng nào.</p>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div v-for="order in buyerOrders" :key="order.id" class="border border-outline-variant rounded-xl p-4 sm:p-6 bg-surface-container-lowest">
+                <div class="flex justify-between items-center mb-4 pb-4 border-b border-outline-variant">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm">storefront</span>
+                    <span class="font-bold text-sm text-on-surface">{{ order.seller?.name }}</span>
+                  </div>
+                  <span class="text-xs font-bold px-3 py-1 rounded-full" :class="{
+                    'bg-amber-100 text-amber-700': order.status === 'pending',
+                    'bg-blue-100 text-blue-700': order.status === 'shipping',
+                    'bg-green-100 text-green-700': order.status === 'delivered',
+                    'bg-indigo-100 text-indigo-700': order.status === 'confirmed',
+                    'bg-surface-container text-on-surface-variant': order.status === 'cancelled' || order.status === 'rejected'
+                  }">
+                    {{ order.status === 'pending' ? 'Chờ xác nhận' :
+                       order.status === 'confirmed' ? 'Đã xác nhận' :
+                       order.status === 'shipping' ? 'Đang giao hàng' :
+                       order.status === 'delivered' ? 'Đã giao hàng' :
+                       order.status === 'rejected' ? 'Người bán từ chối' : 'Đã hủy' }}
+                  </span>
+                </div>
+
+                <div class="flex gap-4 mb-4">
+                  <img :src="order.post?.images?.[0]?.image_path || 'https://via.placeholder.com/100'" class="w-20 h-20 rounded-lg object-cover border border-outline-variant shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-on-surface text-sm sm:text-base mb-1 truncate">{{ order.post?.title }}</h4>
+                    <p class="text-xs text-on-surface-variant mb-2">Ngày đặt: {{ new Date(order.created_at).toLocaleDateString('vi-VN') }}</p>
+                    <div class="text-error font-extrabold">{{ new Intl.NumberFormat('vi-VN').format(order.total_price || order.post?.price) }}đ</div>
+                  </div>
+                </div>
+
+                <div v-if="order.status === 'pending' || order.status === 'confirmed'" class="flex justify-end pt-4 border-t border-outline-variant">
+                  <button @click="cancelBuyerOrder(order.id)" class="px-4 py-2 border border-error text-error font-bold rounded-lg hover:bg-error-container transition-colors text-sm">
+                    Hủy đơn hàng
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div v-if="buyerOrdersPagination?.last_page > 1" class="flex justify-center gap-2 mt-8">
+              <button v-for="page in buyerOrdersPagination.last_page" :key="page"
+                @click="fetchBuyerOrders(page)"
+                :class="['w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center transition-all',
+                  buyerOrdersPagination.current_page === page ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high']">
+                {{ page }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -385,10 +471,10 @@
                       :class="star <= rev.rating ? 'text-amber-500' : 'text-outline-variant'"
                       :style="star <= rev.rating ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">
                       star </span>
-                    <span v-if="rev.transaction && rev.transaction.post"
+                    <span v-if="rev.order && rev.order.post"
                       class="text-xs text-on-surface-variant ml-2 font-medium">Mua hàng: <router-link
-                        :to="`/post/${rev.transaction.post.slug}`"
-                        class="text-primary hover:underline cursor-pointer font-bold">{{ rev.transaction.post.title
+                        :to="`/post/${rev.order.post.slug}`"
+                        class="text-primary hover:underline cursor-pointer font-bold">{{ rev.order.post.title
                         }}</router-link></span>
                   </div>
 
@@ -554,9 +640,45 @@ watch(() => authStore.user, (user) => {
   }
 }, { immediate: true });
 
+const buyerOrders = ref([]);
+const buyerOrdersPagination = ref(null);
+const buyerOrdersLoading = ref(false);
+const buyerOrderFilter = ref('');
+
+const fetchBuyerOrders = async (page = 1) => {
+  buyerOrdersLoading.value = true;
+  try {
+    const response = await axios.get(`/api/user/orders/bought?page=${page}&status=${buyerOrderFilter.value}`);
+    if (response.data.success) {
+      buyerOrders.value = response.data.data.data;
+      buyerOrdersPagination.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Lỗi tải đơn hàng:', error);
+  } finally {
+    buyerOrdersLoading.value = false;
+  }
+};
+
+const cancelBuyerOrder = async (orderId) => {
+  if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+  try {
+    const res = await axios.put(`/api/orders/${orderId}/cancel`);
+    if (res.data.success) {
+      showToast('Hủy đơn hàng thành công');
+      fetchBuyerOrders(buyerOrdersPagination.value?.current_page || 1);
+    }
+  } catch (error) {
+    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+  }
+};
+
 watch(activeTab, (tab) => {
   if (tab === 'reviews' && reviews.value.length === 0) {
     fetchReviews();
+  }
+  if (tab === 'orders' && buyerOrders.value.length === 0) {
+    fetchBuyerOrders();
   }
 });
 

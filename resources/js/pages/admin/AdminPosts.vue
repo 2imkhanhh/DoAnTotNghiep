@@ -66,11 +66,11 @@
               <td class="text-secondary">{{ formatDate(post.created_at) }}</td>
               <td>
                 <div class="action-btns">
-                  <button v-if="post.status !== 1" class="btn-icon approve" @click="updateStatus(post, 1)"
-                    title="Duyệt">
+                  <button v-if="post.status !== 'active'" class="btn-icon approve" @click="updateStatus(post, 'active')"
+                    title="Duyệt hiển thị">
                     <span class="material-symbols-outlined">check_circle</span>
                   </button>
-                  <button v-if="post.status !== 3" class="btn-icon reject" @click="openRejectModal(post)"
+                  <button v-if="post.status !== 'rejected'" class="btn-icon reject" @click="openRejectModal(post)"
                     title="Từ chối">
                     <span class="material-symbols-outlined">block</span>
                   </button>
@@ -194,10 +194,10 @@
           </div>
 
           <div class="modal-footer">
-            <button v-if="selectedPost?.status !== 1" class="btn-approve" @click="updateStatus(selectedPost, 1)">
+            <button v-if="selectedPost?.status !== 'active'" class="btn-approve" @click="updateStatus(selectedPost, 'active')">
               <span class="material-symbols-outlined">check_circle</span> Duyệt tin
             </button>
-            <button v-if="selectedPost?.status !== 3" class="btn-reject" @click="openRejectModal(selectedPost)">
+            <button v-if="selectedPost?.status !== 'rejected'" class="btn-reject" @click="openRejectModal(selectedPost)">
               <span class="material-symbols-outlined">block</span> Từ chối
             </button>
             <button class="btn-secondary" @click="showDetailModal = false">Đóng</button>
@@ -270,10 +270,11 @@ const pagination = ref({
 
 const statusTabs = ref([
   { label: 'Tất cả', value: '', count: null },
-  { label: 'Chờ duyệt', value: '0', count: null },
-  { label: 'Đang hiển thị', value: '1', count: null },
-  { label: 'Đã bán', value: '2', count: null },
-  { label: 'Bị từ chối', value: '3', count: null },
+  { label: 'Chờ duyệt', value: 'pending', count: null },
+  { label: 'Đang hiển thị', value: 'active', count: null },
+  { label: 'Đã bán', value: 'sold', count: null },
+  { label: 'Bị từ chối', value: 'rejected', count: null },
+  { label: 'Tạm ẩn', value: 'hidden', count: null },
 ]);
 
 const visiblePages = computed(() => {
@@ -370,13 +371,13 @@ const openRejectModal = (post) => {
 
 const confirmReject = async () => {
   if (!rejectionReason.value.trim()) return;
-  await updateStatus(postToReject.value, 3, rejectionReason.value);
+  await updateStatus(postToReject.value, 'rejected', rejectionReason.value);
   showRejectModal.value = false;
 };
 
 const updateStatus = async (post, status, reason = null) => {
-  if (status !== 3) {
-    const statusTexts = { 1: 'Duyệt tin', 2: 'Đánh dấu đã bán' };
+  if (status !== 'rejected') {
+    const statusTexts = { 'active': 'Duyệt tin', 'sold': 'Đánh dấu đã bán' };
     if (!confirm(`${statusTexts[status]} này?`)) return;
   }
 
@@ -428,20 +429,22 @@ const getAttributeName = (post, key) => {
 
 const getStatusText = (status) => {
   const texts = {
-    0: 'Chờ duyệt',
-    1: 'Đang hiển thị',
-    2: 'Đã bán',
-    3: 'Bị từ chối'
+    'pending': 'Chờ duyệt',
+    'active': 'Đang hiển thị',
+    'sold': 'Đã bán',
+    'rejected': 'Bị từ chối',
+    'hidden': 'Tạm ẩn'
   };
   return texts[status] || 'Không rõ';
 };
 
 const getStatusClass = (status) => {
   const classes = {
-    0: 'pending',
-    1: 'approved',
-    2: 'sold',
-    3: 'rejected'
+    'pending': 'pending',
+    'active': 'approved',
+    'sold': 'sold',
+    'rejected': 'rejected',
+    'hidden': 'hidden'
   };
   return classes[status] || '';
 };

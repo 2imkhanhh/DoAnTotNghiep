@@ -23,6 +23,12 @@ const routes = [
         component: () => import('./pages/CategoryPosts.vue'),
     },
     {
+        path: '/checkout/:slug',
+        name: 'Checkout',
+        component: () => import('./pages/Checkout.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import('./pages/Login.vue'),
@@ -94,9 +100,9 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/seller-center/transactions',
-        name: 'SellerTransactions',
-        component: () => import('./pages/seller/SellerTransactions.vue'),
+        path: '/seller-center/orders',
+        name: 'SellerOrders',
+        component: () => import('./pages/seller/SellerOrders.vue'),
         meta: { requiresAuth: true }
     },
     {

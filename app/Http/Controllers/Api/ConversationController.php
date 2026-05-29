@@ -21,7 +21,7 @@ class ConversationController extends Controller
 
         $conversations = Conversation::where('buyer_id', $userId)
             ->orWhere('seller_id', $userId)
-            ->with(['buyer', 'seller', 'post.images', 'post.transactions', 'latestMessage'])
+            ->with(['buyer', 'seller', 'post.images', 'post.orders', 'latestMessage'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -47,7 +47,7 @@ class ConversationController extends Controller
                     'user_id' => $conversation->post->user_id,
                     'status' => $conversation->post->status,
                     'image' => $primaryImage ? $primaryImage->image_path : null,
-                    'transactions' => $conversation->post->transactions,
+                    'orders' => $conversation->post->orders,
                 ];
             }
 
@@ -143,7 +143,7 @@ class ConversationController extends Controller
 
         // Lấy toàn bộ tin nhắn sắp xếp từ cũ đến mới kèm thông tin sản phẩm đính kèm
         $messages = Message::where('conversation_id', $id)
-            ->with(['sender', 'post.images', 'post.transactions.review'])
+            ->with(['sender', 'post.images', 'post.orders.review'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -159,7 +159,7 @@ class ConversationController extends Controller
                     'user_id' => $message->post->user_id,
                     'status' => $message->post->status,
                     'image' => $primaryImage ? $primaryImage->image_path : null,
-                    'transactions' => $message->post->transactions,
+                    'orders' => $message->post->orders,
                 ];
             }
 
@@ -215,7 +215,7 @@ class ConversationController extends Controller
         $conversation->touch();
 
         // Tải các thông tin liên quan để broadcast
-        $message->load(['sender', 'post.images', 'post.transactions.review']);
+        $message->load(['sender', 'post.images', 'post.orders.review']);
 
         // Phát sự kiện broadcast qua WebSockets
         broadcast(new MessageSent($message))->toOthers();
@@ -232,7 +232,7 @@ class ConversationController extends Controller
                 'user_id' => $message->post->user_id,
                 'status' => $message->post->status,
                 'image' => $primaryImage ? $primaryImage->image_path : null,
-                'transactions' => $message->post->transactions,
+                'orders' => $message->post->orders,
             ];
         }
 
@@ -284,7 +284,7 @@ class ConversationController extends Controller
     /**
      * Lấy danh sách các giao dịch chung giữa 2 người dùng của cuộc hội thoại này
      */
-    public function activeTransactions($id)
+    public function activeOrders($id)
     {
         $userId = auth()->id();
         $conversation = Conversation::findOrFail($id);
@@ -295,7 +295,7 @@ class ConversationController extends Controller
 
         $partnerId = $conversation->buyer_id === $userId ? $conversation->seller_id : $conversation->buyer_id;
 
-        $transactions = \App\Models\Transaction::where(function($q) use ($userId, $partnerId) {
+        $orders = \App\Models\Order::where(function($q) use ($userId, $partnerId) {
                 $q->where(function($query) use ($userId, $partnerId) {
                     $query->where('buyer_id', $userId)->where('seller_id', $partnerId);
                 })->orWhere(function($query) use ($userId, $partnerId) {
@@ -309,19 +309,19 @@ class ConversationController extends Controller
             ->unique('post_id')
             ->values(); // Đảm bảo trả về mảng chuẩn (indexed array) cho Vue
 
-        $data = $transactions->map(function ($transaction) {
-            $primaryImage = $transaction->post->images->first();
+        $data = $orders->map(function ($order) {
+            $primaryImage = $order->post->images->first();
             return [
-                'id' => $transaction->id,
-                'status' => $transaction->status,
-                'buyer_id' => $transaction->buyer_id,
-                'seller_id' => $transaction->seller_id,
-                'review' => $transaction->review,
+                'id' => $order->id,
+                'status' => $order->status,
+                'buyer_id' => $order->buyer_id,
+                'seller_id' => $order->seller_id,
+                'review' => $order->review,
                 'post' => [
-                    'id' => $transaction->post->id,
-                    'title' => $transaction->post->title,
-                    'slug' => $transaction->post->slug,
-                    'price' => $transaction->post->price,
+                    'id' => $order->post->id,
+                    'title' => $order->post->title,
+                    'slug' => $order->post->slug,
+                    'price' => $order->post->price,
                     'image' => $primaryImage ? $primaryImage->image_path : null,
                 ]
             ];

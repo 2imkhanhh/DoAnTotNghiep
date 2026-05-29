@@ -6,7 +6,7 @@ export const useChatStore = defineStore('chat', {
     state: () => ({
         conversations: [],
         activeConversation: null,
-        activeTransactions: [], // Danh sách các giao dịch đang diễn ra giữa 2 người (để hiển thị trên Header)
+        activeOrders: [], // Danh sách các giao dịch đang diễn ra giữa 2 người (để hiển thị trên Header)
         unreadMessagesCount: 0,
         loading: false,
     }),
@@ -46,20 +46,20 @@ export const useChatStore = defineStore('chat', {
                 if (conversation.unread_messages_count > 0) {
                     await this.markAsRead(conversation.id);
                 }
-                await this.fetchActiveTransactions(conversation.id);
+                await this.fetchActiveOrders(conversation.id);
             } else {
-                this.activeTransactions = [];
+                this.activeOrders = [];
             }
         },
 
         /**
          * Lấy danh sách giao dịch đang diễn ra chung giữa 2 người
          */
-        async fetchActiveTransactions(conversationId) {
+        async fetchActiveOrders(conversationId) {
             try {
-                const response = await axios.get(`/api/conversations/${conversationId}/active-transactions`);
+                const response = await axios.get(`/api/conversations/${conversationId}/active-orders`);
                 if (response.data.success) {
-                    this.activeTransactions = response.data.data;
+                    this.activeOrders = response.data.data;
                 }
             } catch (error) {
                 console.error('Lỗi khi tải danh sách giao dịch đa nhiệm:', error);
@@ -108,8 +108,8 @@ export const useChatStore = defineStore('chat', {
                     .listen('.message.sent', (e) => {
                         this.handleIncomingMessage(e.message);
                     })
-                    .listen('TransactionUpdated', (e) => {
-                        this.handleTransactionUpdated(e.transaction, conversation.id);
+                    .listen('OrderUpdated', (e) => {
+                        this.handleOrderUpdated(e.order, conversation.id);
                     });
             });
 
@@ -147,7 +147,7 @@ export const useChatStore = defineStore('chat', {
                 if (message.post) {
                     const post = message.post;
                     post.image = post.images && post.images.length > 0 ? post.images[0].image_path : null;
-                    post.transactions = post.transactions || [];
+                    post.orders = post.orders || [];
                     
                     // Cập nhật hình ảnh thu nhỏ cho cuộc trò chuyện ở Sidebar
                     conversation.post = {
@@ -197,23 +197,23 @@ export const useChatStore = defineStore('chat', {
         /**
          * Xử lý khi trạng thái giao dịch thay đổi.
          */
-        handleTransactionUpdated(transaction, conversationId) {
+        handleOrderUpdated(order, conversationId) {
             // Do mô hình mới quản lý nhiều giao dịch, ta chỉ cần gọi API nạp lại danh sách giao dịch nếu đang mở đúng phòng chat này
             if (this.activeConversation && Number(this.activeConversation.id) === Number(conversationId)) {
-                this.fetchActiveTransactions(conversationId);
-                const event = new CustomEvent('transaction-updated-event', { detail: transaction });
+                this.fetchActiveOrders(conversationId);
+                const event = new CustomEvent('order-updated-event', { detail: order });
                 window.dispatchEvent(event);
             }
         },
 
-        async requestTransaction(conversationId, postId) {
+        async requestOrder(conversationId, postId) {
             try {
-                const response = await axios.post('/api/transactions/request', {
+                const response = await axios.post('/api/orders/request', {
                     conversation_id: conversationId,
                     post_id: postId
                 });
                 if (response.data.success) {
-                    this.handleTransactionUpdated(response.data.data, conversationId);
+                    this.handleOrderUpdated(response.data.data, conversationId);
                 }
                 return response.data;
             } catch (error) {
@@ -222,13 +222,13 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        async startTransaction(conversationId, transactionId) {
+        async startOrder(conversationId, orderId) {
             try {
-                const response = await axios.put(`/api/transactions/${transactionId}/start`, {
+                const response = await axios.put(`/api/orders/${orderId}/start`, {
                     conversation_id: conversationId
                 });
                 if (response.data.success) {
-                    this.handleTransactionUpdated(response.data.data, conversationId);
+                    this.handleOrderUpdated(response.data.data, conversationId);
                 }
                 return response.data;
             } catch (error) {
@@ -237,13 +237,13 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        async completeTransaction(conversationId, transactionId) {
+        async completeOrder(conversationId, orderId) {
             try {
-                const response = await axios.put(`/api/transactions/${transactionId}/complete`, {
+                const response = await axios.put(`/api/orders/${orderId}/complete`, {
                     conversation_id: conversationId
                 });
                 if (response.data.success) {
-                    this.handleTransactionUpdated(response.data.data, conversationId);
+                    this.handleOrderUpdated(response.data.data, conversationId);
                 }
                 return response.data;
             } catch (error) {
@@ -252,13 +252,13 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
-        async cancelTransaction(conversationId, transactionId) {
+        async cancelOrder(conversationId, orderId) {
             try {
-                const response = await axios.put(`/api/transactions/${transactionId}/cancel`, {
+                const response = await axios.put(`/api/orders/${orderId}/cancel`, {
                     conversation_id: conversationId
                 });
                 if (response.data.success) {
-                    this.handleTransactionUpdated(response.data.data, conversationId);
+                    this.handleOrderUpdated(response.data.data, conversationId);
                 }
                 return response.data;
             } catch (error) {

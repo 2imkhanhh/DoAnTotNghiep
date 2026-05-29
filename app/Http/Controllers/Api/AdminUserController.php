@@ -62,3 +62,4 @@ class AdminUserController extends Controller
         return response()->json(['success' => true, 'data' => $user, 'message' => 'Thay đổi trạng thái tài khoản thành công.']);
     }
 }
+

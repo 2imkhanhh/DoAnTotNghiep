@@ -110,9 +110,9 @@
 
             <div v-else class="flex flex-col gap-4">
               <!-- Tin đăng Card Ngang -->
-              <div v-for="item in filteredPosts" :key="item.id" @click="item.status !== 2 ? goToPost(item.slug) : null"
+              <div v-for="item in filteredPosts" :key="item.id" @click="item.status !== 'sold' ? goToPost(item.slug) : null"
                 class="bg-surface-container rounded-2xl overflow-hidden border border-outline-variant hover:shadow-md transition-all flex flex-col sm:flex-row group relative"
-                :class="item.status === 2 ? 'cursor-default' : 'cursor-pointer'">
+                :class="item.status === 'sold' ? 'cursor-default' : 'cursor-pointer'">
                 <div class="relative w-full sm:w-[240px] sm:h-[180px] aspect-[4/3] sm:aspect-auto bg-surface-container-high overflow-hidden shrink-0">
                   <img :src="item.image" :alt="item.title"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -122,12 +122,12 @@
                   </span>
                   
                   <!-- Nhãn đã bán -->
-                  <div v-if="item.status === 2" class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div v-if="item.status === 'sold'" class="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <span class="bg-surface-container-lowest text-on-surface px-3 py-1.5 rounded-full text-xs font-bold shadow-md">Đã bán</span>
                   </div>
 
                   <!-- Nút yêu thích (Trái tim) -->
-                  <button v-if="(!authStore.isLoggedIn || item.user_id !== authStore.user?.id) && item.status !== 2"
+                  <button v-if="(!authStore.isLoggedIn || item.user_id !== authStore.user?.id) && item.status !== 'sold'"
                     @click.stop="toggleFavorite(item.id)"
                     class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                     <!-- Ruột Đỏ -->
@@ -145,15 +145,15 @@
                 <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between min-w-0">
                   <div>
                     <h4
-                      :class="['font-bold text-on-surface text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-primary transition-colors', item.status === 2 ? 'cursor-text' : '']"
+                      :class="['font-bold text-on-surface text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-primary transition-colors', item.status === 'sold' ? 'cursor-text' : '']"
                       :title="item.title">
                       {{ item.title }}
                     </h4>
-                    <p :class="['text-error font-extrabold text-base sm:text-lg mt-1', item.status === 2 ? 'cursor-text' : '']">{{ formatPrice(item.price) }}đ</p>
+                    <p :class="['text-error font-extrabold text-base sm:text-lg mt-1', item.status === 'sold' ? 'cursor-text' : '']">{{ formatPrice(item.price) }}đ</p>
                   </div>
 
                   <div
-                    :class="['mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs text-on-surface-variant', item.status === 2 ? 'cursor-text' : '']">
+                    :class="['mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs text-on-surface-variant', item.status === 'sold' ? 'cursor-text' : '']">
                     <span class="flex items-center gap-1">
                       <span class="material-symbols-outlined text-sm">schedule</span>
                       {{ item.time }}
@@ -215,15 +215,15 @@
                     {{ rev.comment }}
                   </p>
 
-                  <router-link v-if="rev.transaction && rev.transaction.post" :to="`/post/${rev.transaction.post.slug}`"
+                  <router-link v-if="rev.order && rev.order.post" :to="`/post/${rev.order.post.slug}`"
                     class="flex items-center gap-3 group/post cursor-pointer">
-                    <img :src="rev.transaction.post.images && rev.transaction.post.images.length > 0 ? (rev.transaction.post.images.find(img => img.is_primary)?.image_path || rev.transaction.post.images[0].image_path) : 'https://via.placeholder.com/100x100?text=No+Image'" 
+                    <img :src="rev.order.post.images && rev.order.post.images.length > 0 ? (rev.order.post.images.find(img => img.is_primary)?.image_path || rev.order.post.images[0].image_path) : 'https://via.placeholder.com/100x100?text=No+Image'" 
                          alt="Product Image" class="w-12 h-12 rounded-lg object-cover bg-surface-container-low shrink-0" />
                     <div class="flex-1 min-w-0">
                       <h5 class="text-[15px] font-medium text-slate-800 line-clamp-1 group-hover/post:text-primary transition-colors">
-                        {{ rev.transaction.post.title }}
+                        {{ rev.order.post.title }}
                       </h5>
-                      <p class="text-[14px] font-semibold text-error mt-0.5">{{ formatPrice(rev.transaction.post.price) }}đ</p>
+                      <p class="text-[14px] font-semibold text-error mt-0.5">{{ formatPrice(rev.order.post.price) }}đ</p>
                     </div>
                   </router-link>
                 </div>
@@ -556,3 +556,4 @@ const toggleFavorite = async (postId) => {
   border-radius: 20px;
 }
 </style>
+

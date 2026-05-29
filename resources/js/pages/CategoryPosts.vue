@@ -249,7 +249,7 @@
             class="relative w-[120px] h-[120px] shrink-0 rounded-lg overflow-hidden block bg-slate-100">
             <img :src="getPrimaryImage(post)" :alt="post.title"
               class="w-full h-full object-cover">
-            <span v-if="post.status === 2"
+            <span v-if="post.status === 'sold'"
               class="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm backdrop-blur-sm z-10">
               Đã bán
             </span>
@@ -1283,3 +1283,4 @@ watch(() => route.path, () => {
   transform: translateY(0);
 }
 </style>
+

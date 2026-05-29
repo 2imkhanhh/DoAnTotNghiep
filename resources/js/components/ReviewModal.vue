@@ -68,7 +68,7 @@ import axios from 'axios';
 
 const props = defineProps({
   isOpen: Boolean,
-  transactionId: [Number, String],
+  orderId: [Number, String],
   sellerId: [Number, String],
   existingReview: {
     type: Object,
@@ -140,7 +140,7 @@ const submit = async () => {
       });
     } else {
       response = await axios.post(`/api/users/${props.sellerId}/reviews`, {
-        transaction_id: props.transactionId,
+        order_id: props.orderId,
         rating: form.value.rating,
         comment: form.value.comment
       });

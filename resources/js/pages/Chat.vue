@@ -94,37 +94,6 @@
               </div>
             </div>
 
-            <!-- Nút Quản lý Giao dịch Đa nhiệm -->
-            <div v-if="chatStore.activeTransactions && chatStore.activeTransactions.length > 0" class="relative shrink-0 ml-auto flex items-center">
-              <!-- Hiển thị trên Desktop -->
-              <div class="hidden sm:flex items-center gap-2">
-                <div class="flex gap-2">
-                  <div v-for="t in chatStore.activeTransactions" :key="t.id" 
-                       class="flex items-center gap-2 bg-surface-container-low border border-outline-variant/60 p-1 rounded-lg cursor-pointer hover:bg-surface-container transition-colors"
-                       :title="t.post.title"
-                       @click="scrollToWidget(t.post.id)">
-                    <img :src="t.post.image || 'https://images.unsplash.com/photo-1584438784894-089d6a128f3e?q=80&w=100'" class="w-7 h-7 rounded border border-outline-variant/50 object-cover">
-                    <div class="flex flex-col pr-2">
-                      <span class="text-[9px] font-bold truncate max-w-[70px] text-on-surface">{{ t.post.title }}</span>
-                      <span class="text-[9px] font-bold" :class="{
-                          'text-orange-500': t.status === 'requested',
-                          'text-amber-600': t.status === 'trading',
-                          'text-green-600': t.status === 'completed'
-                      }">
-                        {{ 
-                          t.status === 'requested' ? (t.seller_id === authStore.user?.id ? 'Đang chờ' : 'Đã gửi yêu cầu') : 
-                          (t.status === 'trading' ? 'Đang giao dịch' : (t.seller_id === authStore.user?.id ? 'Đã bán' : 'Đã mua')) 
-                        }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Hiển thị trên Mobile -->
-              <div class="sm:hidden flex items-center justify-center bg-primary/10 text-primary px-3 py-1.5 rounded-full border border-primary/20">
-                <span class="text-[10px] font-bold">{{ chatStore.activeTransactions.length }} Giao dịch</span>
-              </div>
-            </div>
           </div>
 
           <!-- Khung nội dung Tin nhắn -->
@@ -154,50 +123,6 @@
                       <p class="text-sm font-bold text-on-surface truncate leading-tight">{{ msg.post.title }}</p>
                       <p class="text-xs text-error font-extrabold leading-none mt-1">{{ formatPrice(msg.post.price) }}đ</p>
                     </div>
-                  </div>
-                  <!-- Nút Thao tác Giao dịch -->
-                  <div v-if="!checkIsSeller(msg.post) || getActiveTransaction(msg.post)" class="flex items-center justify-end gap-2 p-2 bg-surface-container-lowest border-t border-outline-variant/50">
-                    <template v-if="checkIsSeller(msg.post)">
-                      <template v-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <button v-if="getActiveTransaction(msg.post).status === 'requested'" @click="handleStartTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">
-                          Chấp nhận giao dịch
-                        </button>
-                        <button v-else-if="getActiveTransaction(msg.post).status === 'trading'" @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
-                        <span v-else-if="getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-green-500/10 text-green-600 font-bold px-2 py-1 rounded">Đã bán</span>
-                      </template>
-                      <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đang giao dịch với người khác</span>
-                    </template>
-                    <template v-else>
-                      <template v-if="!getActiveTransaction(msg.post)">
-                        <button @click="handleRequestTransaction(msg.post.id)" class="bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all shadow-sm cursor-pointer">
-                          Yêu cầu mua
-                        </button>
-                      </template>
-                      <template v-else-if="checkIsTradingWithPartner(getActiveTransaction(msg.post))">
-                        <span v-if="getActiveTransaction(msg.post).status === 'requested'" class="text-[10px] bg-orange-100 text-orange-600 font-bold px-2 py-1 rounded border border-orange-200">
-                          Đã gửi yêu cầu mua
-                        </span>
-                        <template v-else-if="getActiveTransaction(msg.post).status === 'trading'">
-                          <button @click="handleCancelTransaction(getActiveTransaction(msg.post).id)" class="text-error text-xs font-bold px-2 py-1.5 hover:bg-error/10 rounded-lg transition-all cursor-pointer">Hủy</button>
-                          <button @click="handleCompleteTransaction(getActiveTransaction(msg.post).id)" class="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-container transition-all shadow-sm cursor-pointer">Đã nhận</button>
-                        </template>
-                        <template v-else-if="getActiveTransaction(msg.post).status === 'completed'">
-                          <button v-if="!getActiveTransaction(msg.post).review" @click="showReviewModal(msg.post)" class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
-                            <span class="material-symbols-outlined" style="font-size: 13px; font-variation-settings: 'FILL' 1;">star</span> Đánh giá
-                          </button>
-                          <template v-else>
-                            <button @click="showReviewModal(msg.post, true)" class="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-surface-container-high transition-all shadow-sm flex items-center gap-1 cursor-pointer">
-                              <span class="material-symbols-outlined" style="font-size: 13px;">visibility</span> Xem
-                            </button>
-                            <button v-if="canEditReview(getActiveTransaction(msg.post).review)" @click="showReviewModal(msg.post, false)" class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-200 transition-all shadow-sm flex items-center gap-1 cursor-pointer">
-                              <span class="material-symbols-outlined" style="font-size: 13px;">edit</span> Sửa
-                            </button>
-                          </template>
-                        </template>
-                      </template>
-                      <span v-else-if="getActiveTransaction(msg.post) && getActiveTransaction(msg.post).status === 'completed'" class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Đã bán</span>
-                      <span v-else class="text-[10px] bg-surface-container text-on-surface-variant font-medium px-2 py-1 rounded">Có người khác đang giao dịch</span>
-                    </template>
                   </div>
                 </div>
 
@@ -285,9 +210,9 @@
     <!-- Modal Đánh giá -->
     <ReviewModal
       :is-open="isReviewModalOpen"
-      :transaction-id="transactionToReview?.id"
-      :seller-id="transactionToReview?.seller_id"
-      :existing-review="transactionToReview?.review"
+      :order-id="orderToReview?.id"
+      :seller-id="orderToReview?.seller_id"
+      :existing-review="orderToReview?.review"
       :read-only="isReviewModalReadOnly"
       @close="isReviewModalOpen = false"
       @success="onReviewSuccess"
@@ -315,7 +240,7 @@ const loadingMessages = ref(false);
 const sending = ref(false);
 const showSidebarOnMobile = ref(true);
 const isReviewModalOpen = ref(false);
-const transactionToReview = ref(null);
+const orderToReview = ref(null);
 
 const scrollToWidget = (postId) => {
     const el = document.getElementById(`widget-post-${postId}`);
@@ -326,43 +251,43 @@ const scrollToWidget = (postId) => {
     }
 };
 
-const getActiveTransaction = (post) => {
-    return post?.transactions?.find(t => t.status === 'requested' || t.status === 'trading' || t.status === 'completed');
+const getActiveOrder = (post) => {
+    return post?.orders?.find(t => t.status === 'requested' || t.status === 'trading' || t.status === 'completed');
 };
 
 const checkIsSeller = (post) => {
     return post?.user_id === authStore.user?.id;
 };
 
-const checkIsTradingWithPartner = (transaction) => {
-    if (!transaction) return false;
+const checkIsTradingWithPartner = (order) => {
+    if (!order) return false;
     const myId = authStore.user?.id;
     const partnerId = chatStore.activeConversation?.partner?.id;
-    return (transaction.buyer_id === myId || transaction.seller_id === myId) &&
-           (transaction.buyer_id === partnerId || transaction.seller_id === partnerId);
+    return (order.buyer_id === myId || order.seller_id === myId) &&
+           (order.buyer_id === partnerId || order.seller_id === partnerId);
 };
 
-const updateTransactionUI = (transaction) => {
-    if (!transaction) return;
+const updateOrderUI = (order) => {
+    if (!order) return;
     messages.value.forEach(msg => {
-        if (msg.post && Number(msg.post.id) === Number(transaction.post_id)) {
-            if (!msg.post.transactions) msg.post.transactions = [];
-            const index = msg.post.transactions.findIndex(t => Number(t.id) === Number(transaction.id));
+        if (msg.post && Number(msg.post.id) === Number(order.post_id)) {
+            if (!msg.post.orders) msg.post.orders = [];
+            const index = msg.post.orders.findIndex(t => Number(t.id) === Number(order.id));
             if (index !== -1) {
-                msg.post.transactions[index] = transaction;
+                msg.post.orders[index] = order;
             } else {
-                msg.post.transactions.push(transaction);
+                msg.post.orders.push(order);
             }
         }
     });
     if (chatStore.activeConversation) {
-        chatStore.fetchActiveTransactions(chatStore.activeConversation.id);
+        chatStore.fetchActiveOrders(chatStore.activeConversation.id);
     }
 };
 
-const handleRequestTransaction = async (postId) => {
+const handleRequestOrder = async (postId) => {
     try {
-        await chatStore.requestTransaction(chatStore.activeConversation.id, postId);
+        await chatStore.requestOrder(chatStore.activeConversation.id, postId);
         // Gửi kèm một tin nhắn để thông báo cho người bán
         const response = await axios.post(`/api/conversations/${chatStore.activeConversation.id}/messages`, {
             message_text: 'Tôi muốn mua sản phẩm này',
@@ -392,30 +317,30 @@ const handleRequestTransaction = async (postId) => {
     }
 };
 
-const handleStartTransaction = async (transactionId) => {
+const handleStartOrder = async (orderId) => {
     if (confirm('Chấp nhận yêu cầu và bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
         try {
-            await chatStore.startTransaction(chatStore.activeConversation.id, transactionId);
+            await chatStore.startOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
             alert(error.response?.data?.message || 'Có lỗi xảy ra khi bắt đầu giao dịch.');
         }
     }
 };
 
-const handleCompleteTransaction = async (transactionId) => {
+const handleCompleteOrder = async (orderId) => {
     if (confirm('Xác nhận bạn đã nhận hàng/nhận tiền? Giao dịch sẽ chuyển sang trạng thái Đã Bán.')) {
         try {
-            await chatStore.completeTransaction(chatStore.activeConversation.id, transactionId);
+            await chatStore.completeOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
             alert(error.response?.data?.message || 'Có lỗi xảy ra khi hoàn thành giao dịch.');
         }
     }
 };
 
-const handleCancelTransaction = async (transactionId) => {
+const handleCancelOrder = async (orderId) => {
     if (confirm('Bạn có chắc chắn muốn hủy giao dịch này không?')) {
         try {
-            await chatStore.cancelTransaction(chatStore.activeConversation.id, transactionId);
+            await chatStore.cancelOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
             alert(error.response?.data?.message || 'Có lỗi xảy ra khi hủy giao dịch.');
         }
@@ -425,7 +350,7 @@ const handleCancelTransaction = async (transactionId) => {
 const isReviewModalReadOnly = ref(false);
 
 const showReviewModal = (post, readOnly = false) => {
-    transactionToReview.value = getActiveTransaction(post);
+    orderToReview.value = getActiveOrder(post);
     isReviewModalReadOnly.value = readOnly;
     isReviewModalOpen.value = true;
 };
@@ -439,8 +364,8 @@ const canEditReview = (review) => {
 };
 
 const onReviewSuccess = (review) => {
-    if (transactionToReview.value) {
-        transactionToReview.value.review = review;
+    if (orderToReview.value) {
+        orderToReview.value.review = review;
     }
 };
 
@@ -673,7 +598,7 @@ onMounted(async () => {
 
   // Đăng ký lắng nghe sự kiện khi có tin nhắn real-time tới
   window.addEventListener('new-message-received', handleIncomingMessage);
-  window.addEventListener('transaction-updated-event', (e) => updateTransactionUI(e.detail));
+  window.addEventListener('order-updated-event', (e) => updateOrderUI(e.detail));
 
   // Nhận tham số conversation_id hoặc post_id từ query (ví dụ khi nhấn "Nhắn tin ngay" từ trang chi tiết bài đăng)
   const queryConvId = route.query.conversation_id;
@@ -703,7 +628,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('new-message-received', handleIncomingMessage);
-  window.removeEventListener('transaction-updated-event', (e) => updateTransactionUI(e.detail));
+  window.removeEventListener('order-updated-event', (e) => updateOrderUI(e.detail));
   if (chatStore.activeConversation && window.Echo) {
     window.Echo.leaveChannel(`chat.${chatStore.activeConversation.id}`);
   }

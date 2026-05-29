@@ -175,7 +175,7 @@ class ChatbotController extends Controller
                 $location = trim($args['location'] ?? '');
 
                 // Query DB: Tách từ khóa để tìm linh hoạt hơn (VD: "loa jbl" -> tìm cả "loa" và "jbl")
-                $query = Post::where('status', 1);
+                $query = Post::where('status', 'active');
                 $words = array_filter(explode(' ', $keyword));
                 if (!empty($words)) {
                     $query->where(function ($q) use ($words) {

@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\SellerController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\BannerController;
-use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ReviewController;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -57,18 +57,21 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/conversations/{id}/messages', [ConversationController::class, 'messages']);
     Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage']);
     Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
-    Route::get('/conversations/{id}/active-transactions', [ConversationController::class, 'activeTransactions']);
+    Route::get('/conversations/{id}/active-orders', [ConversationController::class, 'activeorders']);
 
     // Route xác thực WebSockets bằng JWT
     Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
         return Broadcast::auth($request);
     });
 
-    // Các routes Giao dịch (Transaction)
-    Route::post('/transactions/request', [TransactionController::class, 'requestTransaction']);
-    Route::put('/transactions/{id}/start', [TransactionController::class, 'startTransaction']);
-    Route::put('/transactions/{id}/complete', [TransactionController::class, 'completeTransaction']);
-    Route::put('/transactions/{id}/cancel', [TransactionController::class, 'cancelTransaction']);
+    // Các routes Giao dịch (Order)
+    Route::post('/orders/checkout', [OrderController::class, 'checkout']);
+    Route::put('/orders/{id}/accept', [OrderController::class, 'acceptOrder']);
+    Route::put('/orders/{id}/ship', [OrderController::class, 'startShipping']);
+    Route::put('/orders/{id}/reject', [OrderController::class, 'rejectOrder']);
+    Route::put('/orders/{id}/deliver', [OrderController::class, 'deliverOrder']);
+    Route::put('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
+    Route::get('/user/orders/bought', [OrderController::class, 'buyerorders']);
 
     // Các routes Đánh giá (Review)
     Route::post('/users/{id}/reviews', [ReviewController::class, 'store']);
@@ -76,7 +79,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // --- Kênh Người Bán (Seller Center) ---
     Route::get('/seller/dashboard/stats', [SellerController::class, 'dashboardStats']);
-    Route::get('/seller/transactions', [SellerController::class, 'transactions']);
+    Route::get('/seller/orders', [SellerController::class, 'orders']);
 });
 
 // Nhóm route quản trị (Admin)

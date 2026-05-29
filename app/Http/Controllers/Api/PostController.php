@@ -39,10 +39,10 @@ class PostController extends Controller
         // Lấy số lượng theo từng trạng thái cho User
         $counts = [
             'all' => Post::where('user_id', $user->id)->count(),
-            'pending' => Post::where('user_id', $user->id)->where('status', 0)->count(),
-            'approved' => Post::where('user_id', $user->id)->where('status', 1)->count(),
-            'sold' => Post::where('user_id', $user->id)->where('status', 2)->count(),
-            'rejected' => Post::where('user_id', $user->id)->where('status', 3)->count(),
+            'pending' => Post::where('user_id', $user->id)->where('status', 'pending')->count(),
+            'approved' => Post::where('user_id', $user->id)->where('status', 'active')->count(),
+            'sold' => Post::where('user_id', $user->id)->where('status', 'sold')->count(),
+            'rejected' => Post::where('user_id', $user->id)->where('status', 'rejected')->count(),
         ];
 
         return response()->json([
@@ -75,7 +75,7 @@ class PostController extends Controller
             ->withExists(['favoritedBy as is_favorited' => function ($query) {
                 $query->where('user_id', auth('api')->id());
             }])
-            ->where('status', 1);
+            ->where('status', 'active');
 
         if ($category_id) {
             $category = \App\Models\Category::with('children.children')->find($category_id);
@@ -156,7 +156,7 @@ class PostController extends Controller
         $posts = $query->paginate($request->get('limit', 10));
 
         // Lấy số lượng chờ duyệt cho Admin
-        $pendingCount = Post::where('status', 0)->count();
+        $pendingCount = Post::where('status', 'pending')->count();
 
         return response()->json([
             'success' => true,
@@ -185,14 +185,14 @@ class PostController extends Controller
         $userId = auth('api')->id();
         
         if (in_array($post->status, [2, 3]) && $post->user_id != $userId) {
-            $isBuyer = \App\Models\Transaction::where('post_id', $post->id)
+            $isBuyer = \App\Models\Order::where('post_id', $post->id)
                 ->whereIn('status', ['trading', 'completed'])
                 ->where('buyer_id', $userId)
                 ->exists();
                 
             // Nếu không phải buyer, hoặc trạng thái là Bị từ chối (3)
-            if (!$isBuyer || $post->status == 3) {
-                $statusMsg = $post->status == 2 ? 'Sản phẩm đã bán, bạn không có quyền xem' : 'Sản phẩm đã bị từ chối duyệt';
+            if (!$isBuyer || $post->status == 'rejected') {
+                $statusMsg = $post->status == 'sold' ? 'Sản phẩm đã bán, bạn không có quyền xem' : 'Sản phẩm đã bị từ chối duyệt';
                 return response()->json(['success' => false, 'message' => $statusMsg], 403);
             }
         }
@@ -205,7 +205,7 @@ class PostController extends Controller
             }])
             ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
-            ->where('status', 1)
+            ->where('status', 'active')
             ->limit(4)
             ->get();
 
@@ -261,8 +261,8 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request)
     {
-        // 1. Bật khiên bảo vệ Database (Transaction)
-        DB::beginTransaction();
+        // 1. Bật khiên bảo vệ Database (Order)
+        DB::beginOrder();
 
         try {
             $data = $request->validated();
@@ -271,9 +271,9 @@ class PostController extends Controller
 
             // Nếu là admin thì duyệt luôn (status = 1), ngược lại là chờ duyệt (status = 0)
             if (auth('api')->user()->isAdmin()) {
-                $data['status'] = 1;
+                $data['status'] = 'active';
             } else {
-                $data['status'] = 0;
+                $data['status'] = 'pending';
             }
 
             // 2. Xử lý cái cột JSON (specifications)
@@ -339,20 +339,20 @@ class PostController extends Controller
         }
 
         // Chặn sửa tin đã bán
-        if ($post->status == 2) {
+        if ($post->status == 'sold') {
             return response()->json(['success' => false, 'message' => 'Tin đã bán không thể chỉnh sửa'], 403);
         }
 
-        DB::beginTransaction();
+        DB::beginOrder();
 
         try {
             $data = $request->validated();
 
             // Tự động reset trạng thái về chờ duyệt khi sửa (nếu không phải admin)
             if (auth('api')->user()->isAdmin()) {
-                $data['status'] = 1;
+                $data['status'] = 'active';
             } else {
-                $data['status'] = 0;
+                $data['status'] = 'pending';
             }
             $data['reject_reason'] = null;
 
@@ -447,7 +447,7 @@ class PostController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|integer|in:0,1,2,3', // 0: Chờ, 1: Duyệt, 2: Đã bán, 3: Từ chối
+            'status' => 'required|string|in:pending,active,sold,rejected,hidden',
             'reason' => 'nullable|string|max:255'
         ]);
 
@@ -458,14 +458,15 @@ class PostController extends Controller
 
         $post->update([
             'status' => $request->status,
-            'reject_reason' => $request->status == 3 ? $request->reason : null
+            'reject_reason' => $request->status === 'rejected' ? $request->reason : null
         ]);
 
         $statusMap = [
-            0 => 'đã chuyển về chờ duyệt',
-            1 => 'đã duyệt hiển thị',
-            2 => 'đã đánh dấu là đã bán',
-            3 => 'đã từ chối'
+            'pending' => 'đã chuyển về chờ duyệt',
+            'active' => 'đã duyệt hiển thị',
+            'sold' => 'đã đánh dấu là đã bán',
+            'rejected' => 'đã từ chối',
+            'hidden' => 'đã tạm ẩn'
         ];
 
         return response()->json([
@@ -493,3 +494,4 @@ class PostController extends Controller
         return response()->json(['success' => true, 'message' => 'Đã xóa tin đăng thành công!']);
     }
 }
+

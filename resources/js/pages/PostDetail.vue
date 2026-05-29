@@ -53,7 +53,7 @@
                 <div class="flex-1 min-w-0">
                   <div class="post-meta-top mb-2">
                     <span class="category-tag">{{ post.category?.name }}</span>
-                    <span v-if="post.status !== 1" :class="['status-badge', getStatusClass(post.status)]">
+                    <span v-if="post.status !== 'active'" :class="['status-badge', getStatusClass(post.status)]">
                       {{ getStatusText(post.status) }}
                     </span>
                   </div>
@@ -110,10 +110,10 @@
             <div class="price-card card">
               <div class="price-value">{{ formatPrice(post.price) }}đ</div>
               <div class="action-buttons">
-                <a :href="`tel:${post.phone || post.user?.phone}`" class="btn-primary call-btn">
-                  <span class="material-symbols-outlined">call</span>
-                  {{ post.phone || post.user?.phone }}
-                </a>
+                <button @click="goToCheckout" class="btn-primary buy-btn" style="background: #ef4444;">
+                  <span class="material-symbols-outlined">shopping_cart_checkout</span>
+                  Mua ngay
+                </button>
                 <button @click="startConversation" class="btn-outline chat-btn">
                   <span class="material-symbols-outlined">chat</span>
                   Nhắn tin ngay
@@ -298,6 +298,15 @@ const toggleFavorite = async (postId) => {
     const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện yêu thích';
     alert(msg);
   }
+};
+
+const goToCheckout = () => {
+  if (!authStore.isLoggedIn) {
+    alert('Vui lòng đăng nhập để mua hàng');
+    router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    return;
+  }
+  router.push(`/checkout/${post.value.slug}`);
 };
 
 const startConversation = async () => {
@@ -1095,3 +1104,4 @@ onMounted(() => {
   color: white;
 }
 </style>
+

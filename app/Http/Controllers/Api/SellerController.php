@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Post;
-use App\Models\Transaction;
+use App\Models\Order;
 
 class SellerController extends Controller
 {
@@ -19,20 +19,20 @@ class SellerController extends Controller
 
         // 1. Post statistics
         $totalPosts = Post::where('user_id', $userId)->count();
-        $activePosts = Post::where('user_id', $userId)->where('status', 1)->count(); // 1: Đang hiển thị
-        $pendingPosts = Post::where('user_id', $userId)->where('status', 0)->count(); // 0: Chờ duyệt
-        $soldPosts = Post::where('user_id', $userId)->where('status', 2)->count(); // 2: Đã bán
+        $activePosts = Post::where('user_id', $userId)->where('status', 'active')->count(); // 1: Đang hiển thị
+        $pendingPosts = Post::where('user_id', $userId)->where('status', 'pending')->count(); // 0: Chờ duyệt
+        $soldPosts = Post::where('user_id', $userId)->where('status', 'sold')->count(); // 2: Đã bán
 
-        // 2. Transaction statistics (where user is the seller)
-        $totalTransactions = Transaction::where('seller_id', $userId)->count();
-        $completedTransactions = Transaction::where('seller_id', $userId)->where('status', 'completed')->count();
-        $tradingTransactions = Transaction::where('seller_id', $userId)->where('status', 'trading')->count();
-        $requestedTransactions = Transaction::where('seller_id', $userId)->where('status', 'requested')->count();
+        // 2. Order statistics (where user is the seller)
+        $totalOrders = Order::where('seller_id', $userId)->count();
+        $completedOrders = Order::where('seller_id', $userId)->where('status', 'delivered')->count();
+        $tradingOrders = Order::where('seller_id', $userId)->where('status', 'shipping')->count();
+        $requestedOrders = Order::where('seller_id', $userId)->where('status', 'pending')->count();
 
-        // 3. Estimated Revenue (Sum of completed transactions' post price)
-        $revenue = Transaction::where('seller_id', $userId)
-            ->where('transactions.status', 'completed')
-            ->join('posts', 'transactions.post_id', '=', 'posts.id')
+        // 3. Estimated Revenue (Sum of completed Orders' post price)
+        $revenue = Order::where('seller_id', $userId)
+            ->where('Orders.status', 'delivered')
+            ->join('posts', 'Orders.post_id', '=', 'posts.id')
             ->sum('posts.price');
 
         return response()->json([
@@ -44,11 +44,11 @@ class SellerController extends Controller
                     'pending' => $pendingPosts,
                     'sold' => $soldPosts,
                 ],
-                'transactions' => [
-                    'total' => $totalTransactions,
-                    'completed' => $completedTransactions,
-                    'trading' => $tradingTransactions,
-                    'requested' => $requestedTransactions,
+                'Orders' => [
+                    'total' => $totalOrders,
+                    'completed' => $completedOrders,
+                    'trading' => $tradingOrders,
+                    'requested' => $requestedOrders,
                 ],
                 'revenue' => $revenue
             ]
@@ -56,26 +56,28 @@ class SellerController extends Controller
     }
 
     /**
-     * Get list of transactions where user is seller.
+     * Get list of Orders where user is seller.
      */
-    public function transactions(Request $request)
+    public function Orders(Request $request)
     {
         $userId = Auth::id();
         $status = $request->query('status');
 
-        $query = Transaction::where('seller_id', $userId)
+        $query = Order::where('seller_id', $userId)
             ->with(['buyer', 'post.images']) // Load related info
             ->orderBy('created_at', 'desc');
             
-        if ($status && in_array($status, ['requested', 'trading', 'completed', 'cancelled'])) {
-            $query->where('status', $status);
+        if ($status) {
+            $statuses = explode(',', $status);
+            $query->whereIn('status', $statuses);
         }
 
-        $transactions = $query->paginate(10);
+        $Orders = $query->paginate(10);
 
         return response()->json([
             'success' => true,
-            'data' => $transactions
+            'data' => $Orders
         ]);
     }
 }
+

@@ -247,7 +247,7 @@ onMounted(async () => {
     const post = response.data.data;
 
     // Ngăn chặn sửa tin đã bán
-    if (post.status === 2) {
+    if (post.status === 'sold') {
       alert('Tin đăng này đã bán, không thể chỉnh sửa.');
       router.push('/seller-center/posts');
       return;
@@ -917,3 +917,4 @@ const submitUpdate = async () => {
   color: var(--color-primary, #3b82f6);
 }
 </style>
+

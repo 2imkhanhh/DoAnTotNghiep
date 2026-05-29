@@ -168,10 +168,11 @@ const pagination = ref({
 
 const statusTabs = ref([
   { label: 'Tất cả', value: '', icon: 'apps', count: null },
-  { label: 'Đang hiển thị', value: '1', icon: 'check_circle', count: null },
-  { label: 'Chờ duyệt', value: '0', icon: 'schedule', count: null },
-  { label: 'Đã bán', value: '2', icon: 'shopping_bag', count: null },
-  { label: 'Bị từ chối', value: '3', icon: 'cancel', count: null },
+  { label: 'Đang hiển thị', value: 'active', icon: 'check_circle', count: null },
+  { label: 'Chờ duyệt', value: 'pending', icon: 'schedule', count: null },
+  { label: 'Đã bán', value: 'sold', icon: 'shopping_bag', count: null },
+  { label: 'Bị từ chối', value: 'rejected', icon: 'cancel', count: null },
+  { label: 'Tạm ẩn', value: 'hidden', icon: 'visibility_off', count: null },
 ]);
 
 const visiblePages = computed(() => {
@@ -232,6 +233,7 @@ const fetchPosts = async (page = 1) => {
         statusTabs.value[2].count = counts.pending;
         statusTabs.value[3].count = counts.sold;
         statusTabs.value[4].count = counts.rejected;
+        statusTabs.value[5].count = counts.hidden || 0;
       }
     }
   } catch (error) {
@@ -250,9 +252,9 @@ const markAsSold = async (post) => {
   if (!confirm('Xác nhận sản phẩm này đã được bán thành công?')) return;
 
   try {
-    const response = await axios.put(`/api/posts/${post.id}/status`, { status: 2 });
+    const response = await axios.put(`/api/posts/${post.id}/status`, { status: 'sold' });
     if (response.data.success) {
-      post.status = 2;
+      post.status = 'sold';
     }
   } catch (error) {
     alert('Lỗi khi cập nhật trạng thái');
@@ -277,16 +279,17 @@ const getPrimaryImage = (post) => {
 };
 
 const getStatusText = (status) => {
-  const texts = { 0: 'Chờ duyệt', 1: 'Đang hiển thị', 2: 'Đã bán', 3: 'Bị từ chối' };
+  const texts = { 'pending': 'Chờ duyệt', 'active': 'Đang hiển thị', 'sold': 'Đã bán', 'rejected': 'Bị từ chối', 'hidden': 'Tạm ẩn' };
   return texts[status] || 'Không rõ';
 };
 
 const getStatusBadgeClass = (status) => {
   const classes = {
-    0: 'bg-amber-100 text-amber-700 border border-amber-200',
-    1: 'bg-[#DCFCE7] text-[#166534] border border-[#BBF7D0]',
-    2: 'bg-blue-100 text-blue-700 border border-blue-200',
-    3: 'bg-red-100 text-red-700 border border-red-200'
+    'pending': 'bg-amber-100 text-amber-700 border border-amber-200',
+    'active': 'bg-[#DCFCE7] text-[#166534] border border-[#BBF7D0]',
+    'sold': 'bg-blue-100 text-blue-700 border border-blue-200',
+    'rejected': 'bg-red-100 text-red-700 border border-red-200',
+    'hidden': 'bg-slate-100 text-slate-700 border border-slate-300'
   };
   return classes[status] || 'bg-slate-100 text-slate-600';
 };

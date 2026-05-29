@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
-use App\Models\Transaction;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +16,7 @@ class ReviewController extends Controller
         $reviews = Review::where('reviewed_user_id', $userId)
             ->with(['reviewer' => function($q) {
                 $q->select('id', 'name', 'avatar');
-            }, 'transaction.post.images'])
+            }, 'Order.post.images'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -27,36 +27,36 @@ class ReviewController extends Controller
     public function store(Request $request, $userId)
     {
         $request->validate([
-            'transaction_id' => 'required|exists:transactions,id',
+            'Order_id' => 'required|exists:Orders,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:500',
         ]);
 
-        $transaction = Transaction::findOrFail($request->transaction_id);
+        $Order = Order::findOrFail($request->Order_id);
 
         // Đảm bảo đúng người mua
-        if ($transaction->buyer_id !== Auth::id()) {
+        if ($Order->buyer_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'Chỉ người mua mới được quyền đánh giá.'], 403);
         }
 
         // Đảm bảo đúng người bán
-        if ($transaction->seller_id != $userId) {
+        if ($Order->seller_id != $userId) {
             return response()->json(['success' => false, 'message' => 'ID người bán không hợp lệ.'], 400);
         }
 
         // Đảm bảo giao dịch đã hoàn thành
-        if ($transaction->status !== 'completed') {
+        if ($Order->status !== 'completed') {
             return response()->json(['success' => false, 'message' => 'Chưa thể đánh giá vì giao dịch chưa hoàn thành.'], 400);
         }
 
         // Đảm bảo chưa review lần nào cho giao dịch này
-        $existing = Review::where('transaction_id', $transaction->id)->first();
+        $existing = Review::where('Order_id', $Order->id)->first();
         if ($existing) {
             return response()->json(['success' => false, 'message' => 'Bạn đã đánh giá giao dịch này rồi.'], 400);
         }
 
         $review = Review::create([
-            'transaction_id' => $transaction->id,
+            'Order_id' => $Order->id,
             'reviewer_id' => Auth::id(),
             'reviewed_user_id' => $userId,
             'rating' => $request->rating,

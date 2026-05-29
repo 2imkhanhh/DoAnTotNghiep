@@ -115,7 +115,7 @@
                             </span>
                         </button>
 
-                        <span v-if="post.status === 2"
+                        <span v-if="post.status === 'sold'"
                             class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm">
                             Đã bán
                         </span>
@@ -478,4 +478,5 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 </style>
+
 

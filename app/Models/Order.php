@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class Order extends Model
 {
     use HasFactory;
 
@@ -13,7 +13,14 @@ class Transaction extends Model
         'post_id',
         'seller_id',
         'buyer_id',
-        'status', // trading, completed, cancelled
+        'shipping_name',
+        'shipping_phone',
+        'shipping_address',
+        'shipping_province_id',
+        'shipping_ward_id',
+        'shipping_note',
+        'total_price',
+        'status', // pending, shipping, delivered, cancelled, rejected
     ];
 
     public function post()
