@@ -81,11 +81,24 @@
           </div>
         </div>
 
-        <div v-if="pagination.last_page > 1" class="flex justify-center mt-12 gap-2">
-          <button v-for="page in pagination.last_page" :key="page" @click="fetchFavorites(page)"
-            :class="['w-10 h-10 rounded-lg font-bold transition-all',
-              pagination.current_page === page ? 'bg-primary text-white shadow-lg' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200']">
-            {{ page }}
+        <div v-if="pagination.last_page > 1" class="flex justify-center my-6 gap-2">
+          <button :disabled="pagination.current_page === 1" @click="fetchFavorites(pagination.current_page - 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+
+          <template v-for="(page, index) in visiblePages" :key="index">
+            <span v-if="page === '...'" class="w-10 h-10 flex items-center justify-center text-slate-400">...</span>
+            <button v-else @click="fetchFavorites(page)"
+              :class="['w-10 h-10 rounded-lg font-bold transition-all border cursor-pointer',
+                pagination.current_page === page ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50']">
+              {{ page }}
+            </button>
+          </template>
+
+          <button :disabled="pagination.current_page === pagination.last_page" @click="fetchFavorites(pagination.current_page + 1)" 
+            class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>
@@ -110,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
 const posts = ref([]);
@@ -119,6 +132,37 @@ const pagination = ref({
   current_page: 1,
   last_page: 1,
   total: 0
+});
+
+const visiblePages = computed(() => {
+  const current = pagination.value.current_page;
+  const last = pagination.value.last_page;
+  const delta = 2;
+  const left = current - delta;
+  const right = current + delta + 1;
+  const range = [];
+  const rangeWithDots = [];
+  let l;
+
+  for (let i = 1; i <= last; i++) {
+    if (i == 1 || i == last || i >= left && i < right) {
+      range.push(i);
+    }
+  }
+
+  for (let i of range) {
+    if (l) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1);
+      } else if (i - l !== 1) {
+        rangeWithDots.push('...');
+      }
+    }
+    rangeWithDots.push(i);
+    l = i;
+  }
+
+  return rangeWithDots;
 });
 
 const fetchFavorites = async (page = 1) => {

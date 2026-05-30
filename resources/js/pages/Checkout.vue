@@ -116,8 +116,8 @@
 
             <div class="space-y-3 text-sm">
               <div class="flex justify-between text-on-surface-variant">
-                <span>Người bán</span>
-                <span class="font-medium text-on-surface">{{ post.user?.name }}</span>
+                <span>Tạm tính</span>
+                <span class="font-medium text-on-surface">{{ formatPrice(post.price) }}đ</span>
               </div>
               <div class="flex justify-between text-on-surface-variant">
                 <span>Phí vận chuyển</span>
@@ -260,7 +260,7 @@ const submitOrder = async () => {
 
     if (response.data.success) {
       alert('Đặt hàng thành công!');
-      router.push('/profile?tab=orders');
+      router.push('/my-orders');
     }
   } catch (error) {
     console.error('Lỗi khi đặt hàng:', error);

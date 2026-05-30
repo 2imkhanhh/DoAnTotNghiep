@@ -74,12 +74,9 @@
                 <span class="material-symbols-outlined">schedule</span>
                 {{ formatDate(post.created_at) }}
               </div>
-              <div class="meta-item items-start">
-                <span class="material-symbols-outlined mt-1">location_on</span>
-                <div class="flex flex-col">
-                  <span>{{ post.ward_name }}</span>
-                  <span>{{ post.province_name }}</span>
-                </div>
+              <div class="meta-item">
+                <span class="material-symbols-outlined">location_on</span>
+                <span>{{ post.ward_name ? post.ward_name + ', ' : '' }}{{ post.province_name }}</span>
               </div>
             </div>
 
@@ -110,7 +107,7 @@
             <div class="price-card card">
               <div class="price-value">{{ formatPrice(post.price) }}đ</div>
               <div class="action-buttons">
-                <button @click="goToCheckout" class="btn-primary buy-btn" style="background: #ef4444;">
+                <button @click="goToCheckout" class="buy-btn">
                   <span class="material-symbols-outlined">shopping_cart_checkout</span>
                   Mua ngay
                 </button>
@@ -130,9 +127,12 @@
                 </div>
                 <div class="seller-meta">
                   <h4 class="seller-name">{{ post.user?.name }}</h4>
-                  <div class="seller-rating" :class="post.user?.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
-                    <span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span class="rating-text font-medium" v-if="post.user?.reviews_count > 0">{{ parseFloat(post.user.average_rating).toFixed(1) }}</span>
+                  <div class="seller-rating"
+                    :class="post.user?.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
+                    <span class="material-symbols-outlined filled"
+                      style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="rating-text font-medium" v-if="post.user?.reviews_count > 0">{{
+                      parseFloat(post.user.average_rating).toFixed(1) }}</span>
                     <span class="rating-text text-sm font-medium" v-else>Chưa có đánh giá</span>
                   </div>
                 </div>
@@ -181,12 +181,11 @@
                   <span class="material-symbols-outlined">schedule</span>
                   <span>{{ formatTime(rel.created_at) }}</span>
                 </div>
-                <div class="rel-meta-item items-start">
-                  <span class="material-symbols-outlined mt-0.5">location_on</span>
-                  <div class="flex flex-col leading-tight">
-                    <span>{{ rel.ward_name || 'Đang cập nhật' }}</span>
-                    <span>{{ rel.province_name }}</span>
-                  </div>
+                <div class="rel-meta-item">
+                  <span class="material-symbols-outlined">location_on</span>
+                  <span class="truncate" :title="(rel.ward_name ? rel.ward_name + ', ' : '') + rel.province_name">
+                    {{ rel.ward_name ? rel.ward_name + ', ' : '' }}{{ rel.province_name }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -200,8 +199,10 @@
   <div v-else class="min-h-[70vh] flex flex-col items-center justify-center px-4 bg-slate-50">
     <img src="/images/empty.png" alt="Không tìm thấy" class="w-64 max-w-full mb-6 pointer-events-none" />
     <h2 class="text-2xl font-bold text-[#222222] mb-3">Tin đăng không còn tồn tại</h2>
-    <p class="text-[15px] text-[#222222] mb-8 text-center max-w-md">Tin đăng này đã hết hạn hoặc đã bán. Hãy thử những tin đăng khác, bạn nhé.</p>
-    <router-link to="/" class="px-8 py-3 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-opacity">
+    <p class="text-[15px] text-[#222222] mb-8 text-center max-w-md">Tin đăng này đã hết hạn hoặc đã bán. Hãy thử những
+      tin đăng khác, bạn nhé.</p>
+    <router-link to="/"
+      class="px-8 py-3 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-opacity">
       Về trang chủ
     </router-link>
   </div>
@@ -763,6 +764,34 @@ onMounted(() => {
   gap: 1rem;
 }
 
+.buy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3); */
+}
+
+.buy-btn:hover {
+  transform: translateY(-2px);
+  /* box-shadow: 0 8px 25px rgba(255, 75, 43, 0.4); */
+  background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%);
+}
+
+.buy-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(255, 75, 43, 0.3);
+}
+
 .call-btn {
   display: flex;
   align-items: center;
@@ -1084,24 +1113,27 @@ onMounted(() => {
 }
 
 .status-sold {
-  background-color: #ef4444; /* red-500 */
+  background-color: #ef4444;
+  /* red-500 */
   color: white;
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 .status-pending {
-  background-color: #eab308; /* yellow-500 */
+  background-color: #eab308;
+  /* yellow-500 */
   color: white;
 }
 
 .status-rejected {
-  background-color: #94a3b8; /* slate-400 */
+  background-color: #94a3b8;
+  /* slate-400 */
   color: white;
 }
 
 .status-active {
-  background-color: #22c55e; /* green-500 */
+  background-color: #22c55e;
+  /* green-500 */
   color: white;
 }
 </style>
-

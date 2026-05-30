@@ -92,9 +92,9 @@
                                     <router-link to="/profile/favorites"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Tin
                                         đăng yêu thích</router-link>
-                                    <router-link to="/settings"
-                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Cài
-                                        đặt</router-link>
+                                    <router-link to="/my-orders"
+                                        class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Đơn
+                                        mua</router-link>
                                     <div class="border-t border-outline-variant my-1"></div>
                                     <button @click="authStore.logout()"
                                         class="w-full text-left block px-4 py-2 text-sm text-error hover:bg-error-container font-bold cursor-pointer">Đăng
