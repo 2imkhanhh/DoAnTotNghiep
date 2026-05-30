@@ -69,7 +69,7 @@
             </div>
 
             <div v-if="order.status === 'pending' || order.status === 'confirmed'" class="flex justify-end pt-5 border-t border-slate-100/80 mt-2">
-              <button @click.stop="cancelBuyerOrder(order.id)" class="px-4 py-2 border border-error text-error font-bold rounded-lg hover:bg-error-container transition-colors text-sm">
+              <button @click.stop="cancelBuyerOrder(order.id)" class="px-4 py-2 border border-error text-error font-bold rounded-lg hover:bg-error-container transition-colors text-sm cursor-pointer">
                 Hủy đơn hàng
               </button>
             </div>

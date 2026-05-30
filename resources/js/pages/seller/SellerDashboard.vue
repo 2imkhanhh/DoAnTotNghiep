@@ -1,10 +1,10 @@
 <template>
-  <SellerLayout title="Tổng quan Bảng điều khiển">
+  <SellerLayout title="Dashboard">
     <div v-if="loading" class="flex justify-center items-center h-64">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>
     <div v-else class="dashboard-content">
-      
+
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="stat-card">
@@ -16,7 +16,7 @@
             <p class="stat-value">{{ stats.posts.total }}</p>
           </div>
         </div>
-        
+
         <div class="stat-card">
           <div class="stat-icon bg-green-100 text-green-600">
             <span class="material-symbols-outlined">check_circle</span>
@@ -26,7 +26,7 @@
             <p class="stat-value">{{ stats.posts.active }}</p>
           </div>
         </div>
-        
+
         <div class="stat-card">
           <div class="stat-icon bg-orange-100 text-orange-600">
             <span class="material-symbols-outlined">receipt_long</span>
@@ -36,7 +36,7 @@
             <p class="stat-value">{{ stats.orders.requested }}</p>
           </div>
         </div>
-        
+
         <div class="stat-card">
           <div class="stat-icon bg-purple-100 text-purple-600">
             <span class="material-symbols-outlined">payments</span>
@@ -47,7 +47,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Chart/Info Section -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -74,17 +74,21 @@
             </div>
           </div>
           <div class="mt-6 text-center">
-            <router-link to="/seller-center/orders" class="text-primary hover:underline font-medium">Xem chi tiết đơn hàng &rarr;</router-link>
+            <router-link to="/seller-center/orders" class="text-primary hover:underline font-medium">Xem chi tiết đơn
+              hàng &rarr;</router-link>
           </div>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center items-center text-center">
+
+        <div
+          class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center items-center text-center">
           <div class="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
             <span class="material-symbols-outlined text-5xl">rocket_launch</span>
           </div>
           <h2 class="text-xl font-bold text-slate-800 mb-2">Phát triển gian hàng của bạn</h2>
-          <p class="text-slate-500 mb-6">Đăng thêm nhiều sản phẩm chất lượng để thu hút khách hàng và tăng doanh thu.</p>
-          <router-link to="/seller-center/post/create" class="bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-dark transition shadow-lg shadow-primary/30">
+          <p class="text-slate-500 mb-6">Đăng thêm nhiều sản phẩm chất lượng để thu hút khách hàng và tăng doanh thu.
+          </p>
+          <router-link to="/seller-center/post/create"
+            class="bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary-dark transition shadow-lg shadow-primary/30">
             Đăng tin mới ngay
           </router-link>
         </div>
@@ -111,7 +115,7 @@ onMounted(async () => {
     const response = await axios.get('/api/seller/dashboard/stats', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    
+
     if (response.data && response.data.success) {
       stats.value = response.data.data;
     }

@@ -16,7 +16,7 @@ class OrderController extends Controller
         $request->validate([
             'post_id' => 'required|exists:posts,id',
             'shipping_name' => 'required|string',
-            'shipping_phone' => 'required|string',
+            'shipping_phone' => ['required', 'string', 'regex:/^(84|0[3|5|7|8|9])+([0-9]{8})$/'],
             'shipping_address' => 'required|string',
             'shipping_province_id' => 'required',
             'shipping_ward_id' => 'required',

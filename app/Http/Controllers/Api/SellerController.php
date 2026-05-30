@@ -44,7 +44,7 @@ class SellerController extends Controller
                     'pending' => $pendingPosts,
                     'sold' => $soldPosts,
                 ],
-                'Orders' => [
+                'orders' => [
                     'total' => $totalOrders,
                     'completed' => $completedOrders,
                     'trading' => $tradingOrders,
@@ -74,9 +74,20 @@ class SellerController extends Controller
 
         $Orders = $query->paginate(10);
 
+        // Calculate counts
+        $counts = [
+            'all' => Order::where('seller_id', $userId)->count(),
+            'pending' => Order::where('seller_id', $userId)->where('status', 'pending')->count(),
+            'confirmed' => Order::where('seller_id', $userId)->where('status', 'confirmed')->count(),
+            'shipping' => Order::where('seller_id', $userId)->where('status', 'shipping')->count(),
+            'delivered' => Order::where('seller_id', $userId)->where('status', 'delivered')->count(),
+            'cancelled' => Order::where('seller_id', $userId)->whereIn('status', ['cancelled', 'rejected'])->count()
+        ];
+
         return response()->json([
             'success' => true,
-            'data' => $Orders
+            'data' => $Orders,
+            'counts' => $counts
         ]);
     }
 }

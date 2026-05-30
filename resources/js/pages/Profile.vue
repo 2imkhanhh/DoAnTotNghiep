@@ -731,10 +731,10 @@ watch(() => authStore.user, (newUser) => {
       email: newUser.email,
       phone: newUser.phone,
       address: newUser.address,
-      province_id: newUser.province_id,
-      province_name: newUser.province_name,
-      ward_id: newUser.ward_id,
-      ward_name: newUser.ward_name,
+      province_id: newUser.province_id || '',
+      province_name: newUser.province_name || '',
+      ward_id: newUser.ward_id || '',
+      ward_name: newUser.ward_name || '',
       avatar: newUser.avatar,
       followers_count: newUser.followers_count || 0,
       followings_count: newUser.followings_count || 0
@@ -846,7 +846,7 @@ const updateProfile = async () => {
 
   try {
     let response;
-    
+
     if (avatarFile.value) {
       const formData = new FormData();
       formData.append('_method', 'PUT');
@@ -860,7 +860,7 @@ const updateProfile = async () => {
       if (avatarFile.value) {
         formData.append('avatar', avatarFile.value);
       }
-      
+
       response = await axios.post('/api/auth/profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'

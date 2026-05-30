@@ -22,12 +22,19 @@
           </h2>
 
           <form @submit.prevent="submitOrder" class="space-y-6">
+
+            <label class="checkbox-label-custom">
+              <input type="checkbox" v-model="useMyInfo" @change="toggleMyInfo">
+              <span>Sử dụng thông tin cá nhân của tôi</span>
+            </label>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <!-- Name -->
               <div class="space-y-2">
                 <label class="text-sm font-bold text-on-surface-variant px-1">Họ và tên người nhận</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">person</span>
+                  <span
+                    class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">person</span>
                   <input v-model="form.shipping_name" type="text" required
                     class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     placeholder="Nhập họ tên người nhận">
@@ -38,7 +45,8 @@
               <div class="space-y-2">
                 <label class="text-sm font-bold text-on-surface-variant px-1">Số điện thoại</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">call</span>
+                  <span
+                    class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">call</span>
                   <input v-model="form.shipping_phone" type="tel" required
                     class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     placeholder="Nhập số điện thoại">
@@ -49,7 +57,8 @@
               <div class="space-y-2">
                 <label class="text-sm font-bold text-on-surface-variant px-1">Tỉnh / Thành phố</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">map</span>
+                  <span
+                    class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">map</span>
                   <select v-model="form.shipping_province_id" @change="onProvinceChange" required
                     class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none">
                     <option value="">Chọn Tỉnh/Thành</option>
@@ -61,7 +70,8 @@
               <div class="space-y-2">
                 <label class="text-sm font-bold text-on-surface-variant px-1">Phường / Xã</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">location_city</span>
+                  <span
+                    class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">location_city</span>
                   <select v-model="form.shipping_ward_id" :disabled="!form.shipping_province_id" required
                     class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none disabled:opacity-50">
                     <option value="">Chọn Phường/Xã</option>
@@ -74,7 +84,8 @@
               <div class="space-y-2 sm:col-span-2">
                 <label class="text-sm font-bold text-on-surface-variant px-1">Địa chỉ cụ thể</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">home</span>
+                  <span
+                    class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">home</span>
                   <input v-model="form.shipping_address" type="text" required
                     class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     placeholder="Số nhà, tên ngõ, đường...">
@@ -94,7 +105,8 @@
             <div class="lg:hidden mt-8 pt-6 border-t border-outline-variant">
               <button type="submit" :disabled="submitting"
                 class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2">
-                <span v-if="submitting" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span v-if="submitting"
+                  class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 Xác nhận Đặt hàng
               </button>
             </div>
@@ -105,9 +117,10 @@
         <div class="w-full lg:w-[400px] shrink-0 space-y-6">
           <div class="bg-white rounded-2xl shadow-sm border border-outline-variant p-6 sticky top-24">
             <h3 class="font-bold text-lg mb-4 text-on-surface">Thông tin đơn hàng</h3>
-            
+
             <div class="flex gap-4 pb-4 border-b border-outline-variant mb-4">
-              <img :src="post.images?.[0]?.image_path || 'https://via.placeholder.com/150'" class="w-20 h-20 rounded-xl object-cover border border-outline-variant">
+              <img :src="post.images?.[0]?.image_path || 'https://via.placeholder.com/150'"
+                class="w-20 h-20 rounded-xl object-cover border border-outline-variant">
               <div class="flex-1">
                 <h4 class="font-bold text-sm text-on-surface line-clamp-2 leading-snug">{{ post.title }}</h4>
                 <div class="mt-2 text-error font-extrabold text-lg">{{ formatPrice(post.price) }}đ</div>
@@ -134,7 +147,8 @@
               <!-- Submit button on Desktop -->
               <button @click="submitOrder" :disabled="submitting"
                 class="hidden lg:flex w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 justify-center items-center gap-2">
-                <span v-if="submitting" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span v-if="submitting"
+                  class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 Xác nhận Đặt hàng
               </button>
             </div>
@@ -157,6 +171,7 @@ const authStore = useAuthStore();
 
 const loading = ref(true);
 const submitting = ref(false);
+const useMyInfo = ref(false);
 const post = ref(null);
 const provinces = ref([]);
 const wards = ref([]);
@@ -172,6 +187,26 @@ const form = ref({
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN').format(price);
+};
+
+const toggleMyInfo = async () => {
+  if (useMyInfo.value && authStore.user) {
+    form.value.shipping_name = authStore.user.name || '';
+    form.value.shipping_phone = authStore.user.phone || '';
+    form.value.shipping_address = authStore.user.address || '';
+    form.value.shipping_province_id = authStore.user.province_id || '';
+    if (form.value.shipping_province_id) {
+      await fetchInitialWards(form.value.shipping_province_id);
+    }
+    form.value.shipping_ward_id = authStore.user.ward_id || '';
+  } else {
+    form.value.shipping_name = '';
+    form.value.shipping_phone = '';
+    form.value.shipping_address = '';
+    form.value.shipping_province_id = '';
+    form.value.shipping_ward_id = '';
+    wards.value = [];
+  }
 };
 
 const fetchProvinces = async () => {
@@ -211,31 +246,21 @@ const fetchPostDetail = async () => {
     const slug = route.params.slug;
     const response = await axios.get(`/api/posts/${slug}`);
     post.value = response.data.data;
-    
+
     // Check validity
     if (post.value.user_id === authStore.user?.id) {
       alert('Bạn không thể mua sản phẩm của chính mình.');
       router.push('/');
       return;
     }
-    
+
     if (post.value.status !== 'active') {
       alert('Sản phẩm này hiện không thể mua.');
       router.push('/');
       return;
     }
 
-    // Prefill form
-    if (authStore.user) {
-      form.value.shipping_name = authStore.user.name || '';
-      form.value.shipping_phone = authStore.user.phone || '';
-      form.value.shipping_address = authStore.user.address || '';
-      form.value.shipping_province_id = authStore.user.province_id || '';
-      if (form.value.shipping_province_id) {
-        await fetchInitialWards(form.value.shipping_province_id);
-      }
-      form.value.shipping_ward_id = authStore.user.ward_id || '';
-    }
+    // Bỏ tự động điền thông tin (người dùng sẽ tự tick nếu muốn)
   } catch (error) {
     console.error('Lỗi khi tải thông tin:', error);
     alert('Không thể tải thông tin sản phẩm.');
@@ -248,6 +273,12 @@ const fetchPostDetail = async () => {
 const submitOrder = async () => {
   if (!form.value.shipping_name || !form.value.shipping_phone || !form.value.shipping_address || !form.value.shipping_province_id || !form.value.shipping_ward_id) {
     alert('Vui lòng điền đầy đủ thông tin giao hàng bắt buộc.');
+    return;
+  }
+
+  const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
+  if (!phoneRegex.test(form.value.shipping_phone)) {
+    alert('Số điện thoại không hợp lệ.');
     return;
   }
 
@@ -280,3 +311,28 @@ onMounted(() => {
 });
 </script>
 
+<style scoped>
+.checkbox-label-custom {
+  display: block;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--on-surface, #1e293b);
+}
+
+.checkbox-label-custom input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0 0.5rem 0 0 !important;
+  cursor: pointer;
+  vertical-align: -2px !important;
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+</style>

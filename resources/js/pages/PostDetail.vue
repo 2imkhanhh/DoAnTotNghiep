@@ -224,21 +224,23 @@ const loading = ref(true);
 const favoriteIds = ref([]); // Danh sách ID các tin đã yêu thích
 
 const getStatusClass = (status) => {
-  switch (Number(status)) {
-    case 0: return 'status-pending';
-    case 1: return 'status-active';
-    case 2: return 'status-sold';
-    case 3: return 'status-rejected';
+  switch (status) {
+    case 'pending': return 'status-pending';
+    case 'active': return 'status-active';
+    case 'sold': return 'status-sold';
+    case 'rejected': return 'status-rejected';
+    case 'hidden': return 'status-hidden';
     default: return '';
   }
 };
 
 const getStatusText = (status) => {
-  switch (Number(status)) {
-    case 0: return 'Chờ duyệt';
-    case 1: return 'Hiển thị';
-    case 2: return 'Đã bán';
-    case 3: return 'Bị từ chối';
+  switch (status) {
+    case 'pending': return 'Chờ duyệt';
+    case 'active': return 'Hiển thị';
+    case 'sold': return 'Đã bán';
+    case 'rejected': return 'Bị từ chối';
+    case 'hidden': return 'Tạm ẩn';
     default: return 'Không xác định';
   }
 };
@@ -1134,6 +1136,12 @@ onMounted(() => {
 .status-active {
   background-color: #22c55e;
   /* green-500 */
+  color: white;
+}
+
+.status-hidden {
+  background-color: #64748b;
+  /* slate-500 */
   color: white;
 }
 </style>

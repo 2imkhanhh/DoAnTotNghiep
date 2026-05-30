@@ -10,7 +10,7 @@
       <nav class="sidebar-nav">
         <router-link to="/seller-center/dashboard" class="nav-item">
           <span class="material-symbols-outlined">dashboard</span>
-          <span class="nav-label">Bảng điều khiển</span>
+          <span class="nav-label">Dashboard</span>
         </router-link>
         <router-link to="/seller-center/posts" class="nav-item">
           <span class="material-symbols-outlined">inventory_2</span>
@@ -26,8 +26,8 @@
         </router-link>
         <div class="nav-divider"></div>
         <router-link to="/" class="nav-item">
-          <span class="material-symbols-outlined">shopping_cart</span>
-          <span class="nav-label">Về kênh mua sắm</span>
+          <span class="material-symbols-outlined">home</span>
+          <span class="nav-label">Trang chủ</span>
         </router-link>
       </nav>
 

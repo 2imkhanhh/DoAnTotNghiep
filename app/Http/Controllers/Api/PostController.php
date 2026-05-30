@@ -184,17 +184,9 @@ class PostController extends Controller
         // Phân quyền xem tin đăng theo trạng thái
         $userId = auth('api')->id();
         
-        if (in_array($post->status, [2, 3]) && $post->user_id != $userId) {
-            $isBuyer = \App\Models\Order::where('post_id', $post->id)
-                ->whereIn('status', ['trading', 'completed'])
-                ->where('buyer_id', $userId)
-                ->exists();
-                
-            // Nếu không phải buyer, hoặc trạng thái là Bị từ chối (3)
-            if (!$isBuyer || $post->status == 'rejected') {
-                $statusMsg = $post->status == 'sold' ? 'Sản phẩm đã bán, bạn không có quyền xem' : 'Sản phẩm đã bị từ chối duyệt';
-                return response()->json(['success' => false, 'message' => $statusMsg], 403);
-            }
+        if (in_array($post->status, ['sold', 'rejected', 'hidden']) && $post->user_id != $userId) {
+            $statusMsg = $post->status == 'rejected' ? 'Sản phẩm đã bị từ chối duyệt' : 'Sản phẩm đã ẩn hoặc đã bán, bạn không có quyền xem';
+            return response()->json(['success' => false, 'message' => $statusMsg], 403);
         }
 
         // Lấy tin đăng liên quan (cùng danh mục, trừ tin hiện tại)
