@@ -79,8 +79,11 @@ const handleLogin = async () => {
 
     if (result.success) {
         alert('Đăng nhập thành công!');
-        // Thay vì dùng window.location.href, chúng ta dùng router.push để trải nghiệm mượt hơn
-        router.push('/');
+        if (authStore.isAdmin) {
+            router.push('/admin/dashboard');
+        } else {
+            router.push('/');
+        }
     } else {
         errorMessage.value = result.message;
     }

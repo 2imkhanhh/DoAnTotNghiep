@@ -1,5 +1,10 @@
 <template>
-  <div class="min-h-screen bg-surface flex flex-col font-sans text-on-surface"
+  <div v-if="authStore.isLoggedIn && !authStore.user" class="h-screen w-screen flex items-center justify-center bg-surface">
+     <!-- Màn hình chờ khi đang fetch user lần đầu để tránh nhấp nháy UI -->
+     <span class="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+  </div>
+
+  <div v-else class="min-h-screen bg-surface flex flex-col font-sans text-on-surface"
     :class="{ 'items-center justify-center p-4': isAuthRoute }">
     <!-- Full Header cho các trang thường -->
     <Header v-if="!isAuthRoute && !isAdminRoute && !isSellerRoute" />
@@ -32,11 +37,13 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthStore } from "./stores/auth";
 import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
 import ChatbotWidget from "./components/ChatbotWidget.vue";
 
 const route = useRoute();
+const authStore = useAuthStore();
 const isAuthRoute = computed(() =>
   ["/login", "/register", "/forgot-password", "/reset-password"].includes(
     route.path,

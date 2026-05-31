@@ -22,6 +22,16 @@ class AdminUserController extends Controller
             });
         }
 
+        // Lọc theo vai trò (role)
+        if ($request->has('role') && $request->role !== null && $request->role !== '') {
+            $query->where('role', $request->role);
+        }
+
+        // Lọc theo trạng thái (status)
+        if ($request->has('status') && $request->status !== null && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+
         // Eager load các relation dùng cho thuộc tính appended (tránh lỗi N+1)
         $query->with(['posts', 'receivedReviews'])->withCount('posts');
 

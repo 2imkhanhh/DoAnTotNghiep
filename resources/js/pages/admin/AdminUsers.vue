@@ -9,10 +9,47 @@
           <span
             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
         </div>
-        <button @click="fetchUsers"
-          class="bg-primary text-on-primary px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary-container transition-colors shrink-0">
-          <span class="material-symbols-outlined">filter_list</span> Lọc
-        </button>
+        <div class="flex flex-wrap gap-3 w-full md:w-auto">
+          <!-- Filter Role -->
+          <div class="relative min-w-[140px] custom-dropdown-role">
+            <div @click="isRoleDropdownOpen = !isRoleDropdownOpen; isStatusDropdownOpen = false" class="bg-surface-container border border-outline-variant rounded-xl px-4 py-2 text-sm font-medium cursor-pointer flex items-center justify-between hover:border-primary transition-colors shadow-sm select-none">
+              <span class="text-on-surface">{{ selectedRoleLabel }}</span>
+              <span class="material-symbols-outlined text-on-surface-variant text-[18px] transition-transform duration-300" :class="{ 'rotate-180': isRoleDropdownOpen }">expand_more</span>
+            </div>
+            
+            <div v-if="isRoleDropdownOpen" class="absolute z-20 w-full mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div 
+                v-for="option in roleOptions" 
+                :key="option.value"
+                @click="selectRole(option.value)"
+                class="px-4 py-3 text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center"
+                :class="{ 'text-primary bg-primary/5 font-bold border-l-2 border-primary': roleFilter === option.value, 'border-l-2 border-transparent text-on-surface-variant': roleFilter !== option.value }"
+              >
+                {{ option.label }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Status -->
+          <div class="relative min-w-[150px] custom-dropdown-status">
+            <div @click="isStatusDropdownOpen = !isStatusDropdownOpen; isRoleDropdownOpen = false" class="bg-surface-container border border-outline-variant rounded-xl px-4 py-2 text-sm font-medium cursor-pointer flex items-center justify-between hover:border-primary transition-colors shadow-sm select-none">
+              <span class="text-on-surface">{{ selectedStatusLabel }}</span>
+              <span class="material-symbols-outlined text-on-surface-variant text-[18px] transition-transform duration-300" :class="{ 'rotate-180': isStatusDropdownOpen }">expand_more</span>
+            </div>
+            
+            <div v-if="isStatusDropdownOpen" class="absolute z-20 right-0 md:left-0 w-full md:min-w-[170px] mt-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div 
+                v-for="option in statusOptions" 
+                :key="option.value"
+                @click="selectStatus(option.value)"
+                class="px-4 py-3 text-sm font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center"
+                :class="{ 'text-primary bg-primary/5 font-bold border-l-2 border-primary': statusFilter === option.value, 'border-l-2 border-transparent text-on-surface-variant': statusFilter !== option.value }"
+              >
+                {{ option.label }}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
@@ -135,23 +172,72 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
 
 const users = ref([]);
 const loading = ref(false);
 const searchQuery = ref('');
+const roleFilter = ref('');
+const statusFilter = ref('');
+const isRoleDropdownOpen = ref(false);
+const isStatusDropdownOpen = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
+
+const roleOptions = [
+  { label: 'Tất cả vai trò', value: '' },
+  { label: 'Admin', value: '1' },
+  { label: 'User', value: '0' }
+];
+
+const statusOptions = [
+  { label: 'Tất cả trạng thái', value: '' },
+  { label: 'Hoạt động', value: '1' },
+  { label: 'Bị khóa', value: '0' }
+];
+
+const selectedRoleLabel = computed(() => {
+  const opt = roleOptions.find(o => o.value === roleFilter.value);
+  return opt ? opt.label : 'Tất cả vai trò';
+});
+
+const selectedStatusLabel = computed(() => {
+  const opt = statusOptions.find(o => o.value === statusFilter.value);
+  return opt ? opt.label : 'Tất cả trạng thái';
+});
+
+const selectRole = (val) => {
+  roleFilter.value = val;
+  isRoleDropdownOpen.value = false;
+  fetchUsers(1);
+};
+
+const selectStatus = (val) => {
+  statusFilter.value = val;
+  isStatusDropdownOpen.value = false;
+  fetchUsers(1);
+};
+
+const closeDropdowns = (e) => {
+  if (!e.target.closest('.custom-dropdown-role')) {
+    isRoleDropdownOpen.value = false;
+  }
+  if (!e.target.closest('.custom-dropdown-status')) {
+    isStatusDropdownOpen.value = false;
+  }
+};
 
 const fetchUsers = async (page = 1) => {
   loading.value = true;
   try {
     const response = await axios.get('/api/admin/users', {
       params: {
-        page: page,
-        search: searchQuery.value
+        page: typeof page === 'number' ? page : 1,
+        search: searchQuery.value,
+        role: roleFilter.value,
+        status: statusFilter.value
       }
     });
     if (response.data.success) {
@@ -204,5 +290,10 @@ const toggleStatus = async (user) => {
 
 onMounted(() => {
   fetchUsers();
+  window.addEventListener('click', closeDropdowns);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeDropdowns);
 });
 </script>

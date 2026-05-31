@@ -146,6 +146,12 @@ const routes = [
         name: 'AdminUsers',
         component: () => import('./pages/admin/AdminUsers.vue'),
         meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/profile',
+        name: 'AdminProfile',
+        component: () => import('./pages/admin/AdminProfile.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
 ];
 
@@ -177,13 +183,19 @@ router.beforeEach(async (to, from, next) => {
         return next({ name: 'Login' });
     }
 
-    // 2. Kiểm tra quyền truy cập route yêu cầu Admin
+    // 2. Chặn Admin truy cập vào các trang dành cho User (bao gồm trang chủ, marketplace, v.v.)
+    if (isLoggedIn && isAdmin && !to.path.startsWith('/admin')) {
+        return next({ name: 'AdminDashboard' });
+    }
+
+    // 3. Kiểm tra quyền truy cập route yêu cầu Admin (Chỉ Admin mới được vào /admin)
     if (to.meta.requiresAdmin && !isAdmin) {
         return next({ name: 'Home' });
     }
 
-    // 3. Nếu đã đăng nhập thì không cho vào trang Login/Register
+    // 4. Nếu đã đăng nhập thì không cho vào trang Login/Register
     if (to.meta.guestOnly && isLoggedIn) {
+        if (isAdmin) return next({ name: 'AdminDashboard' });
         return next({ name: 'Home' });
     }
 

@@ -29,14 +29,14 @@
           <span class="nav-label">Người dùng</span>
         </router-link>
         <div class="nav-divider"></div>
-        <!-- <router-link to="/admin/settings" class="nav-item">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="nav-label">Cài đặt</span>
-        </router-link> -->
-        <router-link to="/" class="nav-item">
-          <span class="material-symbols-outlined">home</span>
-          <span class="nav-label">Về trang chủ</span>
+        <router-link to="/admin/profile" class="nav-item">
+          <span class="material-symbols-outlined">manage_accounts</span>
+          <span class="nav-label">Thông tin tài khoản</span>
         </router-link>
+        <button @click="handleLogout" class="nav-item logout-btn cursor-pointer w-full text-left bg-transparent border-0">
+          <span class="material-symbols-outlined">logout</span>
+          <span class="nav-label">Đăng xuất</span>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -80,6 +80,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 
 defineProps({
@@ -90,7 +91,13 @@ defineProps({
 });
 
 const authStore = useAuthStore();
+const router = useRouter();
 const isSidebarCollapsed = ref(false);
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push('/login');
+};
 </script>
 
 <style scoped>
@@ -162,6 +169,11 @@ const isSidebarCollapsed = ref(false);
 .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: white;
+}
+
+.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
 }
 
 .nav-item.router-link-active {
