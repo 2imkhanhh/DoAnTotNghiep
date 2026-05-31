@@ -174,6 +174,11 @@ class PostController extends Controller
             ->withExists(['favoritedBy as is_favorited' => function ($query) {
                 $query->where('user_id', auth('api')->id());
             }])
+            // Kiểm tra xem người dùng hiện tại đã đặt hàng sản phẩm này chưa
+            ->withExists(['orders as is_ordered' => function ($query) {
+                $query->where('buyer_id', auth('api')->id())
+                      ->whereIn('status', ['pending', 'confirmed', 'shipping']);
+            }])
             ->where('slug', $slug)
             ->first();
 

@@ -34,12 +34,17 @@ class Post extends Model
         'price' => 'decimal:2'
     ];
 
-    protected $appends = ['is_favorited'];
+    protected $appends = ['is_favorited', 'is_ordered'];
 
     public function getIsFavoritedAttribute()
     {
         // Trả về giá trị từ subquery withExists, ép kiểu về boolean
         return (bool) ($this->attributes['is_favorited'] ?? false);
+    }
+
+    public function getIsOrderedAttribute()
+    {
+        return (bool) ($this->attributes['is_ordered'] ?? false);
     }
 
     // Mối quan hệ: Một tin đăng thuộc về MỘT người dùng

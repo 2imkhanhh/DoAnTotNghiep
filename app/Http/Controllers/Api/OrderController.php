@@ -33,6 +33,16 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Bài đăng này không thể mua được (có thể đã bán hoặc đang giao dịch).'], 400);
         }
 
+        // Kiểm tra xem người dùng đã đặt đơn hàng này chưa (tránh spam)
+        $existingOrder = Order::where('post_id', $post->id)
+            ->where('buyer_id', Auth::id())
+            ->whereIn('status', ['pending', 'confirmed', 'shipping'])
+            ->exists();
+
+        if ($existingOrder) {
+            return response()->json(['success' => false, 'message' => 'Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.'], 400);
+        }
+
         $Order = Order::create([
             'post_id' => $post->id,
             'seller_id' => $post->user_id,

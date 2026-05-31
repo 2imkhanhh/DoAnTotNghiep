@@ -104,10 +104,10 @@
             <!-- Submit button on Mobile -->
             <div class="lg:hidden mt-8 pt-6 border-t border-outline-variant">
               <button type="submit" :disabled="submitting"
-                class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2">
+                class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer">
                 <span v-if="submitting"
                   class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Xác nhận Đặt hàng
+                Xác nhận đặt hàng
               </button>
             </div>
           </form>
@@ -146,7 +146,7 @@
 
               <!-- Submit button on Desktop -->
               <button @click="submitOrder" :disabled="submitting"
-                class="hidden lg:flex w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 justify-center items-center gap-2">
+                class="hidden lg:flex w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 justify-center items-center gap-2 cursor-pointer">
                 <span v-if="submitting"
                   class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 Xác nhận Đặt hàng
@@ -257,6 +257,12 @@ const fetchPostDetail = async () => {
     if (post.value.status !== 'active') {
       alert('Sản phẩm này hiện không thể mua.');
       router.push('/');
+      return;
+    }
+
+    if (post.value.is_ordered) {
+      alert('Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.');
+      router.push('/my-orders');
       return;
     }
 

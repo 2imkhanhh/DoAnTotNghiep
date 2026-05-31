@@ -107,7 +107,11 @@
             <div class="price-card card">
               <div class="price-value">{{ formatPrice(post.price) }}đ</div>
               <div class="action-buttons">
-                <button @click="goToCheckout" class="buy-btn">
+                <button v-if="post.is_ordered" class="buy-btn bg-slate-400 hover:bg-slate-400 cursor-not-allowed opacity-70" disabled title="Bạn đã đặt mua sản phẩm này rồi">
+                  <span class="material-symbols-outlined">shopping_cart_checkout</span>
+                  Đã đặt hàng
+                </button>
+                <button v-else @click="goToCheckout" class="buy-btn">
                   <span class="material-symbols-outlined">shopping_cart_checkout</span>
                   Mua ngay
                 </button>
