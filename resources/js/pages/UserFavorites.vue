@@ -7,7 +7,7 @@
           <h1 class="text-3xl font-extrabold text-slate-900">Tin đăng yêu thích</h1>
           <p class="text-slate-500 mt-1">Danh sách các sản phẩm bạn đã lưu để xem lại sau.</p>
         </div>
-        <router-link to="/"
+        <router-link to="/marketplace"
           class="inline-flex items-center gap-2 bg-white text-slate-700 border border-slate-200 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm w-fit">
           <span class="material-symbols-outlined">explore</span>
           Khám phá thêm
@@ -82,7 +82,7 @@
         </div>
 
         <div v-if="pagination.last_page > 1" class="flex justify-center my-6 gap-2">
-          <button :disabled="pagination.current_page === 1" @click="fetchFavorites(pagination.current_page - 1)" 
+          <button :disabled="pagination.current_page === 1" @click="fetchFavorites(pagination.current_page - 1)"
             class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
@@ -96,7 +96,8 @@
             </button>
           </template>
 
-          <button :disabled="pagination.current_page === pagination.last_page" @click="fetchFavorites(pagination.current_page + 1)" 
+          <button :disabled="pagination.current_page === pagination.last_page"
+            @click="fetchFavorites(pagination.current_page + 1)"
             class="w-10 h-10 rounded-lg font-bold transition-all bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed">
             <span class="material-symbols-outlined">chevron_right</span>
           </button>
@@ -289,4 +290,3 @@ onMounted(() => {
   animation-delay: 0.4s;
 }
 </style>
-

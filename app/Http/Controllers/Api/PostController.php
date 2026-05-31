@@ -100,6 +100,12 @@ class PostController extends Controller
             $query->where('province_name', $province_name);
         }
 
+        // Lọc theo từ khóa tìm kiếm
+        $search = $request->get('search');
+        if ($search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
         // Lọc theo khoảng giá
         if ($price_min !== null && $price_min !== '') {
             $query->where('price', '>=', $price_min);

@@ -362,6 +362,7 @@ const showSortDropdown = ref(false);
 const showProvinceDropdown = ref(false);
 const showCategoryDropdown = ref(false);
 const provinceSearchQuery = ref('');
+const searchKeyword = ref(route.query.search || '');
 
 // Dynamic Category Attribute Filter states
 const categoryAttributes = ref([]); // Danh sách attribute có type=select của danh mục hiện tại
@@ -797,6 +798,9 @@ const buildQueryUrl = (page) => {
   if (maxPrice.value !== null) {
     url += `&price_max=${maxPrice.value}`;
   }
+  if (searchKeyword.value) {
+    url += `&search=${encodeURIComponent(searchKeyword.value)}`;
+  }
   // Thêm specs vào query
   Object.entries(selectedSpecs.value).forEach(([key, value]) => {
     if (value !== null && value !== '') {
@@ -916,6 +920,13 @@ watch(() => route.path, () => {
   // Only reload if we are on a category or mua-ban route
   if (route.path.startsWith('/category/') || route.path === '/marketplace') {
     loadCategoryData();
+  }
+});
+
+watch(() => route.query.search, (newSearch) => {
+  if (route.path.startsWith('/category/') || route.path === '/marketplace') {
+    searchKeyword.value = newSearch || '';
+    reloadPosts();
   }
 });
 </script>

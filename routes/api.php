@@ -85,6 +85,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 // Nhóm route quản trị (Admin)
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
     
+    Route::get('/admin/dashboard/stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'stats']);
+
     // Category Admin Routes
     Route::get('/admin/categories', [CategoryController::class, 'indexAll']);
     Route::post('/categories', [CategoryController::class, 'store']);

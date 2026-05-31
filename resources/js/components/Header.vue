@@ -15,9 +15,11 @@
                 <div class="flex-1 max-w-2xl px-4 ml-8 hidden md:block">
                     <div class="relative w-full">
                         <input type="text"
+                            v-model="searchQuery"
+                            @keyup.enter="handleSearch"
                             class="w-full bg-surface-container border border-outline-variant text-on-surface rounded-full pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                             placeholder="Tìm kiếm điện thoại, laptop, xe cộ...">
-                        <button class="absolute right-0 top-0 mt-2 mr-3 text-on-surface-variant hover:text-primary">
+                        <button @click="handleSearch" class="absolute right-0 top-0 mt-2 mr-3 text-on-surface-variant hover:text-primary cursor-pointer">
                             <span class="material-symbols-outlined">search</span>
                         </button>
                     </div>
@@ -115,12 +117,24 @@
 </template>
 
 <script setup>
-import { onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useChatStore } from '../stores/chat';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+
+const searchQuery = ref('');
+
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        router.push({ path: '/marketplace', query: { search: searchQuery.value.trim() } });
+    } else {
+        router.push({ path: '/marketplace' });
+    }
+};
 
 onMounted(async () => {
     await authStore.fetchUser();

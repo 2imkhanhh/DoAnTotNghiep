@@ -17,19 +17,19 @@
           <span class="material-symbols-outlined">article</span>
         </div>
         <div class="stat-details">
-          <h3>Tin đăng mới</h3>
-          <p class="stat-value">{{ stats.posts }}</p>
+          <h3>Tin đang hiển thị</h3>
+          <p class="stat-value">{{ stats.active_posts }}</p>
           <p class="stat-change positive">+5.4% hôm nay</p>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon categories">
-          <span class="material-symbols-outlined">category</span>
+        <div class="stat-icon orders">
+          <span class="material-symbols-outlined">local_shipping</span>
         </div>
         <div class="stat-details">
-          <h3>Danh mục</h3>
-          <p class="stat-value">{{ stats.categories }}</p>
-          <p class="stat-change">Đang hoạt động</p>
+          <h3>Đơn hàng</h3>
+          <p class="stat-value">{{ stats.completed_orders }}</p>
+          <p class="stat-change positive">Giao dịch thành công</p>
         </div>
       </div>
       <div class="stat-card">
@@ -123,32 +123,38 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
 
 const stats = ref({
-  users: '1,248',
-  posts: '452',
-  categories: '12',
-  reports: '8'
+  users: 0,
+  active_posts: 0,
+  completed_orders: 0,
+  reports: 0
 });
 
-const recentPosts = ref([
-  { id: 1, user_name: 'Minh Tuấn', title: 'iPhone 13 Pro Max cũ 99%', price: 15500000, created_at: '2026-05-14T08:30:00Z' },
-  { id: 2, user_name: 'Hải Yến', title: 'Tủ lạnh Samsung Inverter', price: 4200000, created_at: '2026-05-14T09:15:00Z' },
-  { id: 3, user_name: 'Thành Nam', title: 'Xe máy Honda Vision 2021', price: 28000000, created_at: '2026-05-14T09:45:00Z' },
-]);
-
-const topUsers = ref([
-  { id: 1, name: 'Nguyễn Văn A', email: 'vana@gmail.com', post_count: 24, rating: 4.8 },
-  { id: 2, name: 'Trần Thị B', email: 'thib@gmail.com', post_count: 18, rating: 4.9 },
-  { id: 3, name: 'Lê Văn C', email: 'vanc@gmail.com', post_count: 15, rating: 4.7 },
-]);
+const recentPosts = ref([]);
+const topUsers = ref([]);
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price);
 const formatDate = (date) => new Date(date).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
+const fetchDashboardData = async () => {
+  try {
+    const response = await axios.get('/api/admin/dashboard/stats');
+    if (response.data.success) {
+      const data = response.data.data;
+      stats.value = data.stats;
+      recentPosts.value = data.recentPosts;
+      topUsers.value = data.topUsers;
+    }
+  } catch (error) {
+    console.error('Lỗi lấy dữ liệu dashboard:', error);
+  }
+};
+
 onMounted(() => {
-  // Logic to fetch actual stats from API would go here
+  fetchDashboardData();
 });
 </script>
 
@@ -199,7 +205,7 @@ onMounted(() => {
   color: #d97706;
 }
 
-.stat-icon.categories {
+.stat-icon.orders {
   background: #dcfce7;
   color: #16a34a;
 }
