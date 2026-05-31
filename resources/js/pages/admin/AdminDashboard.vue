@@ -9,7 +9,9 @@
         <div class="stat-details">
           <h3>Người dùng</h3>
           <p class="stat-value">{{ stats.users }}</p>
-          <p class="stat-change positive">+12% tháng này</p>
+          <p class="stat-change" :class="stats.users_percent >= 0 ? 'positive' : 'negative'">
+            {{ stats.users_percent > 0 ? '+' : '' }}{{ stats.users_percent }}% tháng này
+          </p>
         </div>
       </div>
       <div class="stat-card">
@@ -19,7 +21,9 @@
         <div class="stat-details">
           <h3>Tin đang hiển thị</h3>
           <p class="stat-value">{{ stats.active_posts }}</p>
-          <p class="stat-change positive">+5.4% hôm nay</p>
+          <p class="stat-change" :class="stats.posts_percent >= 0 ? 'positive' : 'negative'">
+            {{ stats.posts_percent > 0 ? '+' : '' }}{{ stats.posts_percent }}% hôm nay
+          </p>
         </div>
       </div>
       <div class="stat-card">
@@ -29,7 +33,9 @@
         <div class="stat-details">
           <h3>Đơn hàng</h3>
           <p class="stat-value">{{ stats.completed_orders }}</p>
-          <p class="stat-change positive">Giao dịch thành công</p>
+          <p class="stat-change" :class="stats.orders_percent >= 0 ? 'positive' : 'negative'">
+            {{ stats.orders_percent > 0 ? '+' : '' }}{{ stats.orders_percent }}% tháng này
+          </p>
         </div>
       </div>
       <div class="stat-card">
@@ -67,7 +73,7 @@
               <tr v-for="post in recentPosts" :key="post.id">
                 <td>
                   <div class="user-cell">
-                    <img :src="`https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
+                    <img :src="post.user_avatar || `https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
                     <span>{{ post.user_name }}</span>
                   </div>
                 </td>
@@ -101,7 +107,7 @@
         <div class="user-list">
           <div v-for="user in topUsers" :key="user.id" class="user-item">
             <div class="user-info">
-              <img :src="`https://ui-avatars.com/api/?name=${user.name}`" alt="">
+              <img :src="user.avatar || `https://ui-avatars.com/api/?name=${user.name}`" alt="">
               <div>
                 <p class="name">{{ user.name }}</p>
                 <p class="email">{{ user.email }}</p>
@@ -128,8 +134,11 @@ import AdminLayout from '../../components/admin/AdminLayout.vue';
 
 const stats = ref({
   users: 0,
+  users_percent: 0,
   active_posts: 0,
+  posts_percent: 0,
   completed_orders: 0,
+  orders_percent: 0,
   reports: 0
 });
 
