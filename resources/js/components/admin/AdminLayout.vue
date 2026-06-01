@@ -60,10 +60,6 @@
           <h1 class="page-title">{{ title }}</h1>
         </div>
         <div class="topbar-right">
-          <div class="search-box">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Tìm kiếm...">
-          </div>
           <button class="icon-btn">
             <span class="material-symbols-outlined">notifications</span>
             <span class="dot"></span>

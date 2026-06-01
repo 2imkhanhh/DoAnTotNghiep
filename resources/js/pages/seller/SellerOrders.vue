@@ -120,12 +120,12 @@
 
               <button v-if="tx.status === 'shipping'" @click="deliverOrder(tx.id)"
                 class="action-btn w-full py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 hover:shadow-lg hover:shadow-green-600/30 transition-all flex items-center justify-center gap-1.5">
-                <span class="material-symbols-outlined text-[18px]">task_alt</span> Đã giao
+                <span class="material-symbols-outlined text-[18px]">check_circle</span> Đã giao
               </button>
 
               <div v-if="tx.status === 'delivered'"
                 class="w-full py-2.5 bg-green-50 text-green-700 rounded-xl font-bold text-sm border border-green-200 flex items-center justify-center gap-1.5 select-none">
-                <span class="material-symbols-outlined text-[18px]">verified</span> Hoàn thành
+                <span class="material-symbols-outlined text-[18px]">check_circle</span> Hoàn thành
               </div>
               <div v-if="tx.status === 'cancelled' || tx.status === 'rejected'"
                 class="w-full py-2.5 bg-slate-100 text-slate-500 rounded-xl font-bold text-sm border border-slate-200 flex items-center justify-center gap-1.5 select-none">

@@ -10,7 +10,7 @@
           <h3>Người dùng</h3>
           <p class="stat-value">{{ stats.users }}</p>
           <p class="stat-change" :class="stats.users_percent >= 0 ? 'positive' : 'negative'">
-            {{ stats.users_percent > 0 ? '+' : '' }}{{ stats.users_percent }}% tháng này
+            {{ stats.users_percent > 0 ? '+' : '' }}{{ stats.users_percent }}% hôm nay
           </p>
         </div>
       </div>
@@ -34,7 +34,7 @@
           <h3>Đơn hàng</h3>
           <p class="stat-value">{{ stats.completed_orders }}</p>
           <p class="stat-change" :class="stats.orders_percent >= 0 ? 'positive' : 'negative'">
-            {{ stats.orders_percent > 0 ? '+' : '' }}{{ stats.orders_percent }}% tháng này
+            {{ stats.orders_percent > 0 ? '+' : '' }}{{ stats.orders_percent }}% hôm nay
           </p>
         </div>
       </div>

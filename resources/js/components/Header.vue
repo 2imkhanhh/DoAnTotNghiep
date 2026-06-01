@@ -85,9 +85,6 @@
                                     <router-link to="/profile"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">Trang
                                         cá nhân</router-link>
-                                    <router-link v-if="authStore.isAdmin" to="/admin/dashboard"
-                                        class="block px-4 py-2 text-sm text-primary font-bold hover:bg-surface-container-low hover:text-primary">Quản
-                                        trị hệ thống</router-link>
                                     <router-link to="/seller-center/dashboard"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary font-bold text-primary">Cửa
                                         hàng</router-link>

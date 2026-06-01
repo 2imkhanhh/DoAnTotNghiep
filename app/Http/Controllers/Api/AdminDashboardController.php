@@ -14,24 +14,23 @@ class AdminDashboardController extends Controller
 {
     public function stats(Request $request)
     {
-        $now = Carbon::now();
-        $lastMonth = Carbon::now()->subMonth();
+        $now = Carbon::today();
         $yesterday = Carbon::yesterday();
 
-        // Tính % User (Tháng này so với tháng trước)
-        $usersThisMonth = User::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
-        $usersLastMonth = User::whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
-        $usersPercentChange = $usersLastMonth > 0 ? round((($usersThisMonth - $usersLastMonth) / $usersLastMonth) * 100, 1) : ($usersThisMonth > 0 ? 100 : 0);
+        // Tính % User (Hôm nay so với hôm qua)
+        $usersToday = User::whereDate('created_at', $now)->count();
+        $usersYesterday = User::whereDate('created_at', $yesterday)->count();
+        $usersPercentChange = $usersYesterday > 0 ? round((($usersToday - $usersYesterday) / $usersYesterday) * 100, 1) : ($usersToday > 0 ? 100 : 0);
 
-        // Tính % Tin đăng hiển thị (Hôm nay so với hôm qua - dựa theo created_at của tin active)
-        $postsToday = Post::where('status', 'active')->whereDate('created_at', Carbon::today())->count();
+        // Tính % Tin đăng hiển thị (Hôm nay so với hôm qua)
+        $postsToday = Post::where('status', 'active')->whereDate('created_at', $now)->count();
         $postsYesterday = Post::where('status', 'active')->whereDate('created_at', $yesterday)->count();
         $postsPercentChange = $postsYesterday > 0 ? round((($postsToday - $postsYesterday) / $postsYesterday) * 100, 1) : ($postsToday > 0 ? 100 : 0);
 
-        // Tính % Đơn hàng thành công (Tháng này so với tháng trước)
-        $ordersThisMonth = Order::where('status', 'delivered')->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
-        $ordersLastMonth = Order::where('status', 'delivered')->whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
-        $ordersPercentChange = $ordersLastMonth > 0 ? round((($ordersThisMonth - $ordersLastMonth) / $ordersLastMonth) * 100, 1) : ($ordersThisMonth > 0 ? 100 : 0);
+        // Tính % Đơn hàng thành công (Hôm nay so với hôm qua)
+        $ordersToday = Order::where('status', 'delivered')->whereDate('created_at', $now)->count();
+        $ordersYesterday = Order::where('status', 'delivered')->whereDate('created_at', $yesterday)->count();
+        $ordersPercentChange = $ordersYesterday > 0 ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1) : ($ordersToday > 0 ? 100 : 0);
 
         // Thống kê cơ bản
         $stats = [

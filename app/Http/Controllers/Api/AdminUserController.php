@@ -33,7 +33,12 @@ class AdminUserController extends Controller
         }
 
         // Eager load các relation dùng cho thuộc tính appended (tránh lỗi N+1)
-        $query->with(['posts', 'receivedReviews'])->withCount('posts');
+        $query->with(['posts', 'receivedReviews'])->withCount([
+            'posts',
+            'ordersAsSeller as successful_orders_count' => function ($query) {
+                $query->where('status', 'delivered');
+            }
+        ]);
 
         $users = $query->orderBy('created_at', 'desc')->paginate(10);
 
