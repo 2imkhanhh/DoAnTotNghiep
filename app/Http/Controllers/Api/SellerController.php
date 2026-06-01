@@ -26,7 +26,7 @@ class SellerController extends Controller
         // 2. Order statistics (where user is the seller)
         $totalOrders = Order::where('seller_id', $userId)->count();
         $completedOrders = Order::where('seller_id', $userId)->where('status', 'delivered')->count();
-        $tradingOrders = Order::where('seller_id', $userId)->where('status', 'shipping')->count();
+        $shippingOrders = Order::where('seller_id', $userId)->where('status', 'shipping')->count();
         $requestedOrders = Order::where('seller_id', $userId)->where('status', 'pending')->count();
 
         // 3. Estimated Revenue (Sum of completed Orders' post price)
@@ -47,7 +47,7 @@ class SellerController extends Controller
                 'orders' => [
                     'total' => $totalOrders,
                     'completed' => $completedOrders,
-                    'trading' => $tradingOrders,
+                    'shipping' => $shippingOrders,
                     'requested' => $requestedOrders,
                 ],
                 'revenue' => $revenue

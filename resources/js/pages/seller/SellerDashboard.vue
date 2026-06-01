@@ -57,12 +57,12 @@
           </h2>
           <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-              <span class="font-medium text-slate-600">Đơn yêu cầu mới:</span>
+              <span class="font-medium text-slate-600">Đơn mới:</span>
               <span class="font-bold text-primary text-lg">{{ stats.orders.requested }}</span>
             </div>
             <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-              <span class="font-medium text-slate-600">Đang giao dịch:</span>
-              <span class="font-bold text-blue-600 text-lg">{{ stats.orders.trading }}</span>
+              <span class="font-medium text-slate-600">Đang vận chuyển:</span>
+              <span class="font-bold text-blue-600 text-lg">{{ stats.orders.shipping }}</span>
             </div>
             <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
               <span class="font-medium text-slate-600">Đã hoàn thành:</span>
@@ -74,7 +74,9 @@
             </div>
           </div>
           <div class="mt-6 text-center">
-            <router-link to="/seller-center/orders" class="text-primary hover:underline font-medium">Xem chi tiết đơn
+            <router-link to="/seller-center/orders"
+              class="inline-block text-primary font-medium transition-transform duration-300 hover:scale-105 hover:text-blue-700">Xem
+              chi tiết đơn
               hàng &rarr;</router-link>
           </div>
         </div>
@@ -105,7 +107,7 @@ import SellerLayout from '../../components/seller/SellerLayout.vue';
 const loading = ref(true);
 const stats = ref({
   posts: { total: 0, active: 0, pending: 0, sold: 0 },
-  orders: { total: 0, completed: 0, trading: 0, requested: 0 },
+  orders: { total: 0, completed: 0, shipping: 0, requested: 0 },
   revenue: 0
 });
 

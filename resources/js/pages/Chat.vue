@@ -207,27 +207,18 @@
     </div>
     </div>
 
-    <!-- Modal Đánh giá -->
-    <ReviewModal
-      :is-open="isReviewModalOpen"
-      :order-id="orderToReview?.id"
-      :seller-id="orderToReview?.seller_id"
-      :existing-review="orderToReview?.review"
-      :read-only="isReviewModalReadOnly"
-      @close="isReviewModalOpen = false"
-      @success="onReviewSuccess"
-    />
+
   </div>
 </template>
 
 <script setup>
-import { toast, confirmDialog } from '../utils/alert';
+import { toast } from '../utils/alert';
 
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useChatStore } from '../stores/chat';
-import ReviewModal from '../components/ReviewModal.vue';
+
 import axios from 'axios';
 
 const router = useRouter();
@@ -241,135 +232,7 @@ const newMessageText = ref('');
 const loadingMessages = ref(false);
 const sending = ref(false);
 const showSidebarOnMobile = ref(true);
-const isReviewModalOpen = ref(false);
-const orderToReview = ref(null);
 
-const scrollToWidget = (postId) => {
-    const el = document.getElementById(`widget-post-${postId}`);
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('ring-2', 'ring-primary');
-        setTimeout(() => el.classList.remove('ring-2', 'ring-primary'), 2000);
-    }
-};
-
-const getActiveOrder = (post) => {
-    return post?.orders?.find(t => t.status === 'requested' || t.status === 'trading' || t.status === 'completed');
-};
-
-const checkIsSeller = (post) => {
-    return post?.user_id === authStore.user?.id;
-};
-
-const checkIsTradingWithPartner = (order) => {
-    if (!order) return false;
-    const myId = authStore.user?.id;
-    const partnerId = chatStore.activeConversation?.partner?.id;
-    return (order.buyer_id === myId || order.seller_id === myId) &&
-           (order.buyer_id === partnerId || order.seller_id === partnerId);
-};
-
-const updateOrderUI = (order) => {
-    if (!order) return;
-    messages.value.forEach(msg => {
-        if (msg.post && Number(msg.post.id) === Number(order.post_id)) {
-            if (!msg.post.orders) msg.post.orders = [];
-            const index = msg.post.orders.findIndex(t => Number(t.id) === Number(order.id));
-            if (index !== -1) {
-                msg.post.orders[index] = order;
-            } else {
-                msg.post.orders.push(order);
-            }
-        }
-    });
-    if (chatStore.activeConversation) {
-        chatStore.fetchActiveOrders(chatStore.activeConversation.id);
-    }
-};
-
-const handleRequestOrder = async (postId) => {
-    try {
-        await chatStore.requestOrder(chatStore.activeConversation.id, postId);
-        // Gửi kèm một tin nhắn để thông báo cho người bán
-        const response = await axios.post(`/api/conversations/${chatStore.activeConversation.id}/messages`, {
-            message_text: 'Tôi muốn mua sản phẩm này',
-            post_id: null
-        });
-        if (response.data.success) {
-            messages.value.push(response.data.data);
-            const currentConv = chatStore.conversations.find(c => Number(c.id) === Number(chatStore.activeConversation.id));
-            if (currentConv) {
-                currentConv.latest_message = {
-                    id: response.data.data.id,
-                    message_text: response.data.data.message_text,
-                    sender_id: response.data.data.sender_id,
-                    is_read: false,
-                    created_at: response.data.data.created_at
-                };
-                chatStore.conversations = [
-                    currentConv,
-                    ...chatStore.conversations.filter(c => Number(c.id) !== Number(currentConv.id))
-                ];
-            }
-            await nextTick();
-            scrollToBottom();
-        }
-    } catch (error) {
-        toast(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu mua.', 'error');
-    }
-};
-
-const handleStartOrder = async (orderId) => {
-    if (await confirmDialog('Chấp nhận yêu cầu và bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
-        try {
-            await chatStore.startOrder(chatStore.activeConversation.id, orderId);
-        } catch (error) {
-            toast(error.response?.data?.message || 'Có lỗi xảy ra khi bắt đầu giao dịch.', 'error');
-        }
-    }
-};
-
-const handleCompleteOrder = async (orderId) => {
-    if (await confirmDialog('Xác nhận bạn đã nhận hàng/nhận tiền? Giao dịch sẽ chuyển sang trạng thái Đã Bán.')) {
-        try {
-            await chatStore.completeOrder(chatStore.activeConversation.id, orderId);
-        } catch (error) {
-            toast(error.response?.data?.message || 'Có lỗi xảy ra khi hoàn thành giao dịch.', 'error');
-        }
-    }
-};
-
-const handleCancelOrder = async (orderId) => {
-    if (await confirmDialog('Bạn có chắc chắn muốn hủy giao dịch này không?')) {
-        try {
-            await chatStore.cancelOrder(chatStore.activeConversation.id, orderId);
-        } catch (error) {
-            toast(error.response?.data?.message || 'Có lỗi xảy ra khi hủy giao dịch.', 'error');
-        }
-    }
-};
-
-const isReviewModalReadOnly = ref(false);
-
-const showReviewModal = (post, readOnly = false) => {
-    orderToReview.value = getActiveOrder(post);
-    isReviewModalReadOnly.value = readOnly;
-    isReviewModalOpen.value = true;
-};
-
-const canEditReview = (review) => {
-    if (!review) return false;
-    const reviewDate = new Date(review.created_at);
-    const now = new Date();
-    const diffHours = (now - reviewDate) / (1000 * 60 * 60);
-    return diffHours <= 24;
-};
-
-const onReviewSuccess = (review) => {
-    if (orderToReview.value) {
-        orderToReview.value.review = review;
-    }
-};
 
 const messagesContainer = ref(null);
 const messageTextarea = ref(null);
@@ -600,7 +463,6 @@ onMounted(async () => {
 
   // Đăng ký lắng nghe sự kiện khi có tin nhắn real-time tới
   window.addEventListener('new-message-received', handleIncomingMessage);
-  window.addEventListener('order-updated-event', (e) => updateOrderUI(e.detail));
 
   // Nhận tham số conversation_id hoặc post_id từ query (ví dụ khi nhấn "Nhắn tin ngay" từ trang chi tiết bài đăng)
   const queryConvId = route.query.conversation_id;
@@ -630,7 +492,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('new-message-received', handleIncomingMessage);
-  window.removeEventListener('order-updated-event', (e) => updateOrderUI(e.detail));
   if (chatStore.activeConversation && window.Echo) {
     window.Echo.leaveChannel(`chat.${chatStore.activeConversation.id}`);
   }

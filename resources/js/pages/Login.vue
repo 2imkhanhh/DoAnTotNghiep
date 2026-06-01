@@ -80,7 +80,6 @@ const handleLogin = async () => {
     });
 
     if (result.success) {
-        toast('Đăng nhập thành công!', 'success');
         if (authStore.isAdmin) {
             router.push('/admin/dashboard');
         } else {

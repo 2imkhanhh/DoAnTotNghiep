@@ -265,7 +265,7 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         // 1. Bật khiên bảo vệ Database (Order)
-        DB::beginOrder();
+        DB::beginTransaction();
 
         try {
             $data = $request->validated();
@@ -346,7 +346,7 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Tin đã bán không thể chỉnh sửa'], 403);
         }
 
-        DB::beginOrder();
+        DB::beginTransaction();
 
         try {
             $data = $request->validated();
