@@ -46,6 +46,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
@@ -90,7 +92,7 @@ const handleResetPassword = async () => {
         });
 
         if (response.ok || response.data.success || response.status === 200) {
-            alert('Đổi mật khẩu thành công! Bạn sẽ được chuyển hướng về trang Đăng nhập.');
+            toast('Đổi mật khẩu thành công! Bạn sẽ được chuyển hướng về trang Đăng nhập.', 'success');
             router.push('/login');
         }
     } catch (error) {

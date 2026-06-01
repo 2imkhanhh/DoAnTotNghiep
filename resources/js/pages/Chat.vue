@@ -221,6 +221,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -313,36 +315,36 @@ const handleRequestOrder = async (postId) => {
             scrollToBottom();
         }
     } catch (error) {
-        alert(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu mua.');
+        toast(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu mua.', 'error');
     }
 };
 
 const handleStartOrder = async (orderId) => {
-    if (confirm('Chấp nhận yêu cầu và bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
+    if (await confirmDialog('Chấp nhận yêu cầu và bắt đầu giao dịch với người này? Bài đăng sẽ bị khóa với những người khác.')) {
         try {
             await chatStore.startOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi bắt đầu giao dịch.');
+            toast(error.response?.data?.message || 'Có lỗi xảy ra khi bắt đầu giao dịch.', 'error');
         }
     }
 };
 
 const handleCompleteOrder = async (orderId) => {
-    if (confirm('Xác nhận bạn đã nhận hàng/nhận tiền? Giao dịch sẽ chuyển sang trạng thái Đã Bán.')) {
+    if (await confirmDialog('Xác nhận bạn đã nhận hàng/nhận tiền? Giao dịch sẽ chuyển sang trạng thái Đã Bán.')) {
         try {
             await chatStore.completeOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi hoàn thành giao dịch.');
+            toast(error.response?.data?.message || 'Có lỗi xảy ra khi hoàn thành giao dịch.', 'error');
         }
     }
 };
 
 const handleCancelOrder = async (orderId) => {
-    if (confirm('Bạn có chắc chắn muốn hủy giao dịch này không?')) {
+    if (await confirmDialog('Bạn có chắc chắn muốn hủy giao dịch này không?')) {
         try {
             await chatStore.cancelOrder(chatStore.activeConversation.id, orderId);
         } catch (error) {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi hủy giao dịch.');
+            toast(error.response?.data?.message || 'Có lỗi xảy ra khi hủy giao dịch.', 'error');
         }
     }
 };
@@ -512,7 +514,7 @@ const handleIncomingMessage = (e) => {
 
 // Mô phỏng đính kèm ảnh
 const simulateAttachment = () => {
-  alert('Tính năng gửi tệp tin & hình ảnh đang được nâng cấp phát triển trong giai đoạn tiếp theo.');
+  toast('Tính năng gửi tệp tin & hình ảnh đang được nâng cấp phát triển trong giai đoạn tiếp theo.', 'info');
 };
 
 // Định dạng thời gian cập nhật ở danh sách hội thoại

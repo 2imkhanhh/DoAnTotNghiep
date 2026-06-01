@@ -172,6 +172,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
@@ -268,58 +270,58 @@ const setTab = (status) => {
 };
 
 const acceptOrder = async (id) => {
-  if (!confirm('Bạn có chắc chắn muốn duyệt đơn hàng này và bắt đầu giao hàng?')) return;
+  if (!await confirmDialog('Bạn có chắc chắn muốn duyệt đơn hàng này và bắt đầu giao hàng?')) return;
   try {
     const token = localStorage.getItem('access_token');
     await axios.put(`/api/orders/${id}/accept`, {}, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Đã duyệt đơn hàng!');
+    toast('Đã duyệt đơn hàng!', 'info');
     fetchOrders(pagination.value.current_page);
   } catch (error) {
-    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 
 const startShipping = async (id) => {
-  if (!confirm('Bạn xác nhận bắt đầu giao đơn hàng này cho đơn vị vận chuyển?')) return;
+  if (!await confirmDialog('Bạn xác nhận bắt đầu giao đơn hàng này cho đơn vị vận chuyển?')) return;
   try {
     const token = localStorage.getItem('access_token');
     await axios.put(`/api/orders/${id}/ship`, {}, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Đã chuyển sang Đang giao hàng!');
+    toast('Đã chuyển sang Đang giao hàng!', 'info');
     fetchOrders(pagination.value.current_page);
   } catch (error) {
-    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 
 const cancelOrder = async (id) => {
-  if (!confirm('Bạn có chắc chắn muốn hủy/từ chối đơn hàng này?')) return;
+  if (!await confirmDialog('Bạn có chắc chắn muốn hủy/từ chối đơn hàng này?')) return;
   try {
     const token = localStorage.getItem('access_token');
     await axios.put(`/api/orders/${id}/cancel`, {}, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Đã hủy/từ chối đơn hàng!');
+    toast('Đã hủy/từ chối đơn hàng!', 'info');
     fetchOrders(pagination.value.current_page);
   } catch (error) {
-    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 
 const deliverOrder = async (id) => {
-  if (!confirm('Xác nhận đã giao hàng thành công? Sản phẩm sẽ chuyển sang trạng thái Đã Bán.')) return;
+  if (!await confirmDialog('Xác nhận đã giao hàng thành công? Sản phẩm sẽ chuyển sang trạng thái Đã Bán.')) return;
   try {
     const token = localStorage.getItem('access_token');
     await axios.put(`/api/orders/${id}/deliver`, {}, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert('Xác nhận giao hàng thành công!');
+    toast('Xác nhận giao hàng thành công!', 'success');
     fetchOrders(pagination.value.current_page);
   } catch (error) {
-    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 

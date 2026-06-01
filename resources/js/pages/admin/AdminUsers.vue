@@ -284,6 +284,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
@@ -372,7 +374,7 @@ const fetchUsers = async (page = 1) => {
     }
   } catch (error) {
     console.error('Lỗi khi tải danh sách người dùng:', error);
-    alert('Không thể tải dữ liệu người dùng');
+    toast('Không thể tải dữ liệu người dùng', 'error');
   } finally {
     loading.value = false;
   }
@@ -385,7 +387,7 @@ const changePage = (page) => {
 };
 
 const toggleRole = async (user) => {
-  if (confirm(`Bạn có chắc muốn ${user.role === 1 ? 'hạ quyền Admin của' : 'cấp quyền Admin cho'} người dùng ${user.name}?`)) {
+  if (await confirmDialog(`Bạn có chắc muốn ${user.role === 1 ? 'hạ quyền Admin của' : 'cấp quyền Admin cho'} người dùng ${user.name}?`)) {
     try {
       const response = await axios.patch(`/api/admin/users/${user.id}/toggle-role`);
       if (response.data.success) {
@@ -393,14 +395,14 @@ const toggleRole = async (user) => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi thay đổi quyền.');
+      toast(error.response?.data?.message || 'Có lỗi xảy ra khi thay đổi quyền.', 'error');
     }
   }
 };
 
 const toggleStatus = async (user) => {
   const action = user.status === 1 ? 'khóa' : 'mở khóa';
-  if (confirm(`Bạn có chắc muốn ${action} tài khoản của ${user.name}?`)) {
+  if (await confirmDialog(`Bạn có chắc muốn ${action} tài khoản của ${user.name}?`)) {
     try {
       const response = await axios.patch(`/api/admin/users/${user.id}/toggle-status`);
       if (response.data.success) {
@@ -408,7 +410,7 @@ const toggleStatus = async (user) => {
       }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi thay đổi trạng thái.');
+      toast(error.response?.data?.message || 'Có lỗi xảy ra khi thay đổi trạng thái.', 'error');
     }
   }
 };

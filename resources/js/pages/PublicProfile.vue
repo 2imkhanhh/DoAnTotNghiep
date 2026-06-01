@@ -288,6 +288,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
@@ -359,7 +361,7 @@ const setTab = (tab) => {
 
 const toggleFollow = async () => {
   if (!authStore.isLoggedIn) {
-    alert('Vui lòng đăng nhập để sử dụng tính năng này!');
+    toast('Vui lòng đăng nhập để sử dụng tính năng này!', 'info');
     router.push('/login');
     return;
   }
@@ -495,7 +497,7 @@ onMounted(() => {
 // Xử lý yêu thích (favorite)
 const toggleFavorite = async (postId) => {
   if (!authStore.isLoggedIn) {
-    alert('Vui lòng đăng nhập để sử dụng tính năng này');
+    toast('Vui lòng đăng nhập để sử dụng tính năng này', 'info');
     router.push('/login');
     return;
   }

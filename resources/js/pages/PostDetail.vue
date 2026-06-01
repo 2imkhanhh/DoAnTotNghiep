@@ -213,6 +213,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
@@ -285,7 +287,7 @@ const fetchFavorites = async () => {
 
 const toggleFavorite = async (postId) => {
   if (!authStore.isLoggedIn) {
-    alert('Vui lòng đăng nhập để sử dụng tính năng này');
+    toast('Vui lòng đăng nhập để sử dụng tính năng này', 'info');
     return;
   }
 
@@ -303,13 +305,13 @@ const toggleFavorite = async (postId) => {
   } catch (error) {
     console.error('Lỗi khi thực hiện yêu thích:', error);
     const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện yêu thích';
-    alert(msg);
+    toast(msg, 'info');
   }
 };
 
 const goToCheckout = () => {
   if (!authStore.isLoggedIn) {
-    alert('Vui lòng đăng nhập để mua hàng');
+    toast('Vui lòng đăng nhập để mua hàng', 'info');
     router.push({ name: 'Login', query: { redirect: route.fullPath } });
     return;
   }
@@ -318,7 +320,7 @@ const goToCheckout = () => {
 
 const startConversation = async () => {
   if (!authStore.isLoggedIn) {
-    alert('Vui lòng đăng nhập để gửi tin nhắn cho người bán');
+    toast('Vui lòng đăng nhập để gửi tin nhắn cho người bán', 'info');
     router.push({ name: 'Login', query: { redirect: route.fullPath } });
     return;
   }
@@ -338,7 +340,7 @@ const startConversation = async () => {
     }
   } catch (error) {
     console.error('Lỗi khi bắt đầu cuộc trò chuyện:', error);
-    alert(error.response?.data?.message || 'Không thể kết nối đến hộp thư nhắn tin');
+    toast(error.response?.data?.message || 'Không thể kết nối đến hộp thư nhắn tin', 'error');
   }
 };
 

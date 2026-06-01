@@ -186,6 +186,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
@@ -284,15 +286,15 @@ const fetchBuyerOrders = async (page = 1) => {
 };
 
 const cancelBuyerOrder = async (orderId) => {
-  if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+  if (!await confirmDialog('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
   try {
     const res = await axios.put(`/api/orders/${orderId}/cancel`);
     if (res.data.success) {
-      alert('Hủy đơn hàng thành công');
+      toast('Hủy đơn hàng thành công', 'success');
       fetchBuyerOrders(buyerOrdersPagination.value?.current_page || 1);
     }
   } catch (error) {
-    alert(error.response?.data?.message || 'Có lỗi xảy ra');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 

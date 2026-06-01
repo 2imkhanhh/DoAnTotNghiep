@@ -229,6 +229,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -374,7 +376,7 @@ const toggleFeatured = async (cat, event) => {
     });
     cat.is_featured = newVal;
   } catch (error) {
-    alert(error.response?.data?.message || 'Không thể cập nhật trạng thái nổi bật');
+    toast(error.response?.data?.message || 'Không thể cập nhật trạng thái nổi bật', 'error');
     if (event) {
       event.target.checked = cat.is_featured; // Revert checkbox if API validation failed
     }
@@ -413,19 +415,19 @@ const saveCategory = async () => {
     await fetchCategories();
     showModal.value = false;
   } catch (error) {
-    alert(error.response?.data?.message || 'Lỗi khi lưu danh mục');
+    toast(error.response?.data?.message || 'Lỗi khi lưu danh mục', 'error');
   } finally {
     loading.value = false;
   }
 };
 
 const confirmDelete = async (cat) => {
-  if (confirm(`Bạn có chắc muốn xóa danh mục "${cat.name}"?`)) {
+  if (await confirmDialog(`Bạn có chắc muốn xóa danh mục "${cat.name}"?`)) {
     try {
       await axios.delete(`/api/categories/${cat.id}`);
       await fetchCategories();
     } catch (error) {
-      alert('Không thể xóa danh mục này');
+      toast('Không thể xóa danh mục này', 'error');
     }
   }
 };

@@ -142,6 +142,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
@@ -281,19 +283,19 @@ const saveAttribute = async () => {
     await fetchAttributes();
     showModal.value = false;
   } catch (error) {
-    alert('Lỗi khi lưu thuộc tính');
+    toast('Lỗi khi lưu thuộc tính', 'error');
   } finally {
     loading.value = false;
   }
 };
 
 const confirmDelete = async (attr) => {
-  if (confirm(`Bạn có chắc muốn xóa thuộc tính "${attr.name}"?`)) {
+  if (await confirmDialog(`Bạn có chắc muốn xóa thuộc tính "${attr.name}"?`)) {
     try {
       await axios.delete(`/api/categories/${categoryId}/attributes/${attr.id}`);
       await fetchAttributes();
     } catch (error) {
-      alert('Không thể xóa thuộc tính');
+      toast('Không thể xóa thuộc tính', 'error');
     }
   }
 };

@@ -153,6 +153,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
@@ -249,7 +251,7 @@ const setTab = (status) => {
 };
 
 const markAsSold = async (post) => {
-  if (!confirm('Xác nhận sản phẩm này đã được bán thành công?')) return;
+  if (!await confirmDialog('Xác nhận sản phẩm này đã được bán thành công?')) return;
 
   try {
     const response = await axios.put(`/api/posts/${post.id}/status`, { status: 'sold' });
@@ -257,18 +259,18 @@ const markAsSold = async (post) => {
       post.status = 'sold';
     }
   } catch (error) {
-    alert('Lỗi khi cập nhật trạng thái');
+    toast('Lỗi khi cập nhật trạng thái', 'error');
   }
 };
 
 const confirmDelete = async (post) => {
-  if (!confirm('Bạn có chắc chắn muốn xóa tin đăng này vĩnh viễn?')) return;
+  if (!await confirmDialog('Bạn có chắc chắn muốn xóa tin đăng này vĩnh viễn?')) return;
 
   try {
     await axios.delete(`/api/posts/${post.id}`);
     fetchPosts(pagination.value.current_page);
   } catch (error) {
-    alert('Lỗi khi xóa tin đăng');
+    toast('Lỗi khi xóa tin đăng', 'error');
   }
 };
 

@@ -184,6 +184,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
@@ -248,7 +250,7 @@ onMounted(async () => {
 
     // Ngăn chặn sửa tin đã bán
     if (post.status === 'sold') {
-      alert('Tin đăng này đã bán, không thể chỉnh sửa.');
+      toast('Tin đăng này đã bán, không thể chỉnh sửa.', 'error');
       router.push('/seller-center/posts');
       return;
     }
@@ -297,7 +299,7 @@ onMounted(async () => {
     loading.value = false;
   } catch (error) {
     console.error('Failed to fetch post:', error);
-    alert('Không thể tải dữ liệu tin đăng');
+    toast('Không thể tải dữ liệu tin đăng', 'error');
     router.push('/seller-center/posts');
   }
 });
@@ -474,12 +476,15 @@ const submitUpdate = async () => {
     });
 
     if (response.data.success) {
-      alert(response.data.message);
+      toast(response.data.message, 'info');
       router.push('/seller-center/posts');
     }
   } catch (err) {
-    if (err.response?.data?.errors) errors.value = err.response.data.errors;
-    else alert('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'));
+    if (err.response?.data?.errors) {
+      errors.value = err.response.data.errors;
+    } else {
+      toast('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'), 'error');
+    }
   } finally {
     submitting.value = false;
   }

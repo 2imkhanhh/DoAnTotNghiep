@@ -124,6 +124,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
@@ -190,7 +192,7 @@ const fetchFavorites = async (page = 1) => {
 };
 
 const removeFavorite = async (postId) => {
-  if (!confirm('Bạn muốn bỏ yêu thích tin đăng này?')) return;
+  if (!await confirmDialog('Bạn muốn bỏ yêu thích tin đăng này?')) return;
 
   try {
     const response = await axios.post(`/api/posts/${postId}/favorite`);
@@ -209,7 +211,7 @@ const removeFavorite = async (postId) => {
     }
   } catch (error) {
     console.error('Lỗi khi bỏ yêu thích:', error);
-    alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+    toast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
   }
 };
 

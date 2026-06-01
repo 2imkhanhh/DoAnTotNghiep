@@ -160,6 +160,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -249,19 +251,19 @@ const fetchPostDetail = async () => {
 
     // Check validity
     if (post.value.user_id === authStore.user?.id) {
-      alert('Bạn không thể mua sản phẩm của chính mình.');
+      toast('Bạn không thể mua sản phẩm của chính mình.', 'error');
       router.push('/');
       return;
     }
 
     if (post.value.status !== 'active') {
-      alert('Sản phẩm này hiện không thể mua.');
+      toast('Sản phẩm này hiện không thể mua.', 'error');
       router.push('/');
       return;
     }
 
     if (post.value.is_ordered) {
-      alert('Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.');
+      toast('Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.', 'info');
       router.push('/my-orders');
       return;
     }
@@ -269,7 +271,7 @@ const fetchPostDetail = async () => {
     // Bỏ tự động điền thông tin (người dùng sẽ tự tick nếu muốn)
   } catch (error) {
     console.error('Lỗi khi tải thông tin:', error);
-    alert('Không thể tải thông tin sản phẩm.');
+    toast('Không thể tải thông tin sản phẩm.', 'error');
     router.push('/');
   } finally {
     loading.value = false;
@@ -278,13 +280,13 @@ const fetchPostDetail = async () => {
 
 const submitOrder = async () => {
   if (!form.value.shipping_name || !form.value.shipping_phone || !form.value.shipping_address || !form.value.shipping_province_id || !form.value.shipping_ward_id) {
-    alert('Vui lòng điền đầy đủ thông tin giao hàng bắt buộc.');
+    toast('Vui lòng điền đầy đủ thông tin giao hàng bắt buộc.', 'info');
     return;
   }
 
   const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/g;
   if (!phoneRegex.test(form.value.shipping_phone)) {
-    alert('Số điện thoại không hợp lệ.');
+    toast('Số điện thoại không hợp lệ.', 'info');
     return;
   }
 
@@ -296,12 +298,12 @@ const submitOrder = async () => {
     });
 
     if (response.data.success) {
-      alert('Đặt hàng thành công!');
+      toast('Đặt hàng thành công!', 'success');
       router.push('/my-orders');
     }
   } catch (error) {
     console.error('Lỗi khi đặt hàng:', error);
-    alert(error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng.');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng.', 'error');
   } finally {
     submitting.value = false;
   }

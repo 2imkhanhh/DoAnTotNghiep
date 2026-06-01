@@ -55,6 +55,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
@@ -78,7 +80,7 @@ const handleLogin = async () => {
     });
 
     if (result.success) {
-        alert('Đăng nhập thành công!');
+        toast('Đăng nhập thành công!', 'success');
         if (authStore.isAdmin) {
             router.push('/admin/dashboard');
         } else {

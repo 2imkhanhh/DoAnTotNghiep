@@ -68,6 +68,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -94,7 +96,7 @@ const handleRegister = async () => {
         const response = await axios.post('/api/auth/register', form);
 
         if (response.data.success || response.status === 201) {
-            alert('Đăng ký thành công! Vui lòng đăng nhập.');
+            toast('Đăng ký thành công! Vui lòng đăng nhập.', 'success');
             router.push('/login');
         }
     } catch (error) {

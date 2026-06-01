@@ -162,6 +162,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted, reactive } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
@@ -231,7 +233,7 @@ const saveOrder = async () => {
     }
   } catch (error) {
     console.error('Lỗi khi cập nhật thứ tự:', error);
-    alert('Có lỗi xảy ra khi cập nhật thứ tự.');
+    toast('Có lỗi xảy ra khi cập nhật thứ tự.', 'error');
   } finally {
     savingOrder.value = false;
   }
@@ -246,7 +248,7 @@ const toggleActive = async (banner, event) => {
     }
   } catch (error) {
     console.error('Lỗi khi thay đổi trạng thái:', error);
-    alert('Không thể cập nhật trạng thái');
+    toast('Không thể cập nhật trạng thái', 'error');
     if (event) {
       event.target.checked = previousState;
       banner.is_active = previousState;
@@ -343,7 +345,7 @@ const submitBanner = async () => {
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors;
     } else {
-      alert('Đã xảy ra lỗi hệ thống.');
+      toast('Đã xảy ra lỗi hệ thống.', 'error');
     }
   } finally {
     submitting.value = false;
@@ -351,7 +353,7 @@ const submitBanner = async () => {
 };
 
 const confirmDelete = async (banner) => {
-  if (confirm('Bạn có chắc chắn muốn xoá banner này không?')) {
+  if (await confirmDialog('Bạn có chắc chắn muốn xoá banner này không?')) {
     try {
       const response = await axios.delete(`/api/admin/banners/${banner.id}`);
       if (response.data.success) {
@@ -359,7 +361,7 @@ const confirmDelete = async (banner) => {
       }
     } catch (error) {
       console.error('Lỗi khi xoá banner:', error);
-      alert('Đã xảy ra lỗi khi xoá.');
+      toast('Đã xảy ra lỗi khi xoá.', 'error');
     }
   }
 };

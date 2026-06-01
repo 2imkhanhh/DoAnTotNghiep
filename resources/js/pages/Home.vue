@@ -205,6 +205,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../utils/alert';
+
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -260,7 +262,7 @@ const fetchFavorites = async () => {
 
 const toggleFavorite = async (postId) => {
     if (!authStore.isLoggedIn) {
-        alert('Vui lòng đăng nhập để sử dụng tính năng này');
+        toast('Vui lòng đăng nhập để sử dụng tính năng này', 'info');
         return;
     }
 
@@ -276,7 +278,7 @@ const toggleFavorite = async (postId) => {
     } catch (error) {
         console.error('Lỗi khi thực hiện yêu thích:', error);
         const msg = error.response?.data?.message || 'Đã xảy ra lỗi khi thực hiện yêu thích';
-        alert(msg);
+        toast(msg, 'info');
     }
 };
 

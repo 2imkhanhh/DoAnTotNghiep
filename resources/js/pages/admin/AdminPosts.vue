@@ -228,6 +228,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
@@ -376,9 +378,9 @@ const confirmReject = async () => {
 };
 
 const updateStatus = async (post, status, reason = null) => {
-  if (status !== 'rejected') {
-    const statusTexts = { 'active': 'Duyệt tin', 'sold': 'Đánh dấu đã bán' };
-    if (!confirm(`${statusTexts[status]} này?`)) return;
+  if (status !== 'rejected' && status !== 'active') {
+    const statusTexts = { 'sold': 'Đánh dấu đã bán' };
+    if (statusTexts[status] && !await confirmDialog(`${statusTexts[status]} này?`)) return;
   }
 
   try {
@@ -390,20 +392,27 @@ const updateStatus = async (post, status, reason = null) => {
       post.status = status;
       post.reject_reason = reason;
       if (showDetailModal.value) showDetailModal.value = false;
+      
+      const successMsgs = {
+        'active': 'Duyệt tin thành công!',
+        'rejected': 'Từ chối tin đăng thành công!',
+        'sold': 'Đánh dấu đã bán thành công!'
+      };
+      toast(successMsgs[status] || 'Cập nhật trạng thái thành công', 'success');
     }
   } catch (error) {
-    alert('Lỗi khi cập nhật trạng thái');
+    toast('Lỗi khi cập nhật trạng thái', 'error');
   }
 };
 
 const confirmDelete = async (post) => {
-  if (!confirm('Bạn có chắc chắn muốn xóa vĩnh viễn tin đăng này?')) return;
+  if (!await confirmDialog('Bạn có chắc chắn muốn xóa vĩnh viễn tin đăng này?')) return;
 
   try {
     await axios.delete(`/api/posts/${post.id}`);
     fetchPosts(pagination.value.current_page);
   } catch (error) {
-    alert('Lỗi khi xóa tin đăng');
+    toast('Lỗi khi xóa tin đăng', 'error');
   }
 };
 

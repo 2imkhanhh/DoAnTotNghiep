@@ -172,6 +172,8 @@
 </template>
 
 <script setup>
+import { toast, confirmDialog } from '../../utils/alert';
+
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -363,11 +365,11 @@ const submitPost = async () => {
     const response = await axios.post('/api/posts', formData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    alert(response.data.message || 'Đăng tin thành công!');
+    toast(response.data.message || 'Đăng tin thành công!', 'success');
     router.push('/seller-center/posts');
   } catch (err) {
     if (err.response?.data?.errors) errors.value = err.response.data.errors;
-    else alert('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'));
+    else toast('Lỗi: ' + (err.response?.data?.message || 'Vui lòng thử lại sau.'), 'error');
   } finally {
     submitting.value = false;
   }
