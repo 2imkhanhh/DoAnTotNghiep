@@ -24,9 +24,7 @@
         </button>
       </div>
 
-      <div v-if="loading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <LoadingState v-if="loading" />
 
       <div v-else-if="orders.length > 0" class="space-y-6">
         <div v-for="(tx, index) in orders" :key="tx.id"
@@ -177,6 +175,7 @@ import { toast, confirmDialog } from '../../utils/alert';
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const loading = ref(true);
 const orders = ref([]);

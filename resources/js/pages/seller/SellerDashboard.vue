@@ -1,8 +1,6 @@
 <template>
   <SellerLayout title="Dashboard">
-    <div v-if="loading" class="flex justify-center items-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>
+    <LoadingState v-if="loading" />
     <div v-else class="dashboard-content">
 
       <!-- Stats Cards -->
@@ -103,6 +101,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const loading = ref(true);
 const stats = ref({

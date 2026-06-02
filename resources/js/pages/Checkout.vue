@@ -1,8 +1,7 @@
 <template>
   <div class="checkout-page bg-slate-50 min-h-screen py-10">
     <div v-if="loading" class="flex flex-col items-center justify-center min-h-[50vh]">
-      <span class="material-symbols-outlined text-5xl animate-spin mb-4 text-primary">progress_activity</span>
-      <p class="font-bold text-lg text-slate-700">Đang tải thông tin...</p>
+      <LoadingState />
     </div>
 
     <div v-else-if="post" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,6 +165,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
+import LoadingState from '../components/common/LoadingState.vue';
 
 const route = useRoute();
 const router = useRouter();

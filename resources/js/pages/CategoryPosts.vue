@@ -233,10 +233,7 @@
     </div>
 
     <!-- PRODUCTS RENDER (ALWAYS HORIZONTAL LIST LAYOUT MATCHING IMAGE) -->
-    <div v-if="loading" class="py-20 text-center text-primary">
-      <span class="material-symbols-outlined text-5xl animate-spin mb-4">progress_activity</span>
-      <p class="font-bold text-lg">Đang tải...</p>
-    </div>
+    <LoadingState v-if="loading" />
 
     <div v-else>
       <div v-if="posts.length > 0" class="flex flex-col mt-2">
@@ -332,6 +329,7 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
+import LoadingState from '../components/common/LoadingState.vue';
 
 const route = useRoute();
 const router = useRouter();

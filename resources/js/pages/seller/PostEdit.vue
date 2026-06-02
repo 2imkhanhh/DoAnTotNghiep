@@ -2,10 +2,7 @@
   <SellerLayout title="Sửa tin đăng">
     <div class="post-edit-page animate-in fade-in">
     <div class="container">
-      <div v-if="loading" class="loading-state">
-        <span class="spinner"></span>
-        <p>Đang tải dữ liệu tin đăng...</p>
-      </div>
+      <LoadingState v-if="loading" />
 
       <div v-else>
         <div class="form-header">
@@ -190,6 +187,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const router = useRouter();
 const route = useRoute();
