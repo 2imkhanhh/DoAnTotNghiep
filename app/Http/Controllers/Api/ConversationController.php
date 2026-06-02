@@ -7,7 +7,9 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Post;
 use App\Events\MessageSent;
+use App\Events\MessageDeleted;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
@@ -351,5 +353,35 @@ class ConversationController extends Controller
             'success' => true,
             'data' => $data
         ]);
+    }
+
+    /**
+     * Xóa (thu hồi) tin nhắn.
+     */
+    public function deleteMessage($id)
+    {
+        $userId = auth()->id();
+        $message = Message::with('conversation')->findOrFail($id);
+
+        if ($message->sender_id !== $userId) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền thu hồi tin nhắn này.'], 403);
+        }
+
+        if ($message->created_at->diffInMinutes(now()) > 10) {
+            return response()->json(['success' => false, 'message' => 'Chỉ có thể thu hồi tin nhắn trong vòng 10 phút.'], 400);
+        }
+
+        $conversation = $message->conversation;
+
+        if ($message->image_path) {
+            $path = str_replace('/storage/', '', $message->image_path);
+            Storage::disk('public')->delete($path);
+        }
+
+        $message->delete();
+
+        broadcast(new MessageDeleted($id, $conversation))->toOthers();
+
+        return response()->json(['success' => true, 'message' => 'Đã thu hồi tin nhắn.']);
     }
 }

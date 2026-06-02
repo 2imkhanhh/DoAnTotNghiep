@@ -89,6 +89,9 @@ export const useChatStore = defineStore('chat', {
                 window.Echo.private(channelName)
                     .listen('.message.sent', (e) => {
                         this.handleIncomingMessage(e.message);
+                    })
+                    .listen('.message.deleted', (e) => {
+                        this.handleDeletedMessage(e);
                     });
             });
 
@@ -106,6 +109,9 @@ export const useChatStore = defineStore('chat', {
                         } else {
                             this.handleIncomingMessage(e.message);
                         }
+                    })
+                    .listen('.message.deleted', (e) => {
+                        this.handleDeletedMessage(e);
                     });
             }
         },
@@ -142,6 +148,7 @@ export const useChatStore = defineStore('chat', {
                 conversation.latest_message = {
                     id: message.id,
                     message_text: message.message_text,
+                    image_path: message.image_path,
                     sender_id: message.sender_id,
                     is_read: message.is_read,
                     created_at: message.created_at
@@ -173,6 +180,22 @@ export const useChatStore = defineStore('chat', {
             }
         },
 
+        /**
+         * Xử lý tin nhắn bị thu hồi real-time.
+         */
+        handleDeletedMessage(eventData) {
+            const { messageId, conversationId } = eventData;
+            
+            // Phát sự kiện tới giao diện Chat.vue để xóa bong bóng tin nhắn
+            const event = new CustomEvent('message-deleted-received', { detail: messageId });
+            window.dispatchEvent(event);
+            
+            // Nếu tin nhắn vừa bị xóa là latest_message, gọi fetchConversations để làm mới danh sách ngoài sidebar
+            const conversation = this.conversations.find(c => Number(c.id) === Number(conversationId));
+            if (conversation && conversation.latest_message && Number(conversation.latest_message.id) === Number(messageId)) {
+                this.fetchConversations();
+            }
+        },
 
     }
 });

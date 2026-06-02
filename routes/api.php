@@ -56,6 +56,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/conversations', [ConversationController::class, 'store']);
     Route::get('/conversations/{id}/messages', [ConversationController::class, 'messages']);
     Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage']);
+    Route::delete('/messages/{id}', [ConversationController::class, 'deleteMessage']);
     Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
     Route::get('/conversations/{id}/active-orders', [ConversationController::class, 'activeorders']);
 
