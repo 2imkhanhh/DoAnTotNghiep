@@ -33,7 +33,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="post in posts" :key="post.id">
+            <tr v-if="loading">
+              <td colspan="7" class="py-12">
+                <LoadingState />
+              </td>
+            </tr>
+            <tr v-else-if="posts.length === 0">
+              <td colspan="7" class="empty-state">
+                <span class="material-symbols-outlined">description</span>
+                <p>Không có tin đăng nào phù hợp với bộ lọc</p>
+              </td>
+            </tr>
+            <tr v-else v-for="post in posts" :key="post.id">
               <td>
                 <div class="post-thumb">
                   <img :src="getPrimaryImage(post)" :alt="post.title">
@@ -83,12 +94,7 @@
                 </div>
               </td>
             </tr>
-            <tr v-if="posts.length === 0">
-              <td colspan="7" class="empty-state">
-                <span class="material-symbols-outlined">description</span>
-                <p>Không có tin đăng nào phù hợp với bộ lọc</p>
-              </td>
-            </tr>
+            <!-- Trạng thái trống đã được chuyển lên trên để dùng với v-else-if -->
           </tbody>
         </table>
 
@@ -233,6 +239,7 @@ import { toast, confirmDialog } from '../../utils/alert';
 import { ref, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const posts = ref([]);
 const filterStatus = ref(''); // Empty means 'All'

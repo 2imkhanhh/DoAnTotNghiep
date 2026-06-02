@@ -70,7 +70,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="post in recentPosts" :key="post.id">
+              <tr v-if="loading">
+                <td colspan="5" class="py-12">
+                  <LoadingState />
+                </td>
+              </tr>
+              <tr v-else-if="recentPosts.length === 0">
+                <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
+              </tr>
+              <tr v-else v-for="post in recentPosts" :key="post.id">
                 <td>
                   <div class="user-cell">
                     <img :src="post.user_avatar || `https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
@@ -91,9 +99,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="recentPosts.length === 0">
-                <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
-              </tr>
+              <!-- Trạng thái trống đã được chuyển lên trên để dùng với v-else-if -->
             </tbody>
           </table>
         </div>
@@ -105,7 +111,11 @@
           <h2 class="section-title">Người dùng tích cực</h2>
         </div>
         <div class="user-list">
-          <div v-for="user in topUsers" :key="user.id" class="user-item">
+          <div v-if="loading" class="py-12">
+            <LoadingState />
+          </div>
+          <div v-else-if="topUsers.length === 0" class="empty-state" style="padding: 2rem !important; border: none; background: transparent;">Không có người dùng nào</div>
+          <div v-else v-for="user in topUsers" :key="user.id" class="user-item">
             <div class="user-info">
               <img :src="user.avatar || `https://ui-avatars.com/api/?name=${user.name}`" alt="">
               <div>
@@ -213,6 +223,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -240,6 +251,8 @@ ChartJS.register(
   Legend,
   Filler
 );
+
+const loading = ref(true);
 
 const stats = ref({
   users: 0,
@@ -335,6 +348,7 @@ const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price);
 const formatDate = (date) => new Date(date).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
 const fetchDashboardData = async () => {
+  loading.value = true;
   try {
     const response = await axios.get('/api/admin/dashboard/stats', {
       params: { 
@@ -425,6 +439,8 @@ const fetchDashboardData = async () => {
     }
   } catch (error) {
     console.error('Lỗi lấy dữ liệu dashboard:', error);
+  } finally {
+    loading.value = false;
   }
 };
 

@@ -24,9 +24,8 @@
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="5" class="text-center py-8">
-                <span class="material-symbols-outlined animate-spin text-4xl text-primary">autorenew</span>
-                <p class="mt-2 text-slate-500">Đang tải dữ liệu...</p>
+              <td colspan="5" class="py-8">
+                <LoadingState />
               </td>
             </tr>
             <tr v-else-if="banners.length === 0">
@@ -167,6 +166,7 @@ import { toast, confirmDialog } from '../../utils/alert';
 import { ref, onMounted, reactive } from 'vue';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const banners = ref([]);
 const loading = ref(true);

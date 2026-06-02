@@ -28,7 +28,12 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="parent in filteredTree" :key="parent.id">
+            <tr v-if="loading">
+              <td colspan="5" class="py-12">
+                <LoadingState />
+              </td>
+            </tr>
+            <template v-else v-for="parent in filteredTree" :key="parent.id">
               <!-- Parent Row -->
               <tr class="parent-row">
                 <td>
@@ -150,7 +155,7 @@
               </template>
             </template>
 
-            <tr v-if="filteredTree.length === 0">
+            <tr v-if="!loading && filteredTree.length === 0">
               <td colspan="5" class="empty-state">
                 <span class="material-symbols-outlined">search_off</span>
                 <p>Không tìm thấy danh mục nào</p>
@@ -235,6 +240,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
+import LoadingState from '../../components/common/LoadingState.vue';
 
 const router = useRouter();
 const categories = ref([]); // This will hold the tree from Backend
@@ -254,11 +260,14 @@ const formData = ref({
 });
 
 const fetchCategories = async () => {
+  loading.value = true;
   try {
     const response = await axios.get('/api/categories');
     categories.value = response.data.data;
   } catch (error) {
     console.error('Lỗi khi tải danh mục:', error);
+  } finally {
+    loading.value = false;
   }
 };
 

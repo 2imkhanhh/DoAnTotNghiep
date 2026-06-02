@@ -6,7 +6,7 @@
 
     <div v-else-if="post" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center gap-3 mb-8">
-        <button @click="$router.back()" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
+        <button @click="$router.back()" class="p-2 cursor-pointer transition-colors">
           <span class="material-symbols-outlined">arrow_back</span>
         </button>
         <h1 class="text-2xl font-bold text-on-surface">Thanh toán & Đặt hàng</h1>
