@@ -127,16 +127,22 @@
                 </div>
 
                 <div class="message-bubble-wrapper max-w-[75%] sm:max-w-[70%] flex flex-col gap-0.5" :class="msg.sender_id === authStore.user?.id ? 'items-end' : 'items-start'">
-                  <!-- Bong bóng -->
-                  <div 
-                    :class="[
-                      'message-bubble px-4 py-2.5 text-sm transition-all shadow-sm break-words inline-block',
-                      msg.sender_id === authStore.user?.id 
-                        ? 'bg-primary text-on-primary rounded-2xl rounded-tr-none' 
-                        : 'bg-surface-container-high text-on-surface rounded-2xl rounded-tl-none'
-                    ]"
-                  >
-                    {{ msg.message_text }}
+                  <div class="flex flex-col gap-1" :class="msg.sender_id === authStore.user?.id ? 'items-end' : 'items-start'">
+                    <!-- Ảnh đính kèm -->
+                    <img v-if="msg.image_path" :src="msg.image_path" alt="Image" class="max-w-full max-h-64 rounded-lg object-contain cursor-pointer border border-outline-variant/30 shadow-sm" @click="window.open(msg.image_path, '_blank')">
+
+                    <!-- Bong bóng văn bản -->
+                    <div 
+                      v-if="msg.message_text"
+                      :class="[
+                        'message-bubble px-4 py-2.5 text-sm transition-all shadow-sm break-words inline-block',
+                        msg.sender_id === authStore.user?.id 
+                          ? 'bg-primary text-on-primary rounded-2xl rounded-tr-none' 
+                          : 'bg-surface-container-high text-on-surface rounded-2xl rounded-tl-none'
+                      ]"
+                    >
+                      {{ msg.message_text }}
+                    </div>
                   </div>
                   
                   <!-- Thời gian gửi tinh tế -->
@@ -177,9 +183,18 @@
               </button>
             </div>
 
-            <form @submit.prevent="sendNewMessage" class="flex gap-2 items-end">
-              <!-- Nút đính kèm ảnh mô phỏng -->
-              <button type="button" @click="simulateAttachment" class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-colors shrink-0" title="Đính kèm ảnh">
+            <!-- Khung xem trước ảnh -->
+            <div v-if="imagePreviewUrl" class="mb-3 relative inline-block animate-fade-in">
+              <img :src="imagePreviewUrl" class="max-h-32 rounded-lg border border-outline-variant object-cover shadow-sm">
+              <button @click="removeSelectedImage" type="button" class="absolute -top-1.5 -right-1.5 bg-error text-on-error rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-sm">
+                <span class="material-symbols-outlined font-bold block" style="font-size: 12px;">close</span>
+              </button>
+            </div>
+
+            <form @submit.prevent="sendNewMessage" class="flex gap-2 items-end relative">
+              <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" class="hidden">
+              <!-- Nút đính kèm ảnh -->
+              <button type="button" @click="triggerFileInput" class="p-2 text-on-surface-variant hover:text-primary transition-colors shrink-0 cursor-pointer" title="Đính kèm ảnh">
                 <span class="material-symbols-outlined">image</span>
               </button>
 
@@ -194,7 +209,7 @@
 
               <button 
                 type="submit" 
-                :disabled="!newMessageText.trim() || sending"
+                :disabled="(!newMessageText.trim() && !selectedImage) || sending"
                 class="p-2.5 bg-primary text-on-primary hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary rounded-xl shadow-sm hover:shadow transition-all shrink-0 flex items-center justify-center cursor-pointer"
               >
                 <span class="material-symbols-outlined text-sm font-bold">send</span>
@@ -236,6 +251,10 @@ const showSidebarOnMobile = ref(true);
 
 const messagesContainer = ref(null);
 const messageTextarea = ref(null);
+const fileInput = ref(null);
+
+const selectedImage = ref(null);
+const imagePreviewUrl = ref(null);
 
 // Lưu trữ thông tin sản phẩm chuẩn bị đính kèm gửi đi
 const attachedPost = ref(null);
@@ -288,19 +307,24 @@ const fetchMessages = async (convId) => {
 
 // Gửi tin nhắn mới
 const sendNewMessage = async () => {
-  if (!newMessageText.value.trim() || sending.value || !chatStore.activeConversation) return;
+  if ((!newMessageText.value.trim() && !selectedImage.value) || sending.value || !chatStore.activeConversation) return;
 
   const text = newMessageText.value.trim();
-  newMessageText.value = '';
   sending.value = true;
   
   // Lấy ID sản phẩm đính kèm nếu có
   const attachPostId = attachedPost.value ? attachedPost.value.id : null;
 
+  const formData = new FormData();
+  if (text) formData.append('message_text', text);
+  if (attachPostId) formData.append('post_id', attachPostId);
+  if (selectedImage.value) formData.append('image', selectedImage.value);
+
   try {
-    const response = await axios.post(`/api/conversations/${chatStore.activeConversation.id}/messages`, {
-      message_text: text,
-      post_id: attachPostId
+    const response = await axios.post(`/api/conversations/${chatStore.activeConversation.id}/messages`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     });
 
     if (response.data.success) {
@@ -337,14 +361,19 @@ const sendNewMessage = async () => {
         router.replace({ query });
       }
 
+      // Xóa form và ảnh đã chọn
+      newMessageText.value = '';
+      removeSelectedImage();
+
       nextTick(() => {
         scrollToBottom();
       });
     }
   } catch (error) {
     console.error('Gửi tin nhắn thất bại:', error);
-    // Phục hồi lại văn bản nếu gửi lỗi
-    newMessageText.value = text;
+    if (error.response?.data?.message) {
+      toast(error.response.data.message, 'error');
+    }
   } finally {
     sending.value = false;
     // Đặt lại con trỏ chuột vào textarea
@@ -375,9 +404,35 @@ const handleIncomingMessage = (e) => {
   }
 };
 
-// Mô phỏng đính kèm ảnh
-const simulateAttachment = () => {
-  toast('Tính năng gửi tệp tin & hình ảnh đang được nâng cấp phát triển trong giai đoạn tiếp theo.', 'info');
+const triggerFileInput = () => {
+  if (fileInput.value) {
+    fileInput.value.click();
+  }
+};
+
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    if (file.size > 5 * 1024 * 1024) { // Tối đa 5MB
+      toast('Kích thước ảnh tối đa là 5MB', 'error');
+      if (fileInput.value) fileInput.value.value = '';
+      return;
+    }
+    selectedImage.value = file;
+    imagePreviewUrl.value = URL.createObjectURL(file);
+    // Đưa focus lại textarea
+    nextTick(() => {
+      messageTextarea.value?.focus();
+    });
+  }
+};
+
+const removeSelectedImage = () => {
+  selectedImage.value = null;
+  imagePreviewUrl.value = null;
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
 };
 
 // Định dạng thời gian cập nhật ở danh sách hội thoại

@@ -62,6 +62,7 @@ class ConversationController extends Controller
                 'latest_message' => $conversation->latestMessage ? [
                     'id' => $conversation->latestMessage->id,
                     'message_text' => $conversation->latestMessage->message_text,
+                    'image_path' => $conversation->latestMessage->image_path,
                     'sender_id' => $conversation->latestMessage->sender_id,
                     'is_read' => $conversation->latestMessage->is_read,
                     'created_at' => $conversation->latestMessage->created_at,
@@ -102,8 +103,8 @@ class ConversationController extends Controller
 
         // Tìm xem cuộc trò chuyện giữa 2 người này đã tồn tại chưa (gộp chat theo User chuẩn Chợ Tốt)
         $conversation = Conversation::where(function ($query) use ($userId, $sellerId) {
-                $query->where('buyer_id', $userId)->where('seller_id', $sellerId);
-            })
+            $query->where('buyer_id', $userId)->where('seller_id', $sellerId);
+        })
             ->orWhere(function ($query) use ($userId, $sellerId) {
                 $query->where('buyer_id', $sellerId)->where('seller_id', $userId);
             })
@@ -169,6 +170,7 @@ class ConversationController extends Controller
                 'sender_id' => $message->sender_id,
                 'sender_name' => $message->sender->name,
                 'message_text' => $message->message_text,
+                'image_path' => $message->image_path,
                 'is_read' => $message->is_read,
                 'created_at' => $message->created_at,
                 'post' => $postData
@@ -187,9 +189,17 @@ class ConversationController extends Controller
     public function sendMessage(Request $request, $id)
     {
         $request->validate([
-            'message_text' => 'required|string',
+            'message_text' => 'nullable|string',
+            'image' => 'nullable|image|max:5120',
             'post_id' => 'nullable|exists:posts,id',
         ]);
+
+        if (!$request->filled('message_text') && !$request->hasFile('image') && !$request->has('post_id')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tin nhắn không được để trống nếu không có hình ảnh hoặc bài đăng.'
+            ], 422);
+        }
 
         $userId = auth()->id();
         $conversation = Conversation::findOrFail($id);
@@ -202,11 +212,20 @@ class ConversationController extends Controller
             ], 403);
         }
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('images', $filename, 'public');
+            $imagePath = '/storage/' . $path;
+        }
+
         // Tạo tin nhắn mới, có thể mang theo widget sản phẩm đính kèm
         $message = Message::create([
             'conversation_id' => $id,
             'sender_id' => $userId,
             'message_text' => $request->message_text,
+            'image_path' => $imagePath,
             'is_read' => false,
             'post_id' => $request->has('post_id') ? $request->post_id : null
         ]);
@@ -244,6 +263,7 @@ class ConversationController extends Controller
                 'sender_id' => $message->sender_id,
                 'sender_name' => auth()->user()->name,
                 'message_text' => $message->message_text,
+                'image_path' => $message->image_path,
                 'is_read' => $message->is_read,
                 'created_at' => $message->created_at,
                 'post' => $postData
@@ -295,13 +315,13 @@ class ConversationController extends Controller
 
         $partnerId = $conversation->buyer_id === $userId ? $conversation->seller_id : $conversation->buyer_id;
 
-        $orders = \App\Models\Order::where(function($q) use ($userId, $partnerId) {
-                $q->where(function($query) use ($userId, $partnerId) {
-                    $query->where('buyer_id', $userId)->where('seller_id', $partnerId);
-                })->orWhere(function($query) use ($userId, $partnerId) {
-                    $query->where('buyer_id', $partnerId)->where('seller_id', $userId);
-                });
-            })
+        $orders = \App\Models\Order::where(function ($q) use ($userId, $partnerId) {
+            $q->where(function ($query) use ($userId, $partnerId) {
+                $query->where('buyer_id', $userId)->where('seller_id', $partnerId);
+            })->orWhere(function ($query) use ($userId, $partnerId) {
+                $query->where('buyer_id', $partnerId)->where('seller_id', $userId);
+            });
+        })
             ->whereIn('status', ['requested', 'trading', 'completed'])
             ->with(['post.images', 'review'])
             ->orderBy('updated_at', 'desc')
