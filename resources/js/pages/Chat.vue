@@ -345,6 +345,9 @@ const fetchMessages = async (convId) => {
     // Đợi DOM render xong danh sách tin nhắn rồi mới cuộn xuống dưới
     await nextTick();
     scrollToBottom();
+    
+    // Cuộn thêm lần nữa sau khi hình ảnh có thể đã load xong để tránh bị đẩy ngược lên
+    setTimeout(scrollToBottom, 500);
   }
 };
 
@@ -430,7 +433,12 @@ const sendNewMessage = async () => {
 // Tự động cuộn khung chat xuống dưới cùng
 const scrollToBottom = () => {
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    // Delay nhẹ để đảm bảo DOM và layout đã cập nhật hoàn toàn
+    setTimeout(() => {
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+      }
+    }, 50);
   }
 };
 

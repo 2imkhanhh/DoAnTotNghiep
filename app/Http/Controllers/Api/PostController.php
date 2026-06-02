@@ -43,6 +43,7 @@ class PostController extends Controller
             'approved' => Post::where('user_id', $user->id)->where('status', 'active')->count(),
             'sold' => Post::where('user_id', $user->id)->where('status', 'sold')->count(),
             'rejected' => Post::where('user_id', $user->id)->where('status', 'rejected')->count(),
+            'hidden' => Post::where('user_id', $user->id)->where('status', 'hidden')->count(),
         ];
 
         return response()->json([
@@ -457,6 +458,35 @@ class PostController extends Controller
         $post = Post::find($id);
         if (!$post) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
+        }
+
+        // Bổ sung phân quyền cho User thường (không phải admin)
+        $user = auth('api')->user();
+        if (!$user->isAdmin()) {
+            // Chỉ được sửa tin của chính mình
+            if ($post->user_id !== $user->id) {
+                return response()->json(['success' => false, 'message' => 'Bạn không có quyền cập nhật trạng thái tin này'], 403);
+            }
+            
+            // Không được tự ý duyệt tin (chuyển sang active từ pending/rejected)
+            if ($request->status === 'active' && in_array($post->status, ['pending', 'rejected'])) {
+                return response()->json(['success' => false, 'message' => 'Không thể tự duyệt hiển thị tin đăng đang chờ duyệt hoặc bị từ chối'], 403);
+            }
+            
+            // User không được tự chuyển trạng thái về chờ duyệt hoặc từ chối
+            if (in_array($request->status, ['pending', 'rejected'])) {
+                return response()->json(['success' => false, 'message' => 'Bạn không có quyền chuyển sang trạng thái này'], 403);
+            }
+            
+            // Không được hiện lại tin nếu đang có đơn hàng giao dịch
+            if ($request->status === 'active' && $post->status === 'hidden') {
+                $hasActiveOrder = \App\Models\Order::where('post_id', $post->id)
+                    ->whereIn('status', ['pending', 'confirmed', 'shipping'])
+                    ->exists();
+                if ($hasActiveOrder) {
+                    return response()->json(['success' => false, 'message' => 'Không thể hiển thị lại tin đăng do đang có đơn hàng đang được xử lý'], 403);
+                }
+            }
         }
 
         $post->update([

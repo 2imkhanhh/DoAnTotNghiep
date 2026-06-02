@@ -44,6 +44,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/posts', [PostController::class, 'store']);
     Route::get('/posts/{id}/edit', [PostController::class, 'edit']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
+    Route::put('/posts/{id}/status', [PostController::class, 'updateStatus']); // Cho phép user tự cập nhật trạng thái (đã bán, ẩn)
 
     Route::post('/posts/{id}/favorite', [FavoriteController::class, 'toggleFavorite']);
     Route::get('/user/favorites', [FavoriteController::class, 'getFavorites']);

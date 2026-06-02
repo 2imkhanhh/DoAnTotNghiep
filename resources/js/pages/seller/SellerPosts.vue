@@ -57,11 +57,20 @@
 
                   <!-- Action Buttons Desktop -->
                   <div class="hidden md:flex items-center gap-2">
-                    <button v-if="post.status === 1" @click="markAsSold(post)"
+                    <button v-if="post.status === 'active'" @click="markAsSold(post)"
                       class="btn-action bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white" title="Đã bán">
                       <span class="material-symbols-outlined">check_circle</span>
                     </button>
-                    <router-link v-if="post.status !== 2" :to="`/seller-center/post/edit/${post.id}`"
+                    <!-- Nút Ẩn/Hiện tin -->
+                    <button v-if="post.status === 'active'" @click="toggleHidePost(post, 'hidden')"
+                      class="btn-action bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white" title="Tạm ẩn tin">
+                      <span class="material-symbols-outlined">visibility_off</span>
+                    </button>
+                    <button v-if="post.status === 'hidden'" @click="toggleHidePost(post, 'active')"
+                      class="btn-action bg-green-50 text-green-600 hover:bg-green-600 hover:text-white" title="Hiện lại tin">
+                      <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                    <router-link v-if="post.status !== 'sold'" :to="`/seller-center/post/edit/${post.id}`"
                       class="btn-action bg-slate-50 text-slate-600 hover:bg-slate-800 hover:text-white" title="Sửa tin">
                       <span class="material-symbols-outlined">edit</span>
                     </router-link>
@@ -80,7 +89,7 @@
                 </div>
 
                 <!-- Rejection Reason -->
-                <div v-if="post.status === 3 && post.reject_reason"
+                <div v-if="post.status === 'rejected' && post.reject_reason"
                   class="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-pulse">
                   <span class="material-symbols-outlined text-red-500 text-[18px]">info</span>
                   <p class="text-[12px] text-red-700 font-medium">
@@ -91,17 +100,27 @@
             </div>
 
             <!-- Mobile Action Buttons -->
-            <div class="flex md:hidden items-center gap-2 mt-4 pt-4 border-t border-slate-100">
-              <button v-if="post.status === 1" @click="markAsSold(post)"
-                class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+            <div class="flex md:hidden items-center gap-2 mt-4 pt-4 border-t border-slate-100 flex-wrap">
+              <button v-if="post.status === 'active'" @click="markAsSold(post)"
+                class="flex-1 min-w-[120px] py-2 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">check_circle</span> Đã bán
               </button>
-              <router-link v-if="post.status !== 2" :to="`/seller-center/post/edit/${post.id}`"
-                class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
+              
+              <!-- Nút Ẩn/Hiện tin -->
+              <button v-if="post.status === 'active'" @click="toggleHidePost(post, 'hidden')"
+                class="flex-1 min-w-[120px] py-2 bg-orange-100 text-orange-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">visibility_off</span> Ẩn tin
+              </button>
+              <button v-if="post.status === 'hidden'" @click="toggleHidePost(post, 'active')"
+                class="flex-1 min-w-[120px] py-2 bg-green-100 text-green-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">visibility</span> Hiện lại
+              </button>
+              <router-link v-if="post.status !== 'sold'" :to="`/seller-center/post/edit/${post.id}`"
+                class="flex-1 min-w-[120px] py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
                 <span class="material-symbols-outlined text-[18px]">edit</span> Sửa
               </router-link>
               <button @click="confirmDelete(post)"
-                class="flex-1 py-2 bg-red-50 text-red-600 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+                class="flex-1 min-w-[120px] py-2 bg-red-50 text-red-600 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">delete</span> Xóa
               </button>
             </div>
@@ -255,9 +274,33 @@ const markAsSold = async (post) => {
     const response = await axios.put(`/api/posts/${post.id}/status`, { status: 'sold' });
     if (response.data.success) {
       post.status = 'sold';
+      toast('Đánh dấu đã bán thành công', 'success');
     }
   } catch (error) {
-    toast('Lỗi khi cập nhật trạng thái', 'error');
+    const errorMsg = error.response?.data?.message || 'Lỗi khi cập nhật trạng thái';
+    toast(errorMsg, 'error');
+  }
+};
+
+const toggleHidePost = async (post, targetStatus) => {
+  const isHiding = targetStatus === 'hidden';
+  const confirmMsg = isHiding 
+    ? 'Bạn có chắc chắn muốn tạm ẩn tin đăng này khỏi những người dùng khác?' 
+    : 'Xác nhận hiển thị lại tin đăng này?';
+    
+  if (!await confirmDialog(confirmMsg)) return;
+
+  try {
+    const response = await axios.put(`/api/posts/${post.id}/status`, { status: targetStatus });
+    if (response.data.success) {
+      post.status = targetStatus;
+      toast(isHiding ? 'Đã tạm ẩn tin đăng' : 'Đã hiện lại tin đăng', 'success');
+      // Lấy lại danh sách để cập nhật tab count
+      fetchPosts(pagination.value.current_page);
+    }
+  } catch (error) {
+    const errorMsg = error.response?.data?.message || 'Lỗi khi cập nhật trạng thái';
+    toast(errorMsg, 'error');
   }
 };
 
