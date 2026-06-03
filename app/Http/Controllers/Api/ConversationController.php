@@ -23,7 +23,7 @@ class ConversationController extends Controller
 
         $conversations = Conversation::where('buyer_id', $userId)
             ->orWhere('seller_id', $userId)
-            ->with(['buyer', 'seller', 'post.images', 'post.orders', 'latestMessage'])
+            ->with(['buyer', 'seller', 'post.images', 'post.orders', 'latestMessage', 'userLabels.chatLabel'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -70,6 +70,9 @@ class ConversationController extends Controller
                     'created_at' => $conversation->latestMessage->created_at,
                 ] : null,
                 'unread_messages_count' => $unreadCount,
+                'user_labels' => $conversation->userLabels->map(function ($ul) {
+                    return $ul->chatLabel;
+                })->filter()->values(),
                 'updated_at' => $conversation->updated_at,
             ];
         });

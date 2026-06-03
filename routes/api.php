@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\SellerController;
+use App\Http\Controllers\Api\ChatLabelController;
 
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ChatbotController;
@@ -60,6 +61,13 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/messages/{id}', [ConversationController::class, 'deleteMessage']);
     Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
     Route::get('/conversations/{id}/active-orders', [ConversationController::class, 'activeorders']);
+    
+    // Quản lý nhãn dán trò chuyện (Chat Labels)
+    Route::get('/chat-labels', [ChatLabelController::class, 'index']);
+    Route::post('/chat-labels', [ChatLabelController::class, 'store']);
+    Route::put('/chat-labels/{id}', [ChatLabelController::class, 'update']);
+    Route::delete('/chat-labels/{id}', [ChatLabelController::class, 'destroy']);
+    Route::post('/conversations/{id}/labels', [ChatLabelController::class, 'updateConversationLabels']);
 
     // Route xác thực WebSockets bằng JWT
     Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {

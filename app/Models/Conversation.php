@@ -54,4 +54,14 @@ class Conversation extends Model
     {
         return $this->hasOne(Message::class, 'conversation_id')->latestOfMany();
     }
+
+    /**
+     * Nhãn được gán cho cuộc trò chuyện bởi người dùng hiện tại
+     */
+    public function userLabels()
+    {
+        return $this->hasMany(ConversationChatLabel::class, 'conversation_id')
+                    ->where('user_id', auth('api')->id())
+                    ->with('chatLabel'); // Eager load luôn label object
+    }
 }

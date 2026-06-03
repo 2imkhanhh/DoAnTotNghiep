@@ -7,18 +7,49 @@
         <!-- Cột Trái: Danh sách cuộc trò chuyện -->
         <div
           :class="['sidebar-panel border-r border-outline-variant flex flex-col', { 'hidden md:flex': !showSidebarOnMobile }]">
-          <!-- Header tìm kiếm -->
-          <div class="p-4 border-b border-outline-variant flex flex-col gap-3">
-            <h2 class="text-xl font-bold text-primary flex items-center gap-2">
-              <span class="material-symbols-outlined">chat</span>
-              Hộp thư
-            </h2>
-            <div class="relative">
-              <input v-model="searchQuery" type="text"
-                class="w-full bg-surface-container border border-outline-variant text-on-surface text-sm rounded-full pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                placeholder="Tìm người dùng...">
-              <span
-                class="material-symbols-outlined absolute left-3 top-2.5 text-sm text-on-surface-variant">search</span>
+          <!-- Header tìm kiếm và bộ lọc -->
+          <div class="pt-4 border-b border-outline-variant flex flex-col gap-3">
+            <div class="px-4 flex flex-col gap-3">
+              <h2 class="text-xl font-bold text-primary flex items-center gap-2">
+                <span class="material-symbols-outlined">chat</span>
+                Hộp thư
+              </h2>
+              <div class="relative">
+                <input v-model="searchQuery" type="text"
+                  class="w-full bg-surface-container border border-outline-variant text-on-surface text-sm rounded-full pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  placeholder="Tìm người dùng...">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-sm text-on-surface-variant">search</span>
+              </div>
+            </div>
+            
+            <!-- Thanh filter nhãn dán -->
+            <div class="relative group">
+              <!-- Nút trượt trái -->
+              <button v-show="canScrollLeft" @click="scrollFilters('left')"
+                class="absolute left-1 top-0 bottom-3 my-auto w-7 h-7 rounded-full bg-surface-container-lowest shadow-md border border-outline-variant flex items-center justify-center text-on-surface opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-surface-container-low cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              
+              <div ref="filterContainer" @scroll="updateScrollState" class="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide shrink-0 scroll-smooth">
+                <button @click="activeFilterLabel = 'all'" 
+                  :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === 'all' ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
+                  Tất cả
+                </button>
+                <button @click="activeFilterLabel = 'unread'" 
+                  :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === 'unread' ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
+                  Chưa đọc
+                </button>
+                <button v-for="label in allChatLabels" :key="label.id" @click="activeFilterLabel = label.id" 
+                  :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === label.id ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
+                  {{ label.name }}
+                </button>
+              </div>
+
+              <!-- Nút trượt phải -->
+              <button v-show="canScrollRight" @click="scrollFilters('right')"
+                class="absolute right-1 top-0 bottom-3 my-auto w-7 h-7 rounded-full bg-surface-container-lowest shadow-md border border-outline-variant flex items-center justify-center text-on-surface opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-surface-container-low cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
             </div>
           </div>
 
@@ -37,7 +68,7 @@
             </div>
 
             <div v-else v-for="conv in filteredConversations" :key="conv.id" @click="selectConversation(conv)"
-              :class="['conversation-item p-4 flex gap-3 cursor-pointer hover:bg-surface-container-low transition-all items-center', { 'bg-surface-container-high': chatStore.activeConversation && Number(chatStore.activeConversation.id) === Number(conv.id) }]">
+              :class="['conversation-item p-4 flex gap-3 cursor-pointer hover:bg-surface-container-low transition-all items-center relative group', { 'bg-surface-container-high': chatStore.activeConversation && Number(chatStore.activeConversation.id) === Number(conv.id) }]">
               <!-- Avatar -->
               <div class="relative shrink-0">
                 <img :src="conv.partner.avatar" alt="Avatar"
@@ -50,10 +81,28 @@
 
               <!-- Nội dung tóm tắt -->
               <div class="flex-1 min-w-0">
+                <!-- Nhãn phân loại -->
+                <div v-if="conv.user_labels && conv.user_labels.length > 0" class="flex gap-1 mb-1 flex-wrap">
+                  <span v-for="label in conv.user_labels" :key="label.id" 
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium text-on-surface bg-surface-container-high flex items-center gap-1 w-max">
+                    <span class="material-symbols-outlined !text-[14px] -rotate-45" :style="{ color: label.color_code, fontVariationSettings: '\'FILL\' 1' }">sell</span>
+                    {{ label.name }}
+                  </span>
+                </div>
+
                 <div class="flex justify-between items-baseline mb-1">
                   <h4 class="font-bold text-sm text-on-surface truncate pr-2">{{ conv.partner.name }}</h4>
-                  <span class="text-[10px] text-on-surface-variant shrink-0">{{ formatTime(conv.latest_message ?
-                    conv.latest_message.created_at : conv.updated_at) }}</span>
+                  <div class="relative flex items-center h-5 shrink-0">
+                    <span class="text-[10px] text-on-surface-variant transition-opacity group-hover:opacity-0">{{
+                      formatTime(conv.latest_message ?
+                        conv.latest_message.created_at : conv.updated_at) }}</span>
+
+                    <!-- Dấu 3 chấm Gắn phân loại -->
+                    <button @click.stop="toggleLabelPopover(conv.id)"
+                      class="btn-toggle-popover opacity-0 group-hover:opacity-100 absolute right-0 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface transition-all z-10 flex items-center justify-center cursor-pointer">
+                      <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </div>
                 </div>
                 <p class="text-xs text-on-surface-variant truncate pr-4"
                   :class="{ 'font-bold text-on-surface': conv.unread_messages_count > 0 }">
@@ -63,10 +112,44 @@
 
               <!-- Bài viết thu nhỏ liên quan -->
               <div v-if="conv.post"
-                class="shrink-0 w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/60"
+                class="shrink-0 w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/60 mr-4"
                 title="Tin đăng đang trao đổi">
                 <img :src="conv.post.image || 'https://images.unsplash.com/photo-1584438784894-089d6a128f3e?q=80&w=100'"
                   alt="Post Thumb" class="w-full h-full object-cover">
+              </div>
+
+              <!-- Popover Gắn phân loại -->
+              <div v-if="activePopover === conv.id"
+                class="label-popover absolute right-6 top-10 z-50 w-64 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant p-0 flex flex-col overflow-hidden"
+                @click.stop>
+                <div
+                  class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+                  <span class="font-bold text-sm">Gắn phân loại</span>
+                  <button @click.stop="activePopover = null"
+                    class="text-on-surface-variant hover:text-error cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                </div>
+                <div class="p-2 flex flex-col gap-1 max-h-60 overflow-y-auto">
+                  <label v-for="label in allChatLabels" :key="label.id"
+                    class="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-lg cursor-pointer">
+                    <input type="checkbox" :value="label.id" v-model="selectedLabels"
+                      class="w-4 h-4 rounded text-primary focus:ring-primary">
+                    <span class="material-symbols-outlined text-[20px]"
+                      :style="{ color: label.color_code, fontVariationSettings: '\'FILL\' 1' }">sell</span>
+                    <span class="text-sm flex-1">{{ label.name }}</span>
+                  </label>
+                </div>
+                <div class="p-2 border-t border-outline-variant flex gap-2">
+                  <button @click.stop="openManageLabels"
+                    class="flex-1 py-1.5 bg-surface-container text-on-surface rounded-lg text-sm font-bold hover:bg-surface-container-high transition-colors cursor-pointer">
+                    Quản lý
+                  </button>
+                  <button @click.stop="saveConversationLabels(conv.id)"
+                    class="flex-1 py-1.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer">
+                    Lưu
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -265,12 +348,71 @@
       </div>
     </div>
 
+    <!-- Modal Quản lý phân loại -->
+    <div v-if="isManagingLabels"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 animate-fade-in"
+      @click.self="isManagingLabels = false">
+      <div
+        class="bg-surface-container-lowest w-full max-w-md rounded-2xl shadow-xl flex flex-col overflow-hidden max-h-[90vh]">
+        <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+          <h3 class="font-bold text-lg">Quản lý phân loại</h3>
+          <button @click="isManagingLabels = false"
+            class="p-1 text-on-surface-variant hover:text-error transition-colors cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          <div v-for="label in allChatLabels" :key="label.id"
+            class="flex items-center gap-3 p-3 bg-surface-container-low border border-outline-variant/50 rounded-xl">
+            <span class="material-symbols-outlined text-[24px]"
+              :style="{ color: label.color_code, fontVariationSettings: '\'FILL\' 1' }">sell</span>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-sm truncate">{{ label.name }}</p>
+              <p class="text-xs text-on-surface-variant">{{ label.conversation_labels_count || 0 }} đoạn chat</p>
+            </div>
+
+            <div v-if="!label.is_default" class="flex items-center gap-1 shrink-0">
+              <button @click="editManageLabel(label)"
+                class="p-2 text-on-surface-variant hover:text-primary transition-colors cursor-pointer" title="Sửa">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+              <button @click="deleteManageLabel(label.id)"
+                class="p-2 text-on-surface-variant hover:text-error transition-colors cursor-pointer" title="Xóa">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 border-t border-outline-variant bg-surface-container flex flex-col gap-3">
+          <h4 class="font-bold text-sm">{{ managingLabelData.id ? 'Sửa nhãn' : 'Tạo mới' }}</h4>
+          <div class="flex gap-2">
+            <input type="text" v-model="managingLabelData.name" placeholder="Tên nhãn dán"
+              class="flex-1 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none">
+            <input type="color" v-model="managingLabelData.color_code"
+              class="color-picker-input w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0 shrink-0">
+          </div>
+          <div class="flex gap-2 justify-end mt-2">
+            <button v-if="managingLabelData.id" @click="resetManagingLabel"
+              class="px-4 py-2 text-sm font-bold text-on-surface hover:bg-surface-container-high rounded-lg transition-colors">
+              Hủy
+            </button>
+            <button @click="saveManageLabel"
+              class="px-4 py-2 bg-primary text-on-primary text-sm font-bold rounded-lg hover:bg-primary-container transition-colors cursor-pointer">
+              Lưu nhãn
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
   </div>
 </template>
 
 <script setup>
-import { toast } from '../utils/alert';
+import { toast, confirmDialog } from '../utils/alert';
 
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -291,6 +433,131 @@ const loadingMessages = ref(false);
 const sending = ref(false);
 const showSidebarOnMobile = ref(true);
 
+const activeFilterLabel = ref('all');
+const filterContainer = ref(null);
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
+
+const updateScrollState = () => {
+  if (filterContainer.value) {
+    const el = filterContainer.value;
+    canScrollLeft.value = el.scrollLeft > 0;
+    // Kiểm tra còn dư khoảng cuộn phải hay không (trừ đi 1px dung sai)
+    canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+  }
+};
+
+const scrollFilters = (direction) => {
+  if (filterContainer.value) {
+    const scrollAmount = 200; // Số pixel cuộn mỗi lần nhấn
+    if (direction === 'left') {
+      filterContainer.value.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else {
+      filterContainer.value.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }
+};
+
+const allChatLabels = ref([]);
+const activePopover = ref(null);
+const selectedLabels = ref([]);
+const isManagingLabels = ref(false);
+const managingLabelData = ref({ id: null, name: '', color_code: '#ef4444' });
+
+const fetchChatLabels = async () => {
+  try {
+    const res = await axios.get('/api/chat-labels');
+    allChatLabels.value = res.data.data || [];
+    nextTick(() => {
+      updateScrollState();
+    });
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách nhãn:', error);
+  }
+};
+
+const toggleLabelPopover = (convId) => {
+  if (activePopover.value === convId) {
+    activePopover.value = null;
+  } else {
+    activePopover.value = convId;
+    const conv = chatStore.conversations.find(c => c.id === convId);
+    selectedLabels.value = conv && conv.user_labels ? conv.user_labels.map(l => l.id) : [];
+  }
+};
+
+const saveConversationLabels = async (convId) => {
+  try {
+    await axios.post(`/api/conversations/${convId}/labels`, { label_ids: selectedLabels.value });
+    const conv = chatStore.conversations.find(c => c.id === convId);
+    if (conv) {
+      conv.user_labels = allChatLabels.value.filter(l => selectedLabels.value.includes(l.id));
+    }
+    toast('Đã cập nhật phân loại', 'success');
+    activePopover.value = null;
+  } catch (error) {
+    toast('Lỗi khi cập nhật phân loại', 'error');
+  }
+};
+
+const openManageLabels = () => {
+  isManagingLabels.value = true;
+  activePopover.value = null;
+  resetManagingLabel();
+};
+
+const resetManagingLabel = () => {
+  managingLabelData.value = { id: null, name: '', color_code: '#ef4444' };
+};
+
+const saveManageLabel = async () => {
+  if (!managingLabelData.value.name) {
+    toast('Vui lòng nhập tên nhãn', 'error');
+    return;
+  }
+  try {
+    if (managingLabelData.value.id) {
+      // Edit
+      await axios.put(`/api/chat-labels/${managingLabelData.value.id}`, managingLabelData.value);
+      toast('Cập nhật nhãn thành công', 'success');
+    } else {
+      // Create
+      await axios.post('/api/chat-labels', managingLabelData.value);
+      toast('Tạo nhãn thành công', 'success');
+    }
+    resetManagingLabel();
+    fetchChatLabels();
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Lỗi khi lưu nhãn';
+    toast(msg, 'error');
+  }
+};
+
+const deleteManageLabel = async (id) => {
+  const isConfirmed = await confirmDialog('Xóa nhãn phân loại', 'Bạn có chắc chắn muốn xóa nhãn này? Hành động này không thể hoàn tác.', 'Xóa', 'Hủy');
+  if (!isConfirmed) return;
+  try {
+    await axios.delete(`/api/chat-labels/${id}`);
+    toast('Xóa nhãn thành công', 'success');
+    fetchChatLabels();
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Lỗi khi xóa nhãn';
+    toast(msg, 'error');
+  }
+};
+
+const editManageLabel = (label) => {
+  managingLabelData.value = { ...label };
+};
+
+const closePopoverOnOutsideClick = (e) => {
+  if (!e.target.closest('.label-popover') && !e.target.closest('.btn-toggle-popover')) {
+    activePopover.value = null;
+  }
+};
+
+
+
 
 const messagesContainer = ref(null);
 const messageTextarea = ref(null);
@@ -302,13 +569,26 @@ const imagePreviewUrl = ref(null);
 // Lưu trữ thông tin sản phẩm chuẩn bị đính kèm gửi đi
 const attachedPost = ref(null);
 
-// Lọc các cuộc hội thoại dựa trên thanh tìm kiếm đối phương
+// Lọc các cuộc hội thoại dựa trên thanh tìm kiếm và bộ lọc nhãn
 const filteredConversations = computed(() => {
-  if (!searchQuery.value.trim()) return chatStore.conversations;
-  const query = searchQuery.value.toLowerCase().trim();
-  return chatStore.conversations.filter(c =>
-    c.partner.name.toLowerCase().includes(query)
-  );
+  let result = chatStore.conversations;
+
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim();
+    result = result.filter(c =>
+      c.partner.name.toLowerCase().includes(query)
+    );
+  }
+
+  if (activeFilterLabel.value === 'unread') {
+    result = result.filter(c => c.unread_messages_count > 0);
+  } else if (activeFilterLabel.value !== 'all') {
+    result = result.filter(c => 
+      c.user_labels && c.user_labels.some(l => l.id === activeFilterLabel.value)
+    );
+  }
+
+  return result;
 });
 
 // Chuyển đổi hiển thị sang khung chat trên di động
@@ -345,7 +625,7 @@ const fetchMessages = async (convId) => {
     // Đợi DOM render xong danh sách tin nhắn rồi mới cuộn xuống dưới
     await nextTick();
     scrollToBottom();
-    
+
     // Cuộn thêm lần nữa sau khi hình ảnh có thể đã load xong để tránh bị đẩy ngược lên
     setTimeout(scrollToBottom, 500);
   }
@@ -623,7 +903,8 @@ const canUnsend = (createdAt) => {
 };
 
 const unsendMessage = async (id) => {
-  if (!confirm('Bạn có chắc chắn muốn thu hồi tin nhắn này?')) return;
+  const isConfirmed = await confirmDialog('Thu hồi tin nhắn', 'Bạn có chắc chắn muốn thu hồi tin nhắn này?', 'Thu hồi', 'Hủy');
+  if (!isConfirmed) return;
   try {
     const res = await axios.delete(`/api/messages/${id}`);
     if (res.data.success) {
@@ -642,12 +923,16 @@ const unsendMessage = async (id) => {
 
 // Khởi tạo trang
 onMounted(async () => {
+  fetchChatLabels();
+  document.addEventListener('click', closePopoverOnOutsideClick);
+
   // Tải danh sách các cuộc hội thoại
   await chatStore.fetchConversations();
 
   // Đăng ký lắng nghe sự kiện khi có tin nhắn real-time tới
   window.addEventListener('new-message-received', handleIncomingMessage);
   window.addEventListener('message-deleted-received', handleMessageDeleted);
+  document.addEventListener('click', closePopoverOnOutsideClick);
 
   // Nhận tham số conversation_id hoặc post_id từ query (ví dụ khi nhấn "Nhắn tin ngay" từ trang chi tiết bài đăng)
   const queryConvId = route.query.conversation_id;
@@ -676,6 +961,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  document.removeEventListener('click', closePopoverOnOutsideClick);
   window.removeEventListener('new-message-received', handleIncomingMessage);
   window.removeEventListener('message-deleted-received', handleMessageDeleted);
   if (chatStore.activeConversation && window.Echo) {
@@ -790,5 +1076,26 @@ onUnmounted(() => {
 .chat-messages::-webkit-scrollbar-thumb:hover,
 .conversations-list::-webkit-scrollbar-thumb:hover {
   background: var(--color-outline);
+}
+
+/* Custom style cho ô chọn màu */
+.color-picker-input {
+  -webkit-appearance: none;
+  border: none;
+}
+.color-picker-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-picker-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.5rem;
+}
+/* Ẩn thanh cuộn của phần filter */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
