@@ -269,9 +269,8 @@
 
         <!-- List -->
         <div class="p-3 overflow-y-auto grow custom-scrollbar">
-          <div v-if="followModal.isLoading" class="text-center py-10 text-on-surface-variant flex flex-col items-center justify-center">
-            <span class="material-symbols-outlined animate-spin text-4xl mb-2 text-primary">progress_activity</span>
-            <p class="font-medium text-sm">Đang tải dữ liệu...</p>
+          <div v-if="followModal.isLoading" class="flex flex-col items-center justify-center py-10">
+            <LoadingState />
           </div>
           <div v-else-if="followModal.list.length === 0" class="text-center py-10 text-on-surface-variant">
             Danh sách này hiện đang trống.
