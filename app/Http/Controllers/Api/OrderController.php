@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -104,19 +105,21 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Sản phẩm này đã được bán hoặc đang giao cho người khác.'], 400);
         }
 
-        $Order->update(['status' => 'confirmed']);
+        DB::transaction(function () use ($Order) {
+            $Order->update(['status' => 'confirmed']);
 
-        // Đổi trạng thái bài đăng thành Tạm ẩn (hidden) để ẩn khỏi trang chủ
-        $post = Post::find($Order->post_id);
-        if ($post) {
-            $post->update(['status' => 'hidden']);
-        }
-        
-        // Từ chối tất cả các giao dịch pending khác cho sản phẩm này
-        Order::where('post_id', $Order->post_id)
-            ->where('id', '!=', $Order->id)
-            ->where('status', 'pending')
-            ->update(['status' => 'rejected']);
+            // Đổi trạng thái bài đăng thành Tạm ẩn (hidden) để ẩn khỏi trang chủ
+            $post = Post::find($Order->post_id);
+            if ($post) {
+                $post->update(['status' => 'hidden']);
+            }
+            
+            // Từ chối tất cả các giao dịch pending khác cho sản phẩm này
+            Order::where('post_id', $Order->post_id)
+                ->where('id', '!=', $Order->id)
+                ->where('status', 'pending')
+                ->update(['status' => 'rejected']);
+        });
 
         return response()->json(['success' => true, 'message' => 'Đã duyệt đơn và chuyển sang Đã xác nhận.', 'data' => $Order]);
     }
@@ -170,13 +173,15 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Đơn hàng chưa ở trạng thái đang giao.'], 400);
         }
 
-        $Order->update(['status' => 'delivered']);
+        DB::transaction(function () use ($Order) {
+            $Order->update(['status' => 'delivered']);
 
-        // Đổi trạng thái bài đăng thành Đã bán (sold)
-        $post = Post::find($Order->post_id);
-        if ($post) {
-            $post->update(['status' => 'sold']);
-        }
+            // Đổi trạng thái bài đăng thành Đã bán (sold)
+            $post = Post::find($Order->post_id);
+            if ($post) {
+                $post->update(['status' => 'sold']);
+            }
+        });
 
         return response()->json(['success' => true, 'message' => 'Đã xác nhận giao hàng thành công.', 'data' => $Order]);
     }
@@ -197,15 +202,17 @@ class OrderController extends Controller
 
         $wasConfirmed = $Order->status === 'confirmed';
 
-        $Order->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($Order, $wasConfirmed) {
+            $Order->update(['status' => 'cancelled']);
 
-        // Khôi phục bài đăng về hiển thị nếu đã từng tạm ẩn
-        if ($wasConfirmed) {
-            $post = Post::find($Order->post_id);
-            if ($post && $post->status === 'hidden') {
-                $post->update(['status' => 'active']);
+            // Khôi phục bài đăng về hiển thị nếu đã từng tạm ẩn
+            if ($wasConfirmed) {
+                $post = Post::find($Order->post_id);
+                if ($post && $post->status === 'hidden') {
+                    $post->update(['status' => 'active']);
+                }
             }
-        }
+        });
 
         return response()->json(['success' => true, 'message' => 'Đã hủy đơn hàng thành công.', 'data' => $Order]);
     }
