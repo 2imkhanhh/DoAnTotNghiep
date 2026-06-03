@@ -117,6 +117,22 @@
               <div v-for="item in filteredPosts" :key="item.id" @click="item.status !== 'sold' ? goToPost(item.slug) : null"
                 class="bg-surface-container rounded-2xl overflow-hidden border border-outline-variant hover:shadow-md transition-all flex flex-col sm:flex-row group relative"
                 :class="item.status === 'sold' ? 'cursor-default' : 'cursor-pointer'">
+                
+                <!-- Nút yêu thích (Trái tim) -->
+                <button v-if="(!authStore.isLoggedIn || item.user_id !== authStore.user?.id) && item.status !== 'sold'"
+                  @click.stop="toggleFavorite(item.id)"
+                  class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
+                  <!-- Ruột Đỏ -->
+                  <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute',
+                    isFavorite(item.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
+                    favorite
+                  </span>
+                  <!-- Viền Trắng -->
+                  <span
+                    class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                    favorite
+                  </span>
+                </button>
                 <div class="relative w-full sm:w-[240px] sm:h-[180px] aspect-[4/3] sm:aspect-auto bg-surface-container-high overflow-hidden shrink-0">
                   <img :src="item.image" :alt="item.title"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -130,24 +146,10 @@
                     <span class="bg-surface-container-lowest text-on-surface px-3 py-1.5 rounded-full text-xs font-bold shadow-md">Đã bán</span>
                   </div>
 
-                  <!-- Nút yêu thích (Trái tim) -->
-                  <button v-if="(!authStore.isLoggedIn || item.user_id !== authStore.user?.id) && item.status !== 'sold'"
-                    @click.stop="toggleFavorite(item.id)"
-                    class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
-                    <!-- Ruột Đỏ -->
-                    <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute',
-                      isFavorite(item.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
-                      favorite
-                    </span>
-                    <!-- Viền Trắng -->
-                    <span
-                      class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                      favorite
-                    </span>
-                  </button>
+
                 </div>
                 <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between min-w-0">
-                  <div>
+                  <div class="pr-8">
                     <h4
                       :class="['font-bold text-on-surface text-sm sm:text-base line-clamp-2 leading-snug group-hover:text-primary transition-colors', item.status === 'sold' ? 'cursor-text' : '']"
                       :title="item.title">
@@ -361,7 +363,7 @@ const setTab = (tab) => {
   if (postFilter.value === tab) return;
   postFilter.value = tab;
   if (postState.value[tab].data.length === 0) {
-    fetchSellerProfile(tab === 'active' ? 1 : 2, 1);
+    fetchSellerProfile(tab, 1);
   }
 };
 
@@ -395,20 +397,19 @@ const loadMorePosts = () => {
   const tab = postFilter.value;
   if (!postState.value[tab].hasMore || loadingMore.value) return;
   
-  const statusId = tab === 'active' ? 1 : 2;
   const nextPage = postState.value[tab].page + 1;
-  fetchSellerProfile(statusId, nextPage);
+  fetchSellerProfile(tab, nextPage);
 };
 
 // Gọi API dữ liệu tin đăng và thông tin người bán thực tế
-const fetchSellerProfile = async (statusId = 1, page = 1) => {
+const fetchSellerProfile = async (status = 'active', page = 1) => {
   const sellerId = route.params.id;
   loadingMore.value = true;
   try {
-    const response = await axios.get(`/api/seller/${sellerId}?status=${statusId}&page=${page}`);
+    const response = await axios.get(`/api/seller/${sellerId}?status=${status}&page=${page}`);
     if (response.data.success) {
       // Cập nhật seller profile ở lần đầu
-      if (page === 1 && statusId === 1 && !seller.value.id) {
+      if (page === 1 && status === 'active' && !seller.value.id) {
         seller.value = response.data.data.user;
         seller.value.active_count = response.data.data.active_count;
         seller.value.sold_count = response.data.data.sold_count;
@@ -435,7 +436,7 @@ const fetchSellerProfile = async (statusId = 1, page = 1) => {
       });
 
       const pagination = response.data.data.posts;
-      const type = statusId === 1 ? 'active' : 'sold';
+      const type = status;
 
       if (page === 1) {
         postState.value[type].data = formattedPosts;
@@ -447,7 +448,7 @@ const fetchSellerProfile = async (statusId = 1, page = 1) => {
       postState.value[type].hasMore = pagination.current_page < pagination.last_page;
       
       // Fetch reviews sau khi load xong profile (chỉ gọi lần 1)
-      if (page === 1 && statusId === 1) {
+      if (page === 1 && status === 'active') {
         fetchReviews(1);
       }
     }
