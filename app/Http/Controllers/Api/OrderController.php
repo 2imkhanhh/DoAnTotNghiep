@@ -67,7 +67,7 @@ class OrderController extends Controller
         $status = $request->query('status');
 
         $query = Order::where('buyer_id', $userId)
-            ->with(['seller', 'post.images']) // Load related info
+            ->with(['seller', 'post.images', 'review']) // Load related info
             ->orderBy('created_at', 'desc');
             
         if ($status) {

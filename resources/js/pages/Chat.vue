@@ -18,10 +18,11 @@
                 <input v-model="searchQuery" type="text"
                   class="w-full bg-surface-container border border-outline-variant text-on-surface text-sm rounded-full pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   placeholder="Tìm người dùng...">
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-sm text-on-surface-variant">search</span>
+                <span
+                  class="material-symbols-outlined absolute left-3 top-2.5 text-sm text-on-surface-variant">search</span>
               </div>
             </div>
-            
+
             <!-- Thanh filter nhãn dán -->
             <div class="relative group">
               <!-- Nút trượt trái -->
@@ -29,17 +30,18 @@
                 class="absolute left-1 top-0 bottom-3 my-auto w-7 h-7 rounded-full bg-surface-container-lowest shadow-md border border-outline-variant flex items-center justify-center text-on-surface opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-surface-container-low cursor-pointer">
                 <span class="material-symbols-outlined text-[18px]">chevron_left</span>
               </button>
-              
-              <div ref="filterContainer" @scroll="updateScrollState" class="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide shrink-0 scroll-smooth">
-                <button @click="activeFilterLabel = 'all'" 
+
+              <div ref="filterContainer" @scroll="updateScrollState"
+                class="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide shrink-0 scroll-smooth">
+                <button @click="activeFilterLabel = 'all'"
                   :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === 'all' ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
                   Tất cả
                 </button>
-                <button @click="activeFilterLabel = 'unread'" 
+                <button @click="activeFilterLabel = 'unread'"
                   :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === 'unread' ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
                   Chưa đọc
                 </button>
-                <button v-for="label in allChatLabels" :key="label.id" @click="activeFilterLabel = label.id" 
+                <button v-for="label in allChatLabels" :key="label.id" @click="activeFilterLabel = label.id"
                   :class="['px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors border cursor-pointer', activeFilterLabel === label.id ? 'bg-surface-container-high border-on-surface text-on-surface' : 'bg-surface-container-lowest border-outline-variant text-on-surface-variant hover:bg-surface-container-low']">
                   {{ label.name }}
                 </button>
@@ -83,9 +85,10 @@
               <div class="flex-1 min-w-0">
                 <!-- Nhãn phân loại -->
                 <div v-if="conv.user_labels && conv.user_labels.length > 0" class="flex gap-1 mb-1 flex-wrap">
-                  <span v-for="label in conv.user_labels" :key="label.id" 
+                  <span v-for="label in conv.user_labels" :key="label.id"
                     class="px-2 py-0.5 rounded-full text-[11px] font-medium text-on-surface bg-surface-container-high flex items-center gap-1 w-max">
-                    <span class="material-symbols-outlined !text-[14px] -rotate-45" :style="{ color: label.color_code, fontVariationSettings: '\'FILL\' 1' }">sell</span>
+                    <span class="material-symbols-outlined !text-[14px] -rotate-45"
+                      :style="{ color: label.color_code, fontVariationSettings: '\'FILL\' 1' }">sell</span>
                     {{ label.name }}
                   </span>
                 </div>
@@ -583,7 +586,7 @@ const filteredConversations = computed(() => {
   if (activeFilterLabel.value === 'unread') {
     result = result.filter(c => c.unread_messages_count > 0);
   } else if (activeFilterLabel.value !== 'all') {
-    result = result.filter(c => 
+    result = result.filter(c =>
       c.user_labels && c.user_labels.some(l => l.id === activeFilterLabel.value)
     );
   }
@@ -1080,20 +1083,24 @@ onUnmounted(() => {
 
 /* Custom style cho ô chọn màu */
 .color-picker-input {
-  -webkit-appearance: none;
+  appearance: none;
   border: none;
 }
+
 .color-picker-input::-webkit-color-swatch-wrapper {
   padding: 0;
 }
+
 .color-picker-input::-webkit-color-swatch {
   border: none;
   border-radius: 0.5rem;
 }
+
 /* Ẩn thanh cuộn của phần filter */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

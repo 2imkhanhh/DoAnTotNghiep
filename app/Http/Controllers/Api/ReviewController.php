@@ -27,12 +27,12 @@ class ReviewController extends Controller
     public function store(Request $request, $userId)
     {
         $request->validate([
-            'Order_id' => 'required|exists:Orders,id',
+            'order_id' => 'required|exists:orders,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:500',
         ]);
 
-        $Order = Order::findOrFail($request->Order_id);
+        $Order = Order::findOrFail($request->order_id);
 
         // Đảm bảo đúng người mua
         if ($Order->buyer_id !== Auth::id()) {
@@ -45,18 +45,18 @@ class ReviewController extends Controller
         }
 
         // Đảm bảo giao dịch đã hoàn thành
-        if ($Order->status !== 'completed') {
+        if ($Order->status !== 'delivered') {
             return response()->json(['success' => false, 'message' => 'Chưa thể đánh giá vì giao dịch chưa hoàn thành.'], 400);
         }
 
         // Đảm bảo chưa review lần nào cho giao dịch này
-        $existing = Review::where('Order_id', $Order->id)->first();
+        $existing = Review::where('order_id', $Order->id)->first();
         if ($existing) {
             return response()->json(['success' => false, 'message' => 'Bạn đã đánh giá giao dịch này rồi.'], 400);
         }
 
         $review = Review::create([
-            'Order_id' => $Order->id,
+            'order_id' => $Order->id,
             'reviewer_id' => Auth::id(),
             'reviewed_user_id' => $userId,
             'rating' => $request->rating,

@@ -62,7 +62,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function getSoldCountAttribute()
     {
-        return $this->posts()->where('status', 2)->count();
+        return $this->posts()->where('status', 'sold')->count();
     }
 
     public function getReviewsCountAttribute()
