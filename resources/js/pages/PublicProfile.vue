@@ -1,5 +1,9 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div v-if="isLoading" class="min-h-[70vh] flex flex-col items-center justify-center">
+    <LoadingState />
+  </div>
+
+  <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex flex-col md:flex-row gap-8">
       <!-- Sidebar Trái: Thông tin người bán -->
       <aside class="w-full md:w-80 shrink-0">
@@ -294,10 +298,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
+import LoadingState from '../components/common/LoadingState.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const isLoading = ref(true);
 
 // Mock dữ liệu danh sách người theo dõi
 const followModal = ref({ show: false, type: 'followers', list: [], isLoading: false });
@@ -486,12 +492,18 @@ const fetchReviews = async (page = 1) => {
   }
 };
 
-onMounted(() => {
-  // Lấy dữ liệu công khai từ backend thay vì truyền qua history state
-  fetchSellerProfile();
-  fetchFavorites();
-
+onMounted(async () => {
   window.scrollTo(0, 0);
+  isLoading.value = true;
+  
+  try {
+    await Promise.all([
+      fetchSellerProfile(),
+      fetchFavorites()
+    ]);
+  } finally {
+    isLoading.value = false;
+  }
 });
 
 // Xử lý yêu thích (favorite)

@@ -1,5 +1,9 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div v-if="isLoading" class="min-h-[70vh] flex flex-col items-center justify-center">
+    <LoadingState />
+  </div>
+
+  <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex flex-col md:flex-row gap-8">
       <!-- Sidebar -->
       <aside class="w-full md:w-80 shrink-0">
@@ -507,11 +511,13 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
+import LoadingState from '../components/common/LoadingState.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 const activeTab = ref('info');
+const isLoading = ref(true);
 const fileInput = ref(null);
 const avatarFile = ref(null);
 const loading = ref(false);
@@ -910,12 +916,19 @@ const changePassword = async () => {
   }
 };
 
-onMounted(() => {
-  fetchProvinces();
-  fetchProfile().then(() => {
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    await Promise.all([
+      fetchProvinces(),
+      fetchProfile()
+    ]);
+    
     if (profileData.value.province_id) {
-      fetchInitialWards(profileData.value.province_id);
+      await fetchInitialWards(profileData.value.province_id);
     }
-  });
+  } finally {
+    isLoading.value = false;
+  }
 });
 </script>
