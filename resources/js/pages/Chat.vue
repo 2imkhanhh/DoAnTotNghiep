@@ -310,7 +310,7 @@
                   </div>
                 </div>
                 <button type="button" @click="attachedPost = null"
-                  class="shrink-0 p-1.5 hover:bg-surface-container rounded-full text-on-surface-variant hover:text-error transition-all flex items-center justify-center"
+                  class="shrink-0 p-1.5 hover:bg-surface-container rounded-full text-on-surface-variant hover:text-error transition-all flex items-center justify-center cursor-pointer"
                   title="Hủy đính kèm">
                   <span class="material-symbols-outlined text-sm font-bold">close</span>
                 </button>

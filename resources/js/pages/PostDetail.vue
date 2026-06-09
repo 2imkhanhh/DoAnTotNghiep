@@ -532,14 +532,15 @@ onMounted(() => {
   color: white;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.7;
-  /* Luôn hiển thị mờ để báo hiệu có thể click */
+  opacity: 0;
+  visibility: hidden;
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .main-image:hover .gallery-nav-btn {
   opacity: 1;
+  visibility: visible;
 }
 
 .gallery-nav-btn:hover {
@@ -569,6 +570,7 @@ onMounted(() => {
 @media (max-width: 768px) {
   .gallery-nav-btn {
     opacity: 0.95 !important;
+    visibility: visible;
     width: 38px;
     height: 38px;
     background: rgba(15, 23, 42, 0.75);
@@ -947,8 +949,8 @@ onMounted(() => {
 /* Related Section */
 .related-section {
   border-top: 1px solid #e2e8f0;
-  padding-top: 3.5rem;
-  margin-top: 5rem;
+  padding-top: 1rem;
+  margin-top: 2rem;
 }
 
 .related-header {
