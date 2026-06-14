@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\NewReviewNotification;
 
 class ReviewController extends Controller
 {
@@ -62,6 +64,12 @@ class ReviewController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+
+        // Gửi thông báo cho người bán
+        $seller = User::find($userId);
+        if ($seller) {
+            $seller->notify(new NewReviewNotification($review));
+        }
 
         return response()->json(['success' => true, 'data' => $review]);
     }

@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Api\Post\StorePostRequest;
 use App\Http\Requests\Api\Post\UpdatePostRequest;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\PostPendingApprovalNotification;
+use App\Notifications\PostApprovedNotification;
+use App\Notifications\PostRejectedNotification;
 
 class PostController extends Controller
 {
@@ -313,6 +318,12 @@ class PostController extends Controller
             // Load lại tin đăng kèm theo ảnh vừa tạo để trả về cho Frontend
             $post->load('images');
 
+            // Gửi thông báo cho Admin nếu bài đăng cần duyệt
+            if ($post->status === 'pending') {
+                $admins = User::where('role', User::ROLE_ADMIN)->get();
+                Notification::send($admins, new PostPendingApprovalNotification($post));
+            }
+
             $message = auth('api')->user()->isAdmin() 
                 ? 'Đăng tin thành công!' 
                 : 'Đăng tin thành công! Tin của bạn đang chờ duyệt.';
@@ -426,6 +437,12 @@ class PostController extends Controller
 
             DB::commit();
 
+            // Gửi thông báo cho Admin nếu bài đăng cần duyệt lại
+            if ($post->status === 'pending') {
+                $admins = User::where('role', User::ROLE_ADMIN)->get();
+                Notification::send($admins, new PostPendingApprovalNotification($post));
+            }
+
             $message = auth('api')->user()->isAdmin() 
                 ? 'Cập nhật tin đăng thành công!' 
                 : 'Cập nhật tin đăng thành công! Tin của bạn đang chờ duyệt lại.';
@@ -489,10 +506,21 @@ class PostController extends Controller
             }
         }
 
+        $oldStatus = $post->status;
+
         $post->update([
             'status' => $request->status,
             'reject_reason' => $request->status === 'rejected' ? $request->reason : null
         ]);
+
+        // Gửi thông báo cho người dùng
+        if ($oldStatus !== $request->status) {
+            if ($request->status === 'active') {
+                $post->user->notify(new PostApprovedNotification($post));
+            } elseif ($request->status === 'rejected') {
+                $post->user->notify(new PostRejectedNotification($post));
+            }
+        }
 
         $statusMap = [
             'pending' => 'đã chuyển về chờ duyệt',

@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/locations/provinces', [LocationController::class, 'getProvinces']);
@@ -90,6 +91,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     // --- Kênh Người Bán (Seller Center) ---
     Route::get('/seller/dashboard/stats', [SellerController::class, 'dashboardStats']);
     Route::get('/seller/orders', [SellerController::class, 'orders']);
+
+    // Các routes Thông báo (Notifications)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
 
 // Nhóm route quản trị (Admin)

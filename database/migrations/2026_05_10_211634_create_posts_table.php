@@ -30,8 +30,7 @@ return new class extends Migration
             $table->json('specifications')->nullable();
 
             // 4. Trạng thái tin đăng
-            $table->tinyInteger('status')->default(0); // 0: Chờ duyệt, 1: Đang hiển thị, 2: Đã bán, 3: Bị từ chối
-
+            $table->tinyInteger('status')->default(0); // pending,active,sold,rejected,hidden
             $table->timestamps();
 
             // Thiết lập Khóa ngoại

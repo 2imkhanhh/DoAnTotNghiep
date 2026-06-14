@@ -90,7 +90,7 @@
 
                 <!-- Rejection Reason -->
                 <div v-if="post.status === 'rejected' && post.reject_reason"
-                  class="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-pulse">
+                  class="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
                   <span class="material-symbols-outlined text-red-500 text-[18px]">info</span>
                   <p class="text-[12px] text-red-700 font-medium">
                     <span class="font-bold">Bị từ chối:</span> {{ post.reject_reason }}
@@ -171,11 +171,15 @@
 <script setup>
 import { toast, confirmDialog } from '../../utils/alert';
 
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
 import LoadingState from '../../components/common/LoadingState.vue';
+import { useNotificationStore } from '../../stores/notification';
 
+const notificationStore = useNotificationStore();
+const route = useRoute();
 const posts = ref([]);
 const loading = ref(true);
 const currentTab = ref('');
@@ -346,8 +350,21 @@ const formatDate = (dateStr) => {
 };
 
 onMounted(() => {
+  if (route.query.status) {
+    currentTab.value = route.query.status;
+  }
   fetchPosts();
 });
+
+watch(
+  () => route.query.status,
+  (newStatus) => {
+    if (newStatus !== undefined && newStatus !== currentTab.value) {
+      currentTab.value = newStatus;
+      fetchPosts();
+    }
+  }
+);
 </script>
 
 <style scoped>

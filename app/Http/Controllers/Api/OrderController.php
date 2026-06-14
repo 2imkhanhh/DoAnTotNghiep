@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\Order;
+use App\Notifications\NewOrderNotification;
+use App\Notifications\OrderCancelledNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +59,9 @@ class OrderController extends Controller
             'shipping_note' => $request->shipping_note,
             'total_price' => $post->price,
         ]);
+
+        // Send notification to the seller
+        $post->user->notify(new NewOrderNotification($Order));
 
         return response()->json(['success' => true, 'data' => $Order, 'message' => 'Đặt hàng thành công!']);
     }
@@ -213,6 +218,15 @@ class OrderController extends Controller
                 }
             }
         });
+
+        // Gửi thông báo cho người còn lại
+        if ($userId === $Order->buyer_id) {
+            // Người mua huỷ -> gửi cho người bán
+            $Order->seller->notify(new OrderCancelledNotification($Order, 'buyer'));
+        } else {
+            // Người bán huỷ -> gửi cho người mua
+            $Order->buyer->notify(new OrderCancelledNotification($Order, 'seller'));
+        }
 
         return response()->json(['success' => true, 'message' => 'Đã hủy đơn hàng thành công.', 'data' => $Order]);
     }

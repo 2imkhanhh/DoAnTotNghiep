@@ -559,7 +559,7 @@ onMounted(() => {
   background: white;
   border-radius: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .admin-table {
@@ -581,6 +581,10 @@ onMounted(() => {
 .admin-table td {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-table td:last-child {
+  white-space: nowrap;
 }
 
 .post-thumb img {

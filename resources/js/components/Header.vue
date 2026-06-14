@@ -39,11 +39,7 @@
                         </div>
                     </router-link>
 
-                    <router-link to="/notifications"
-                        class="p-2 text-on-surface hover:text-primary hover:bg-surface-container rounded-full transition-colors hidden sm:block"
-                        title="Thông báo">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </router-link>
+                    <NotificationDropdown />
 
                     <router-link to="/seller-center/post/create"
                         class="hidden sm:flex items-center gap-1 font-bold text-primary hover:text-primary-container px-3 py-2 rounded-lg hover:bg-surface-container-low transition-colors">
@@ -118,6 +114,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useChatStore } from '../stores/chat';
+import NotificationDropdown from './common/NotificationDropdown.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

@@ -40,7 +40,7 @@
             <span class="material-symbols-outlined">payments</span>
           </div>
           <div class="stat-info">
-            <h3 class="stat-title">Doanh thu dự kiến</h3>
+            <h3 class="stat-title">Doanh thu</h3>
             <p class="stat-value text-primary font-bold">{{ formatPrice(stats.revenue) }}đ</p>
           </div>
         </div>

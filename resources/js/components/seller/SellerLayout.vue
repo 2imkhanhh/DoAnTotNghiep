@@ -52,10 +52,7 @@
           <h1 class="page-title">{{ title }}</h1>
         </div>
         <div class="topbar-right">
-          <button class="icon-btn">
-            <span class="material-symbols-outlined">notifications</span>
-            <span class="dot"></span>
-          </button>
+          <NotificationDropdown />
         </div>
       </header>
 
@@ -69,6 +66,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStore } from '../../stores/auth';
+import NotificationDropdown from '../common/NotificationDropdown.vue';
 
 defineProps({
   title: {
