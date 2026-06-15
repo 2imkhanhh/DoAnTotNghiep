@@ -510,6 +510,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import LoadingState from '../components/common/LoadingState.vue';
+import { toast } from '../utils/alert';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -634,7 +635,7 @@ const submitReply = () => {
   if (review) {
     review.reply = replyModal.value.text;
     review.reply_date = new Date().toLocaleDateString('vi-VN');
-    showToast('Đã gửi phản hồi đánh giá thành công!');
+    toast('Đã gửi phản hồi đánh giá thành công!', 'success');
   }
   closeReplyModal();
 };
@@ -687,7 +688,7 @@ const unfollowUser = async (userId) => {
     if (response.data.success) {
       followModal.value.list = followModal.value.list.filter(u => u.id !== userId);
       if (profileData.value.followings_count > 0) profileData.value.followings_count--;
-      showToast('Đã hủy theo dõi người dùng!');
+      toast('Đã hủy theo dõi người dùng!', 'success');
     }
   } catch (error) {
     console.error('Lỗi khi thao tác:', error);
@@ -701,7 +702,7 @@ const followBackUser = async (userId) => {
       const user = followModal.value.list.find(u => u.id === userId);
       if (user) user.isFollowing = true;
       profileData.value.followings_count++;
-      showToast('Đã theo dõi người dùng!');
+      toast('Đã theo dõi người dùng!', 'success');
     }
   } catch (error) {
     console.error('Lỗi khi thao tác:', error);
@@ -797,18 +798,7 @@ const passwordData = ref({
   new_password_confirmation: ''
 });
 
-const toast = ref({
-  show: false,
-  message: ''
-});
-
-const showToast = (message) => {
-  toast.value.message = message;
-  toast.value.show = true;
-  setTimeout(() => {
-    toast.value.show = false;
-  }, 3000);
-};
+// Xóa biến toast cục bộ vì đã dùng toast global
 
 const fetchProfile = async () => {
   try {
@@ -883,10 +873,12 @@ const updateProfile = async () => {
     // QUAN TRỌNG: Cập nhật Store để Header thay đổi ngay lập tức
     authStore.setUser(updatedUser);
 
-    showToast('Cập nhật hồ sơ thành công!');
+    toast('Cập nhật hồ sơ thành công!', 'success');
   } catch (error) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors;
+    } else {
+      toast(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin.', 'error');
     }
   } finally {
     loading.value = false;
@@ -904,10 +896,16 @@ const changePassword = async () => {
       new_password: '',
       new_password_confirmation: ''
     };
-    showToast('Đổi mật khẩu thành công!');
+    toast('Đổi mật khẩu thành công!', 'success');
   } catch (error) {
     if (error.response?.status === 422 || error.response?.status === 400) {
       passwordErrors.value = error.response.data.errors;
+      // Nếu API trả về message lỗi chung cho mật khẩu
+      if (error.response?.data?.message && !error.response?.data?.errors) {
+        toast(error.response.data.message, 'error');
+      }
+    } else {
+      toast(error.response?.data?.message || 'Có lỗi xảy ra khi đổi mật khẩu.', 'error');
     }
   } finally {
     passwordLoading.value = false;

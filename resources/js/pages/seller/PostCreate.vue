@@ -115,6 +115,11 @@
         <section class="form-card">
           <h2 class="card-title"><span class="material-symbols-outlined">payments</span> Giá & Địa điểm</h2>
 
+          <label class="checkbox-label-custom mb-6">
+            <input type="checkbox" v-model="useMyInfo" @change="toggleMyInfo">
+            <span>Sử dụng thông tin cá nhân của tôi</span>
+          </label>
+
           <div class="info-grid mb-6">
             <div class="form-group">
               <label class="field-label">Giá bán *</label>
@@ -177,9 +182,11 @@ import { toast, confirmDialog } from '../../utils/alert';
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/auth';
 import SellerLayout from '../../components/seller/SellerLayout.vue';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const categories = ref([]);
 const childCategories = ref([]);
 const selectedParentId = ref('');
@@ -190,6 +197,7 @@ const replaceImageInput = ref(null);
 const replacingIndex = ref(null);
 const submitting = ref(false);
 const errors = ref({});
+const useMyInfo = ref(false);
 
 // Administrative Units
 const provinces = ref([]);
@@ -256,6 +264,41 @@ const onProvinceChange = async () => {
 const onWardChange = () => {
   const selected = wards.value.find(w => w.code === form.ward_id);
   form.ward_name = selected ? selected.name : '';
+};
+
+const fetchInitialWards = async (provinceId) => {
+  try {
+    const res = await axios.get(`/api/locations/wards/${provinceId}`);
+    wards.value = res.data;
+  } catch (error) {
+    console.error('Failed to fetch initial wards:', error);
+  }
+};
+
+const toggleMyInfo = async () => {
+  if (useMyInfo.value && authStore.user) {
+    form.phone = authStore.user.phone || '';
+    form.province_id = authStore.user.province_id || '';
+    
+    if (form.province_id) {
+      await fetchInitialWards(form.province_id);
+      const selectedProv = provinces.value.find(p => p.code === form.province_id);
+      form.province_name = selectedProv ? selectedProv.name : '';
+    }
+    
+    form.ward_id = authStore.user.ward_id || '';
+    if (form.ward_id) {
+      const selectedWard = wards.value.find(w => w.code === form.ward_id);
+      form.ward_name = selectedWard ? selectedWard.name : '';
+    }
+  } else {
+    form.phone = '';
+    form.province_id = '';
+    form.province_name = '';
+    form.ward_id = '';
+    form.ward_name = '';
+    wards.value = [];
+  }
 };
 
 const selectParent = (cat) => {
@@ -377,6 +420,30 @@ const submitPost = async () => {
 </script>
 
 <style scoped>
+.checkbox-label-custom {
+  display: block;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--on-surface, #1e293b);
+}
+
+.checkbox-label-custom input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0 0.5rem 0 0 !important;
+  cursor: pointer;
+  vertical-align: -2px !important;
+  appearance: checkbox !important;
+  -webkit-appearance: checkbox !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .post-create-page {
   background-color: #f0f2f5;
   min-height: 100vh;

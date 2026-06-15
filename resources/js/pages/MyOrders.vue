@@ -189,8 +189,7 @@
             </div>
             <div class="flex justify-between border-b border-slate-100 pb-2">
               <span class="text-on-surface-variant">Địa chỉ cụ thể:</span>
-              <span class="font-medium text-on-surface text-right max-w-[60%]">{{ selectedOrder.shipping_address
-                }}</span>
+              <span class="font-medium text-on-surface text-right max-w-[60%]">{{ orderFullAddress || selectedOrder.shipping_address }}</span>
             </div>
             <div class="flex justify-between" v-if="selectedOrder.shipping_note">
               <span class="text-on-surface-variant">Ghi chú:</span>
@@ -232,6 +231,7 @@ const buyerOrdersPagination = ref(null);
 const buyerOrdersLoading = ref(false);
 const buyerOrderFilter = ref('');
 const selectedOrder = ref(null);
+const orderFullAddress = ref('');
 const isDropdownOpen = ref(false);
 
 const isReviewModalOpen = ref(false);
@@ -297,8 +297,62 @@ const closeDropdown = (e) => {
   }
 };
 
+const cachedProvinces = ref(null);
+const cachedWards = ref({});
+
+const enrichOrdersWithLocation = async (ordersList) => {
+  try {
+    if (!cachedProvinces.value) {
+      const pRes = await axios.get('/api/locations/provinces');
+      cachedProvinces.value = pRes.data;
+    }
+
+    // Gom các province_id duy nhất để tải phường xã nếu chưa có
+    const uniqueProvinceIds = [...new Set(ordersList.map(o => o.shipping_province_id).filter(id => id))];
+    
+    await Promise.all(uniqueProvinceIds.map(async (pid) => {
+      if (!cachedWards.value[pid]) {
+        try {
+          const wRes = await axios.get(`/api/locations/wards/${pid}`);
+          cachedWards.value[pid] = wRes.data;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }));
+
+    // Gán full_address
+    for (const order of ordersList) {
+      if (order.shipping_province_id) {
+        const prov = cachedProvinces.value.find(p => p.code == order.shipping_province_id);
+        const pName = prov ? prov.name : '';
+        let wName = '';
+
+        if (order.shipping_ward_id && cachedWards.value[order.shipping_province_id]) {
+          const ward = cachedWards.value[order.shipping_province_id].find(w => w.code == order.shipping_ward_id);
+          if (ward) wName = ward.name;
+        }
+
+        if (wName && pName) {
+          order.full_address = `${order.shipping_address}, ${wName}, ${pName}`;
+        } else if (pName) {
+          order.full_address = `${order.shipping_address}, ${pName}`;
+        } else {
+          order.full_address = order.shipping_address;
+        }
+      } else {
+        order.full_address = order.shipping_address;
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải trước địa chỉ:', error);
+  }
+};
+
 const viewOrderDetails = (order) => {
   selectedOrder.value = order;
+  // Nếu đã được tải trước thì dùng luôn, nếu không thì hiện tạm địa chỉ cụ thể
+  orderFullAddress.value = order.full_address || order.shipping_address;
 };
 
 const closeOrderDetails = () => {
@@ -325,6 +379,9 @@ const fetchBuyerOrders = async (page = 1) => {
     if (response.data.success) {
       buyerOrders.value = response.data.data.data;
       buyerOrdersPagination.value = response.data.data;
+      
+      // Chạy ngầm việc tải địa chỉ để không block UI
+      enrichOrdersWithLocation(buyerOrders.value);
     }
   } catch (error) {
     console.error('Lỗi tải đơn hàng:', error);
