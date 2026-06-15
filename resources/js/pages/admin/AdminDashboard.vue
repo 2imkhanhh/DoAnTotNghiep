@@ -41,13 +41,15 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon report">
-          <span class="material-symbols-outlined">report</span>
+        <div class="stat-icon sold">
+          <span class="material-symbols-outlined">shopping_cart_checkout</span>
         </div>
         <div class="stat-details">
-          <h3>Báo cáo vi phạm</h3>
-          <p class="stat-value">{{ stats.reports }}</p>
-          <p class="stat-change negative">Cần xử lý gấp</p>
+          <h3>Tin đã bán</h3>
+          <p class="stat-value">{{ stats.sold_posts }}</p>
+          <p class="stat-change" :class="stats.sold_posts_percent >= 0 ? 'positive' : 'negative'">
+            {{ stats.sold_posts_percent > 0 ? '+' : '' }}{{ stats.sold_posts_percent }}% hôm nay
+          </p>
         </div>
       </div>
     </div>
@@ -509,13 +511,13 @@ onUnmounted(() => {
 }
 
 .stat-icon.orders {
-  background: #dcfce7;
-  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c5e5;
 }
 
-.stat-icon.report {
-  background: #fee2e2;
-  color: #dc2626;
+.stat-icon.sold {
+  background: rgba(234, 179, 8, 0.1);
+  color: #eab308;
 }
 
 .stat-details h3 {

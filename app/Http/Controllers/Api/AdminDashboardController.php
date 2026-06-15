@@ -33,6 +33,11 @@ class AdminDashboardController extends Controller
         $ordersYesterday = Order::where('status', 'delivered')->whereDate('created_at', $yesterday)->count();
         $ordersPercentChange = $ordersYesterday > 0 ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1) : ($ordersToday > 0 ? 100 : 0);
 
+        // Tính % Tin đăng đã bán (Hôm nay so với hôm qua)
+        $soldPostsToday = Post::where('status', 'sold')->whereDate('updated_at', $now)->count();
+        $soldPostsYesterday = Post::where('status', 'sold')->whereDate('updated_at', $yesterday)->count();
+        $soldPostsPercentChange = $soldPostsYesterday > 0 ? round((($soldPostsToday - $soldPostsYesterday) / $soldPostsYesterday) * 100, 1) : ($soldPostsToday > 0 ? 100 : 0);
+
         // Thống kê cơ bản
         $stats = [
             'users' => User::count(),
@@ -41,7 +46,8 @@ class AdminDashboardController extends Controller
             'posts_percent' => $postsPercentChange,
             'completed_orders' => Order::where('status', 'delivered')->count(),
             'orders_percent' => $ordersPercentChange,
-            'reports' => 0 // Có thể tích hợp bảng Report sau
+            'sold_posts' => Post::where('status', 'sold')->count(),
+            'sold_posts_percent' => $soldPostsPercentChange
         ];
 
         // Tin đăng chờ duyệt
