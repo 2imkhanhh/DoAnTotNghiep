@@ -8,11 +8,11 @@
                 :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
                 <!-- Dynamic Slides -->
                 <div v-for="(banner, index) in banners" :key="banner.id" class="min-w-full h-full relative">
-                    <img :src="banner.image_path" class="w-full h-full object-cover"
-                        :alt="banner.title || 'Banner'">
+                    <img :src="banner.image_path" class="w-full h-full object-cover" :alt="banner.title || 'Banner'">
                     <div v-if="banner.title || banner.description || banner.link"
                         class="absolute inset-0 bg-linear-to-r from-black/80 to-transparent flex flex-col justify-center px-10 sm:px-20">
-                        <h1 v-if="banner.title" class="text-white text-3xl sm:text-5xl font-extrabold mb-4 max-w-xl leading-tight">
+                        <h1 v-if="banner.title"
+                            class="text-white text-3xl sm:text-5xl font-extrabold mb-4 max-w-xl leading-tight">
                             {{ banner.title }}
                         </h1>
                         <p v-if="banner.description" class="text-gray-200 text-lg mb-8 max-w-md">
@@ -70,13 +70,15 @@
                 <h2 class="text-2xl font-bold text-on-surface">
                     {{ showAllCategories ? 'Tất cả danh mục' : 'Danh mục nổi bật' }}
                 </h2>
-                <button @click.prevent="toggleShowAllCategories" class="text-primary font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
+                <button @click.prevent="toggleShowAllCategories"
+                    class="text-primary font-medium hover:underline bg-transparent border-none cursor-pointer p-0">
                     {{ showAllCategories ? 'Thu gọn' : 'Xem tất cả' }}
                 </button>
             </div>
 
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`" class="category-item">
+                <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`"
+                    class="category-item">
                     <div class="icon-wrapper">
                         <img v-if="cat.icon" :src="cat.icon" :alt="cat.name" class="w-11 h-11 object-contain">
                         <span v-else class="material-symbols-outlined text-3xl">category</span>
@@ -93,24 +95,26 @@
             </div>
 
             <div v-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <div v-for="post in posts" :key="post.id"
-                    @click="router.push(`/post/${post.slug}`)"
+                <div v-for="post in posts" :key="post.id" @click="router.push(`/post/${post.slug}`)"
                     class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group cursor-pointer">
-                    <router-link :to="`/post/${post.slug}`" @click.stop class="relative h-48 w-full overflow-hidden block">
+                    <router-link :to="`/post/${post.slug}`" @click.stop
+                        class="relative h-48 w-full overflow-hidden block">
                         <img :src="getPrimaryImage(post)" :alt="post.title"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        
+
                         <!-- Favorite Button -->
-                        <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id" @click.prevent.stop="toggleFavorite(post.id)" 
+                        <button v-if="!authStore.isLoggedIn || post.user_id !== authStore.user?.id"
+                            @click.prevent.stop="toggleFavorite(post.id)"
                             class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 z-10 active:scale-95 group/heart">
                             <!-- 1. Ruột Đỏ (Nằm dưới, chỉ hiện khi yêu thích) -->
-                            <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute', 
+                            <span :class="['material-symbols-outlined text-[22px] text-error font-variation-fill transition-all duration-300 absolute',
                                 isFavorite(post.id) ? 'opacity-100 scale-100' : 'opacity-0 scale-0']">
                                 favorite
                             </span>
-                            
+
                             <!-- 2. Viền Trắng (Nằm trên cùng, luôn hiện để giữ đường viền) -->
-                            <span class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                            <span
+                                class="material-symbols-outlined text-[26px] text-white absolute drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
                                 favorite
                             </span>
                         </button>
@@ -142,27 +146,21 @@
                     </div>
                 </div>
             </div>
-            
-            <div v-else class="py-12 text-center text-on-surface-variant bg-surface-container-low rounded-2xl border-2 border-dashed border-outline-variant">
+
+            <div v-else
+                class="py-12 text-center text-on-surface-variant bg-surface-container-low rounded-2xl border-2 border-dashed border-outline-variant">
                 <span class="material-symbols-outlined text-4xl mb-2">inventory_2</span>
                 <p>Hiện chưa có tin đăng nào được hiển thị.</p>
             </div>
 
             <div v-if="posts.length > 0" class="flex justify-center items-center gap-4 mt-8">
                 <!-- Nút Xem thêm tin khác -->
-                <button
-                    v-if="hasMore"
-                    @click="loadMorePosts"
-                    :disabled="loadingMore"
-                    class="btn-load-more">
+                <button v-if="hasMore" @click="loadMorePosts" :disabled="loadingMore" class="btn-load-more">
                     {{ loadingMore ? 'Đang tải...' : 'Xem thêm tin khác' }}
                 </button>
 
                 <!-- Nút Ẩn bớt -->
-                <button
-                    v-if="currentPage > 1"
-                    @click="collapsePosts"
-                    class="btn-collapse">
+                <button v-if="currentPage > 1" @click="collapsePosts" class="btn-collapse">
                     Ẩn bớt tin
                 </button>
             </div>
@@ -185,7 +183,7 @@
                     class="w-16 h-16 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-4">
                     <span class="material-symbols-outlined text-3xl">smart_toy</span>
                 </div>
-                <h3 class="text-lg font-bold mb-2">Chatbot AI Hỗ trợ</h3>
+                <h3 class="text-lg font-bold mb-2">Chatbot AI hỗ trợ</h3>
                 <p class="text-on-surface-variant">Giải đáp thắc mắc, hướng dẫn đăng tin và hỗ trợ người dùng 24/7 tự
                     động.</p>
             </div>
@@ -195,7 +193,7 @@
                     class="w-16 h-16 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-4">
                     <span class="material-symbols-outlined text-3xl">verified_user</span>
                 </div>
-                <h3 class="text-lg font-bold mb-2">Giao dịch An toàn</h3>
+                <h3 class="text-lg font-bold mb-2">Giao dịch an toàn</h3>
                 <p class="text-on-surface-variant">Hệ thống xác thực người dùng, đánh giá uy tín giúp hạn chế tối đa lừa
                     đảo.</p>
             </div>
@@ -378,7 +376,7 @@ const formatTime = (dateString) => {
     if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
     if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
-    
+
     return date.toLocaleDateString('vi-VN');
 };
 
@@ -426,59 +424,57 @@ onUnmounted(() => {
 
 <style scoped>
 .btn-load-more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 2rem;
-  border: 2px solid var(--color-primary, #020037);
-  background: transparent;
-  color: var(--color-primary, #020037);
-  font-weight: 700;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--color-primary, #020037);
+    background: transparent;
+    color: var(--color-primary, #020037);
+    font-weight: 700;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-load-more:hover:not(:disabled) {
-  background: var(--color-primary, #020037);
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
-  transform: translateY(-2px);
+    background: var(--color-primary, #020037);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
+    transform: translateY(-2px);
 }
 
 .btn-load-more:active:not(:disabled) {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
 .btn-load-more:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-collapse {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 2rem;
-  border: 2px solid var(--color-primary, #020037);
-  background: transparent;
-  color: var(--color-primary, #020037);
-  font-weight: 700;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--color-primary, #020037);
+    background: transparent;
+    color: var(--color-primary, #020037);
+    font-weight: 700;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-collapse:hover {
-  background: var(--color-primary, #020037);
-  color: #ffffff !important;
-  box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
-  transform: translateY(-2px);
+    background: var(--color-primary, #020037);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(2, 0, 55, 0.25);
+    transform: translateY(-2px);
 }
 
 .btn-collapse:active {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 </style>
-
-

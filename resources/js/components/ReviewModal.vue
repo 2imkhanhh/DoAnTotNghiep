@@ -65,6 +65,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import axios from 'axios';
+import { toast } from '../utils/alert';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -147,13 +148,13 @@ const submit = async () => {
     }
 
     if (response.data.success) {
-      alert(isEdit.value ? 'Đã cập nhật đánh giá thành công!' : 'Đã gửi đánh giá thành công!');
+      toast(isEdit.value ? 'Đã cập nhật đánh giá thành công!' : 'Đã gửi đánh giá thành công!', 'success');
       emit('success', response.data.data);
       close();
     }
   } catch (error) {
     console.error('Lỗi khi gửi đánh giá:', error);
-    alert(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+    toast(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
   } finally {
     loading.value = false;
   }
