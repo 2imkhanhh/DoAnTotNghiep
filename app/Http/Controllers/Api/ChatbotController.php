@@ -34,6 +34,12 @@ class ChatbotController extends Controller
 
         if ($sessionIdInput) {
             $session = ChatbotSession::where('session_id', $sessionIdInput)->first();
+
+            // Nếu session thuộc về một user khác, từ chối dùng chung session này
+            if ($session && $session->user_id !== null && $session->user_id !== $userId) {
+                $session = null;
+            }
+
             // Cập nhật user_id nếu trước đó là khách vãng lai, giờ họ đã đăng nhập
             if ($session && !$session->user_id && $userId) {
                 $session->update(['user_id' => $userId]);
@@ -43,7 +49,7 @@ class ChatbotController extends Controller
         // Nếu không có session cũ hoặc không tìm thấy -> Tạo mới
         if (!$session) {
             $session = ChatbotSession::create([
-                'session_id' => (string) Str::uuid(),
+                'session_id' => $sessionIdInput ?: (string) Str::uuid(),
                 'user_id' => $userId
             ]);
         }
@@ -266,6 +272,11 @@ class ChatbotController extends Controller
         $session = null;
         if ($sessionIdInput) {
             $session = ChatbotSession::where('session_id', $sessionIdInput)->first();
+
+            // Nếu session thuộc về một user khác, từ chối
+            if ($session && $session->user_id !== null && $session->user_id !== $userId) {
+                $session = null;
+            }
         }
 
         // Khôi phục session theo user nếu ở local storage bị mất
@@ -303,7 +314,8 @@ class ChatbotController extends Controller
         // Nếu có session_id, tiến hành xoá phiên chat hiện tại
         if ($sessionIdInput) {
             $oldSession = ChatbotSession::where('session_id', $sessionIdInput)->first();
-            if ($oldSession) {
+            // Chỉ xoá nếu session là của khách hoặc của chính user đang request
+            if ($oldSession && ($oldSession->user_id === null || $oldSession->user_id === $userId)) {
                 $oldSession->messages()->delete();
                 $oldSession->delete();
             }
@@ -319,15 +331,12 @@ class ChatbotController extends Controller
             }
         }
 
-        // Tạo phiên làm việc mới
-        $newSession = ChatbotSession::create([
-            'session_id' => (string) Str::uuid(),
-            'user_id' => $userId
-        ]);
+        // Tạo mã phiên làm việc mới trả về cho FE nhưng KHÔNG lưu vội vào Database (tránh rác dữ liệu)
+        $newSessionId = (string) Str::uuid();
 
         return response()->json([
             'status' => 'success',
-            'session_id' => $newSession->session_id
+            'session_id' => $newSessionId
         ]);
     }
 }

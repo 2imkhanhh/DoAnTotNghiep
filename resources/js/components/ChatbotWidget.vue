@@ -217,8 +217,9 @@ const getPrimaryImage = (product) => {
 };
 
 const resetChat = async () => {
-  // Nếu chỉ có 2 tin nhắn chào mừng mặc định, tức là đoạn chat đã mới tinh rồi -> Không gửi request lên server nữa
-  if (messages.value.length <= 2) return;
+  // Nếu chưa có tin nhắn nào của người dùng, tức là đoạn chat đã mới tinh rồi -> Không gửi request lên server nữa
+  const hasUserMessage = messages.value.some(msg => msg.role === 'user');
+  if (!hasUserMessage) return;
 
   // Tiến hành xoá luôn giao diện
   messages.value = [
