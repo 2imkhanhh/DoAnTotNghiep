@@ -19,17 +19,18 @@
                     <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Email</span>
                     <input v-model="form.email"
                         class="w-full h-14 bg-surface-container-highest border-none rounded-lg px-4 py-3 focus:ring-0 focus:outline-none"
-                        placeholder="Địa chỉ email của bạn" required type="email" />
+                        placeholder="Địa chỉ email" required type="email" />
                 </label>
                 <label class="flex flex-col relative">
                     <span class="text-label-md font-bold text-primary mb-2 tracking-wide uppercase">Mật khẩu</span>
                     <div class="relative w-full">
                         <input v-model="form.password"
                             class="w-full h-14 bg-surface-container-highest border-none rounded-lg pl-4 pr-12 py-3 focus:ring-0 focus:outline-none"
-                            placeholder="Tạo mật khẩu an toàn" required :type="showPassword ? 'text' : 'password'" />
+                            placeholder="Tạo mật khẩu" required :type="showPassword ? 'text' : 'password'" />
                         <button type="button" @click="showPassword = !showPassword"
                             class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none flex items-center justify-center">
-                            <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                            <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility'
+                            }}</span>
                         </button>
                     </div>
                 </label>
@@ -39,10 +40,12 @@
                     <div class="relative w-full">
                         <input v-model="form.password_confirmation"
                             class="w-full h-14 bg-surface-container-highest border-none rounded-lg pl-4 pr-12 py-3 focus:ring-0 focus:outline-none"
-                            placeholder="Nhập lại mật khẩu" required :type="showConfirmPassword ? 'text' : 'password'" />
+                            placeholder="Nhập lại mật khẩu" required
+                            :type="showConfirmPassword ? 'text' : 'password'" />
                         <button type="button" @click="showConfirmPassword = !showConfirmPassword"
                             class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none flex items-center justify-center">
-                            <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+                            <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' :
+                                'visibility' }}</span>
                         </button>
                     </div>
                 </label>
