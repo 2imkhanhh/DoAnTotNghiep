@@ -545,6 +545,10 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
         }
 
+        if ($post->status === 'sold') {
+            return response()->json(['success' => false, 'message' => 'Không thể xóa tin đăng đã bán để bảo lưu lịch sử giao dịch'], 403);
+        }
+
         // Xóa ảnh liên quan trong storage
         foreach ($post->images as $image) {
             Storage::disk('public')->delete(str_replace('/storage/', '', $image->image_path));

@@ -74,7 +74,7 @@
                       class="btn-action bg-slate-50 text-slate-600 hover:bg-slate-800 hover:text-white" title="Sửa tin">
                       <span class="material-symbols-outlined">edit</span>
                     </router-link>
-                    <button @click="confirmDelete(post)"
+                    <button v-if="post.status !== 'sold'" @click="confirmDelete(post)"
                       class="btn-action bg-red-50 text-red-600 hover:bg-red-600 hover:text-white" title="Xóa tin">
                       <span class="material-symbols-outlined">delete</span>
                     </button>
@@ -119,7 +119,7 @@
                 class="flex-1 min-w-[120px] py-2 bg-slate-100 text-slate-700 rounded-lg font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
                 <span class="material-symbols-outlined text-[18px]">edit</span> Sửa
               </router-link>
-              <button @click="confirmDelete(post)"
+              <button v-if="post.status !== 'sold'" @click="confirmDelete(post)"
                 class="flex-1 min-w-[120px] py-2 bg-red-50 text-red-600 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">delete</span> Xóa
               </button>

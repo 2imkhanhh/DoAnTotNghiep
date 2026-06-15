@@ -88,7 +88,7 @@
                   <button class="btn-icon view" @click="viewDetail(post)" title="Xem chi tiết">
                     <span class="material-symbols-outlined">visibility</span>
                   </button>
-                  <button class="btn-icon delete" @click="confirmDelete(post)" title="Xóa">
+                  <button v-if="post.status !== 'sold'" class="btn-icon delete" @click="confirmDelete(post)" title="Xóa">
                     <span class="material-symbols-outlined">delete</span>
                   </button>
                 </div>
