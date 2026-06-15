@@ -66,7 +66,7 @@ class SellerController extends Controller
         $query = Order::where('seller_id', $userId)
             ->with(['buyer', 'post.images']) // Load related info
             ->orderBy('created_at', 'desc');
-            
+
         if ($status) {
             $statuses = explode(',', $status);
             $query->whereIn('status', $statuses);
@@ -90,5 +90,15 @@ class SellerController extends Controller
             'counts' => $counts
         ]);
     }
-}
 
+    public function sidebarStats(Request $request)
+    {
+        $userId = Auth::id();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'pending_orders' => Order::where('seller_id', $userId)->where('status', 'pending')->count()
+            ]
+        ]);
+    }
+}

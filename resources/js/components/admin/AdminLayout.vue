@@ -19,6 +19,9 @@
         <router-link to="/admin/posts" class="nav-item">
           <span class="material-symbols-outlined">article</span>
           <span class="nav-label">Tin đăng</span>
+          <span v-if="sidebarStore.pendingPostsCount !== null && sidebarStore.pendingPostsCount > 0"
+            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{ sidebarStore.pendingPostsCount
+              > 99 ? '99+' : sidebarStore.pendingPostsCount }}</span>
         </router-link>
         <router-link to="/admin/banners" class="nav-item">
           <span class="material-symbols-outlined">view_carousel</span>
@@ -33,7 +36,8 @@
           <span class="material-symbols-outlined">manage_accounts</span>
           <span class="nav-label">Thông tin tài khoản</span>
         </router-link>
-        <button @click="handleLogout" class="nav-item logout-btn cursor-pointer w-full text-left bg-transparent border-0">
+        <button @click="handleLogout"
+          class="nav-item logout-btn cursor-pointer w-full text-left bg-transparent border-0">
           <span class="material-symbols-outlined">logout</span>
           <span class="nav-label">Đăng xuất</span>
         </button>
@@ -72,9 +76,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
+import { useSidebarStore } from '../../stores/sidebar';
 import NotificationDropdown from '../common/NotificationDropdown.vue';
 
 defineProps({
@@ -85,8 +90,13 @@ defineProps({
 });
 
 const authStore = useAuthStore();
+const sidebarStore = useSidebarStore();
 const router = useRouter();
 const isSidebarCollapsed = ref(false);
+
+onMounted(() => {
+  sidebarStore.fetchAdminStats();
+});
 
 const handleLogout = () => {
   authStore.logout();

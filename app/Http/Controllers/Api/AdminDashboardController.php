@@ -81,7 +81,7 @@ class AdminDashboardController extends Controller
         $trendPeriod = $request->query('trend_period', '7days');
         $categoryPeriod = $request->query('category_period', '7days');
         $orderPeriod = $request->query('order_period', '7days');
-        
+
         [$trendStart, $trendEnd, $trendGroup] = $this->getTimeBounds($trendPeriod);
         [$catStart, $catEnd, $catGroup] = $this->getTimeBounds($categoryPeriod);
         [$orderStart, $orderEnd, $orderGroup] = $this->getTimeBounds($orderPeriod);
@@ -156,10 +156,10 @@ class AdminDashboardController extends Controller
         }
 
         // 2. Dữ liệu cơ cấu danh mục (Doughnut Chart)
-        $categories = Category::withCount(['posts' => function($q) use ($catStart, $catEnd) {
+        $categories = Category::withCount(['posts' => function ($q) use ($catStart, $catEnd) {
             $q->whereBetween('created_at', [$catStart, $catEnd]);
         }])->having('posts_count', '>', 0)->get();
-        
+
         $categoryData = [
             'labels' => $categories->pluck('name')->toArray(),
             'data' => $categories->pluck('posts_count')->toArray(),
@@ -171,7 +171,7 @@ class AdminDashboardController extends Controller
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
-        
+
         $orderStatusData = [
             'pending' => $orderStatuses['pending'] ?? 0,
             'confirmed' => $orderStatuses['confirmed'] ?? 0,
@@ -209,7 +209,17 @@ class AdminDashboardController extends Controller
             $startDate = Carbon::now()->startOfYear();
             $groupBy = 'month';
         }
-        
+
         return [$startDate, $endDate, $groupBy];
+    }
+
+    public function sidebarStats()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'pending_posts' => Post::where('status', 'pending')->count()
+            ]
+        ]);
     }
 }

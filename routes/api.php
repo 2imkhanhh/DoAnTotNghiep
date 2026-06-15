@@ -62,7 +62,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/messages/{id}', [ConversationController::class, 'deleteMessage']);
     Route::post('/conversations/{id}/read', [ConversationController::class, 'markAsRead']);
     Route::get('/conversations/{id}/active-orders', [ConversationController::class, 'activeorders']);
-    
+
     // Quản lý nhãn dán trò chuyện (Chat Labels)
     Route::get('/chat-labels', [ChatLabelController::class, 'index']);
     Route::post('/chat-labels', [ChatLabelController::class, 'store']);
@@ -90,6 +90,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // --- Kênh Người Bán (Seller Center) ---
     Route::get('/seller/dashboard/stats', [SellerController::class, 'dashboardStats']);
+    Route::get('/seller/sidebar-stats', [SellerController::class, 'sidebarStats']);
     Route::get('/seller/orders', [SellerController::class, 'orders']);
 
     // Các routes Thông báo (Notifications)
@@ -100,20 +101,21 @@ Route::group(['middleware' => 'auth:api'], function () {
 
 // Nhóm route quản trị (Admin)
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
-    
+
     Route::get('/admin/dashboard/stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'stats']);
+    Route::get('/admin/sidebar-stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'sidebarStats']);
 
     // Category Admin Routes
     Route::get('/admin/categories', [CategoryController::class, 'indexAll']);
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::put('/categories/{id}', [CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
-    
+
     // Category Attribute Admin Routes
     Route::post('/categories/{id}/attributes', [CategoryController::class, 'storeAttribute']);
     Route::put('/categories/attributes/{id}', [CategoryController::class, 'updateAttribute']);
     Route::delete('/categories/attributes/{id}', [CategoryController::class, 'destroyAttribute']);
-    
+
     // Admin Posts Management
     Route::get('/admin/posts', [PostController::class, 'adminIndex']);
     Route::put('/admin/posts/{id}/status', [PostController::class, 'updateStatus']);

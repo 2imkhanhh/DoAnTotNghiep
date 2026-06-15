@@ -23,6 +23,9 @@
         <router-link to="/seller-center/orders" class="nav-item">
           <span class="material-symbols-outlined">receipt_long</span>
           <span class="nav-label">Quản lý đơn hàng</span>
+          <span v-if="sidebarStore.pendingOrdersCount !== null && sidebarStore.pendingOrdersCount > 0"
+            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{ sidebarStore.pendingOrdersCount
+              > 99 ? '99+' : sidebarStore.pendingOrdersCount }}</span>
         </router-link>
         <div class="nav-divider"></div>
         <router-link to="/" class="nav-item">
@@ -64,8 +67,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../../stores/auth';
+import { useSidebarStore } from '../../stores/sidebar';
 import NotificationDropdown from '../common/NotificationDropdown.vue';
 
 defineProps({
@@ -76,7 +80,12 @@ defineProps({
 });
 
 const authStore = useAuthStore();
+const sidebarStore = useSidebarStore();
 const isSidebarCollapsed = ref(false);
+
+onMounted(() => {
+  sidebarStore.fetchSellerStats();
+});
 </script>
 
 <style scoped>
