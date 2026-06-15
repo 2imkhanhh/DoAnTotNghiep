@@ -43,14 +43,12 @@ const routes = [
     {
         path: '/forgot-password',
         name: 'ForgotPassword',
-        component: () => import('./pages/ForgotPassword.vue'),
-        meta: { guestOnly: true }
+        component: () => import('./pages/ForgotPassword.vue')
     },
     {
         path: '/reset-password',
         name: 'ResetPassword',
-        component: () => import('./pages/ResetPassword.vue'),
-        meta: { guestOnly: true }
+        component: () => import('./pages/ResetPassword.vue')
     },
     {
         path: '/profile',
