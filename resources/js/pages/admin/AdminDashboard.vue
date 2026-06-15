@@ -1,7 +1,9 @@
 <template>
   <AdminLayout title="Bảng điều khiển">
-    <!-- Stats Grid -->
-    <div class="stats-grid">
+    <LoadingState v-if="loading" />
+    <div v-else class="dashboard-content">
+      <!-- Stats Grid -->
+      <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon users">
           <span class="material-symbols-outlined">group</span>
@@ -70,12 +72,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="loading">
-                <td colspan="5" class="py-12">
-                  <LoadingState />
-                </td>
-              </tr>
-              <tr v-else-if="recentPosts.length === 0">
+              <tr v-if="recentPosts.length === 0">
                 <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
               </tr>
               <tr v-else v-for="post in recentPosts" :key="post.id">
@@ -111,10 +108,7 @@
           <h2 class="section-title">Người dùng tích cực</h2>
         </div>
         <div class="user-list">
-          <div v-if="loading" class="py-12">
-            <LoadingState />
-          </div>
-          <div v-else-if="topUsers.length === 0" class="empty-state" style="padding: 2rem !important; border: none; background: transparent;">Không có người dùng nào</div>
+          <div v-if="topUsers.length === 0" class="empty-state" style="padding: 2rem !important; border: none; background: transparent;">Không có người dùng nào</div>
           <div v-else v-for="user in topUsers" :key="user.id" class="user-item">
             <div class="user-info">
               <img :src="user.avatar || `https://ui-avatars.com/api/?name=${user.name}`" alt="">
@@ -214,6 +208,7 @@
             <Bar v-if="chartDataLoaded" :data="orderStatusChartData" :options="orderStatusChartOptions" />
           </div>
         </section>
+      </div>
       </div>
     </div>
   </AdminLayout>

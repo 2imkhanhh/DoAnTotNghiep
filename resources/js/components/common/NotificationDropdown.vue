@@ -28,8 +28,8 @@
             </div>
 
             <!-- Loading -->
-            <div v-if="notificationStore.loading && notificationStore.notifications.length === 0" class="p-8 flex justify-center">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <div v-if="notificationStore.loading && notificationStore.notifications.length === 0">
+                <LoadingState padding="py-8" spinnerSize="w-8 h-8" />
             </div>
 
             <!-- Trống -->
@@ -86,6 +86,7 @@ import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useNotificationStore } from '../../stores/notification';
 import { useAuthStore } from '../../stores/auth';
+import LoadingState from './LoadingState.vue';
 
 const router = useRouter();
 const notificationStore = useNotificationStore();
