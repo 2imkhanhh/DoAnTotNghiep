@@ -10,7 +10,7 @@
       <nav class="sidebar-nav">
         <router-link to="/seller-center/dashboard" class="nav-item">
           <span class="material-symbols-outlined">dashboard</span>
-          <span class="nav-label">Dashboard</span>
+          <span class="nav-label">Tổng quan</span>
         </router-link>
         <router-link to="/seller-center/posts" class="nav-item">
           <span class="material-symbols-outlined">inventory_2</span>
@@ -24,8 +24,9 @@
           <span class="material-symbols-outlined">receipt_long</span>
           <span class="nav-label">Quản lý đơn hàng</span>
           <span v-if="sidebarStore.pendingOrdersCount !== null && sidebarStore.pendingOrdersCount > 0"
-            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{ sidebarStore.pendingOrdersCount
-              > 99 ? '99+' : sidebarStore.pendingOrdersCount }}</span>
+            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{
+              sidebarStore.pendingOrdersCount
+                > 99 ? '99+' : sidebarStore.pendingOrdersCount }}</span>
         </router-link>
         <div class="nav-divider"></div>
         <router-link to="/" class="nav-item">

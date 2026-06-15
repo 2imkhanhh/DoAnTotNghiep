@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 use App\Models\Post;
 use App\Models\ChatbotSession;
 use App\Models\ChatbotMessage;
+use App\Models\Order;
+use App\Models\User;
 
 class ChatbotController extends Controller
 {
@@ -112,9 +114,11 @@ class ChatbotController extends Controller
                                 - Hình thức giao dịch: Nền tảng chỉ đóng vai trò kết nối người mua và người bán. Hai bên tự liên hệ để thương lượng cách xem hàng và thanh toán trực tiếp.
 
                                 Quy tắc xử lý:
-                                1. Khi khách CẦN TÌM MỚI một sản phẩm, HÃY LUÔN SỬ DỤNG hàm search_posts. Khi có kết quả, CHỈ giới thiệu các sản phẩm ĐÚNG loại khách cần (VD: khách tìm laptop tuyệt đối không đưa iPad vào).
-                                2. Khi khách HỎI THÊM CHI TIẾT về sản phẩm bạn vừa giới thiệu, KHÔNG CẦN GỌI HÀM search_posts nữa, hãy đọc phần [Dữ liệu ẩn trong bộ nhớ] ở câu trả lời trước của bạn để lấy thông tin tư vấn cho khách.
-                                3. Luôn trả lời ngắn gọn, thân thiện. Hãy dựa vào "các thông tin chung" ở trên để hướng dẫn khách khi họ hỏi về quy định hay cách hoạt động của sàn. Nếu khách hỏi ngoài lề (làm thơ, tính toán, thông tin xã hội...), hãy từ chối khéo léo.']
+                                1. Khi khách CẦN TÌM MỚI một sản phẩm, HÃY LUÔN SỬ DỤNG hàm search_posts.
+                                2. Khi khách TRA CỨU ĐƠN HÀNG của họ, HÃY SỬ DỤNG hàm check_order_status. Nếu API trả về lỗi chưa đăng nhập, hãy nhắc khách đăng nhập. Các trạng thái trả về là tiếng Anh (pending, confirmed, shipping, delivered, cancelled, rejected), hãy dịch sang tiếng Việt cho khách dễ hiểu (chờ xác nhận, đã xác nhận, đang giao, đã giao, đã hủy, bị từ chối).
+                                3. Khi khách KIỂM TRA UY TÍN người bán, HÃY SỬ DỤNG hàm check_seller_reputation.
+                                4. Khi khách HỎI THÊM CHI TIẾT về sản phẩm bạn vừa giới thiệu, KHÔNG CẦN GỌI HÀM search_posts nữa, hãy đọc phần [Dữ liệu ẩn trong bộ nhớ] ở câu trả lời trước của bạn để lấy thông tin tư vấn cho khách.
+                                5. Luôn trả lời ngắn gọn, thân thiện. Nếu khách hỏi ngoài lề (làm thơ, tính toán, thông tin xã hội...), hãy từ chối khéo léo.']
                 ]
             ],
             'tools' => [
@@ -131,6 +135,27 @@ class ChatbotController extends Controller
                                     'location' => ['type' => 'STRING', 'description' => 'Địa điểm, tên tỉnh thành, quận huyện khách muốn tìm (vd: "Nghệ An", "Hà Nội"). Trả về chuỗi rỗng nếu khách không nhắc đến địa điểm.']
                                 ],
                                 'required' => ['keyword']
+                            ]
+                        ],
+                        [
+                            'name' => 'check_order_status',
+                            'description' => 'Tra cứu thông tin và trạng thái đơn hàng của người dùng hiện tại.',
+                            'parameters' => [
+                                'type' => 'OBJECT',
+                                'properties' => [
+                                    'product_name' => ['type' => 'STRING', 'description' => 'Tên của sản phẩm trong đơn hàng nếu khách nhắc đến. Nếu khách chỉ hỏi chung chung thì để rỗng.']
+                                ]
+                            ]
+                        ],
+                        [
+                            'name' => 'check_seller_reputation',
+                            'description' => 'Tra cứu thông tin, đánh giá sao trung bình và số lượng đơn hàng đã bán của một người bán.',
+                            'parameters' => [
+                                'type' => 'OBJECT',
+                                'properties' => [
+                                    'seller_name' => ['type' => 'STRING', 'description' => 'Tên của người bán cần tra cứu (ví dụ: "Minh Quang", "Hoàng Anh").']
+                                ],
+                                'required' => ['seller_name']
                             ]
                         ]
                     ]
@@ -150,7 +175,7 @@ class ChatbotController extends Controller
                 Log::error('Gemini API Error: ' . $response1->body());
                 return response()->json([
                     'status' => 'success',
-                    'reply' => 'Hệ thống AI đã hết lượt dùng trong ngày. Vui lòng tạo một API Key mới (từ nick Google khác) và dán vào file .env nhé!',
+                    'reply' => 'Hệ thống AI đã hết lượt dùng trong ngày. Vui lòng tạo một API Key mới',
                     'session_id' => $session->session_id
                 ]);
             }
@@ -175,53 +200,96 @@ class ChatbotController extends Controller
             }
             // NẾU CÓ GỌI HÀM
             else {
+                $functionName = $functionCall['name'];
                 $args = $functionCall['args'];
-                $keyword = trim($args['keyword'] ?? '');
-                $maxPrice = $args['max_price'] ?? null;
-                $location = trim($args['location'] ?? '');
+                $functionResult = [];
 
-                // Query DB: Tách từ khóa để tìm linh hoạt hơn (VD: "loa jbl" -> tìm cả "loa" và "jbl")
-                $query = Post::where('status', 'active');
-                $words = array_filter(explode(' ', $keyword));
-                if (!empty($words)) {
-                    $query->where(function ($q) use ($words) {
-                        foreach ($words as $word) {
-                            $q->where(function ($subQ) use ($word) {
-                                $subQ->where('title', 'like', "%{$word}%")
-                                    ->orWhereHas('category', function ($catQuery) use ($word) {
-                                        $catQuery->where('name', 'like', "%{$word}%");
-                                    });
-                            });
+                if ($functionName === 'search_posts') {
+                    $keyword = trim($args['keyword'] ?? '');
+                    $maxPrice = $args['max_price'] ?? null;
+                    $location = trim($args['location'] ?? '');
+
+                    $query = Post::where('status', 'active');
+                    $words = array_filter(explode(' ', $keyword));
+                    if (!empty($words)) {
+                        $query->where(function ($q) use ($words) {
+                            foreach ($words as $word) {
+                                $q->where(function ($subQ) use ($word) {
+                                    $subQ->where('title', 'like', "%{$word}%")
+                                        ->orWhereHas('category', function ($catQuery) use ($word) {
+                                            $catQuery->where('name', 'like', "%{$word}%");
+                                        });
+                                });
+                            }
+                        });
+                    }
+                    if ($maxPrice) {
+                        $query->where('price', '<=', $maxPrice);
+                    }
+                    if ($location) {
+                        $query->where(function ($q) use ($location) {
+                            $q->where('province_name', 'like', "%{$location}%")
+                                ->orWhere('ward_name', 'like', "%{$location}%");
+                        });
+                    }
+
+                    $productsData = $query->with(['user:id,name', 'images'])->take(5)->get([
+                        'id',
+                        'user_id',
+                        'title',
+                        'price',
+                        'slug',
+                        'description',
+                        'specifications',
+                        'province_name',
+                        'ward_name'
+                    ])->toArray();
+
+                    $functionResult = [
+                        'products' => $productsData,
+                        'count' => count($productsData)
+                    ];
+                } elseif ($functionName === 'check_order_status') {
+                    if (!$userId) {
+                        $functionResult = ['error' => 'Người dùng chưa đăng nhập. Xin lỗi, bạn cần đăng nhập để sử dụng tính năng này.'];
+                    } else {
+                        $productName = trim($args['product_name'] ?? '');
+                        $query = Order::where('buyer_id', $userId)
+                            ->join('posts', 'orders.post_id', '=', 'posts.id')
+                            ->select('orders.id', 'orders.status', 'orders.created_at', 'posts.title', 'posts.price');
+
+                        if ($productName) {
+                            $query->where('posts.title', 'like', "%{$productName}%");
                         }
-                    });
-                }
-                if ($maxPrice) {
-                    $query->where('price', '<=', $maxPrice);
-                }
-                if ($location) {
-                    $query->where(function ($q) use ($location) {
-                        $q->where('province_name', 'like', "%{$location}%")
-                          ->orWhere('ward_name', 'like', "%{$location}%");
-                    });
-                }
-                
-                // Lấy thêm nhiều trường dữ liệu để AI có thể tư vấn chi tiết hơn
-                $productsData = $query->with(['user:id,name', 'images'])->take(5)->get([
-                    'id',
-                    'user_id',
-                    'title',
-                    'price',
-                    'slug',
-                    'description',
-                    'specifications',
-                    'province_name',
-                    'ward_name'
-                ])->toArray();
 
-                $functionResult = [
-                    'products' => $productsData,
-                    'count' => count($productsData)
-                ];
+                        $orders = $query->orderBy('orders.created_at', 'desc')->take(3)->get();
+                        $functionResult = [
+                            'orders' => $orders->toArray(),
+                            'count' => $orders->count()
+                        ];
+                    }
+                } elseif ($functionName === 'check_seller_reputation') {
+                    $sellerName = trim($args['seller_name'] ?? '');
+                    if (!$sellerName) {
+                        $functionResult = ['error' => 'Không tìm thấy tên người bán.'];
+                    } else {
+                        $users = User::where('name', 'like', "%{$sellerName}%")->take(3)->get()->map(function ($u) {
+                            return [
+                                'id' => $u->id,
+                                'name' => $u->name,
+                                'sold_count' => $u->sold_count,
+                                'reviews_count' => $u->reviews_count,
+                                'average_rating' => $u->average_rating,
+                                'join_date' => $u->created_at->format('Y-m-d')
+                            ];
+                        })->toArray();
+
+                        $functionResult = [
+                            'sellers' => $users,
+                            'count' => count($users)
+                        ];
+                    }
+                }
 
                 // GỌI API LẦN 2 (Truyền kết quả DB về cho AI)
                 $requestData2 = $requestData;
@@ -231,7 +299,7 @@ class ChatbotController extends Controller
                 ];
                 $requestData2['contents'][] = [
                     'role' => 'function',
-                    'parts' => [['functionResponse' => ['name' => 'search_posts', 'response' => $functionResult]]]
+                    'parts' => [['functionResponse' => ['name' => $functionName, 'response' => $functionResult]]]
                 ];
 
                 $response2 = Http::withHeaders(['Content-Type' => 'application/json'])->post($apiUrl, $requestData2);
