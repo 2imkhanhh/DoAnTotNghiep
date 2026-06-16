@@ -43,7 +43,7 @@ class NewOrderNotification extends Notification implements ShouldBroadcastNow
     {
         return [
             'type' => 'new_order',
-            'message' => 'Bạn có 1 đơn hàng mới từ bài đăng: ' . $this->order->post->title,
+            'message' => 'Bạn có đơn hàng mới (DH' . $this->order->id . ') thanh toán khi nhận hàng (COD). Sản phẩm: ' . $this->order->post->title,
             'order_id' => $this->order->id,
             'post_id' => $this->order->post_id,
             'url' => '/seller-center/orders' // Trỏ tới trang quản lý đơn hàng của người bán

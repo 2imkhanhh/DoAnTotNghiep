@@ -42,6 +42,8 @@
                 <p class="font-bold text-slate-800 text-[15px] group-hover:text-primary transition-colors">{{
                   tx.buyer?.name || tx.shipping_name || 'Khách hàng' }}</p>
                 <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium mt-0.5">
+                  <span class="font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">#DH{{ tx.id }}</span>
+                  <span class="mx-1 text-slate-300">•</span>
                   <span class="material-symbols-outlined text-[14px]">schedule</span>
                   {{ formatDate(tx.created_at) }}
                 </div>

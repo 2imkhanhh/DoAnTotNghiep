@@ -69,9 +69,8 @@ class OrderController extends Controller
             'payment_status' => 'unpaid',
         ]);
 
-        if ($request->payment_method === 'vietqr') {
-            $post->update(['status' => 'hidden']);
-        }
+        // Luôn ẩn tin đăng ngay khi có người đặt (cho cả COD và QR) để giữ chỗ
+        $post->update(['status' => 'hidden']);
 
         // Send notification to the seller ONLY IF COD
         if ($request->payment_method === 'cod') {
@@ -127,18 +126,6 @@ class OrderController extends Controller
 
         DB::transaction(function () use ($Order) {
             $Order->update(['status' => 'confirmed']);
-
-            // Đổi trạng thái bài đăng thành Tạm ẩn (hidden) để ẩn khỏi trang chủ
-            $post = Post::find($Order->post_id);
-            if ($post) {
-                $post->update(['status' => 'hidden']);
-            }
-            
-            // Từ chối tất cả các giao dịch pending khác cho sản phẩm này
-            Order::where('post_id', $Order->post_id)
-                ->where('id', '!=', $Order->id)
-                ->where('status', 'pending')
-                ->update(['status' => 'rejected']);
         });
 
         return response()->json(['success' => true, 'message' => 'Đã duyệt đơn và chuyển sang Đã xác nhận.', 'data' => $Order]);
@@ -175,7 +162,15 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Chỉ có thể từ chối đơn đang chờ duyệt.'], 400);
         }
 
-        $Order->update(['status' => 'rejected']);
+        DB::transaction(function () use ($Order) {
+            $Order->update(['status' => 'rejected']);
+
+            // Khôi phục bài đăng về hiển thị
+            $post = Post::find($Order->post_id);
+            if ($post && $post->status === 'hidden') {
+                $post->update(['status' => 'active']);
+            }
+        });
 
         return response()->json(['success' => true, 'message' => 'Đã từ chối đơn hàng.', 'data' => $Order]);
     }
@@ -221,9 +216,8 @@ class OrderController extends Controller
         }
 
         $oldStatus = $Order->status;
-        $wasConfirmedOrAwaiting = in_array($oldStatus, ['confirmed', 'awaiting_payment']);
 
-        DB::transaction(function () use ($Order, $oldStatus, $wasConfirmedOrAwaiting) {
+        DB::transaction(function () use ($Order, $oldStatus) {
             if ($oldStatus === 'awaiting_payment') {
                 $Order->delete();
             } else {
@@ -231,11 +225,9 @@ class OrderController extends Controller
             }
 
             // Khôi phục bài đăng về hiển thị nếu đã từng tạm ẩn
-            if ($wasConfirmedOrAwaiting) {
-                $post = Post::find($Order->post_id);
-                if ($post && $post->status === 'hidden') {
-                    $post->update(['status' => 'active']);
-                }
+            $post = Post::find($Order->post_id);
+            if ($post && $post->status === 'hidden') {
+                $post->update(['status' => 'active']);
             }
         });
 

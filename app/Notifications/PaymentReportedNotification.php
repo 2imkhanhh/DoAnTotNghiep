@@ -42,7 +42,7 @@ class PaymentReportedNotification extends Notification implements ShouldBroadcas
     {
         return [
             'type' => 'payment_reported',
-            'message' => 'Người mua đã báo cáo thanh toán (VietQR) cho đơn hàng DH' . $this->order->id . '. Vui lòng kiểm tra tài khoản!',
+            'message' => 'Bạn có đơn hàng mới (DH' . $this->order->id . ') thanh toán qua mã QR. Sản phẩm: ' . $this->order->post->title . '. Vui lòng kiểm tra tài khoản!',
             'order_id' => $this->order->id,
             'post_id' => $this->order->post_id,
             'url' => '/seller-center/orders'

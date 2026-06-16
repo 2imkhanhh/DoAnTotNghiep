@@ -49,8 +49,10 @@
                 <span class="font-bold text-sm text-on-surface">{{ order.seller?.name }}</span>
               </div>
               <div class="flex gap-2 items-center">
-                <span class="text-xs font-bold px-3 py-1 rounded-full border border-slate-200 text-slate-600 flex items-center gap-1 bg-slate-50">
-                  <span class="material-symbols-outlined text-[14px]">{{ order.payment_method === 'vietqr' ? 'qr_code_scanner' : 'local_shipping' }}</span>
+                <span
+                  class="text-xs font-bold px-3 py-1 rounded-full border border-slate-200 text-slate-600 flex items-center gap-1 bg-slate-50">
+                  <span class="material-symbols-outlined text-[14px]">{{ order.payment_method === 'vietqr' ?
+                    'qr_code_scanner' : 'local_shipping' }}</span>
                   <span>{{ order.payment_method === 'vietqr' ? 'QR' : 'COD' }}</span>
                 </span>
                 <span class="text-xs font-bold px-3 py-1 rounded-full" :class="{
@@ -145,8 +147,9 @@
           class="flex justify-between items-center bg-surface-container-lowest p-4 rounded-xl border border-slate-100">
           <span class="font-bold text-on-surface">Phương thức thanh toán:</span>
           <span class="text-sm font-bold px-4 py-1.5 rounded-full bg-slate-100 text-slate-700 flex items-center gap-2">
-             <span class="material-symbols-outlined text-[18px]">{{ selectedOrder.payment_method === 'vietqr' ? 'qr_code_scanner' : 'local_shipping' }}</span>
-             {{ selectedOrder.payment_method === 'vietqr' ? 'QR' : 'COD' }}
+            <span class="material-symbols-outlined text-[18px]">{{ selectedOrder.payment_method === 'vietqr' ?
+              'qr_code_scanner' : 'local_shipping' }}</span>
+            {{ selectedOrder.payment_method === 'vietqr' ? 'QR' : 'COD' }}
           </span>
         </div>
 
@@ -204,7 +207,8 @@
             </div>
             <div class="flex justify-between border-b border-slate-100 pb-2">
               <span class="text-on-surface-variant">Địa chỉ cụ thể:</span>
-              <span class="font-medium text-on-surface text-right max-w-[60%]">{{ orderFullAddress || selectedOrder.shipping_address }}</span>
+              <span class="font-medium text-on-surface text-right max-w-[60%]">{{ orderFullAddress ||
+                selectedOrder.shipping_address }}</span>
             </div>
             <div class="flex justify-between" v-if="selectedOrder.shipping_note">
               <span class="text-on-surface-variant">Ghi chú:</span>
@@ -324,7 +328,7 @@ const enrichOrdersWithLocation = async (ordersList) => {
 
     // Gom các province_id duy nhất để tải phường xã nếu chưa có
     const uniqueProvinceIds = [...new Set(ordersList.map(o => o.shipping_province_id).filter(id => id))];
-    
+
     await Promise.all(uniqueProvinceIds.map(async (pid) => {
       if (!cachedWards.value[pid]) {
         try {
@@ -394,7 +398,7 @@ const fetchBuyerOrders = async (page = 1) => {
     if (response.data.success) {
       buyerOrders.value = response.data.data.data;
       buyerOrdersPagination.value = response.data.data;
-      
+
       // Chạy ngầm việc tải địa chỉ để không block UI
       enrichOrdersWithLocation(buyerOrders.value);
     }
