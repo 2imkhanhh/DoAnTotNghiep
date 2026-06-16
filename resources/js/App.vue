@@ -31,6 +31,9 @@
 
     <!-- AI Chatbot Widget (Hiển thị Global) -->
     <ChatbotWidget v-if="!isAuthRoute && !isAdminRoute && !isSellerRoute" />
+
+    <!-- Popup Thông Báo Realtime Góc Dưới Phải -->
+    <NotificationToastPopup v-if="authStore.isLoggedIn" />
   </div>
 </template>
 
@@ -41,6 +44,7 @@ import { useAuthStore } from "./stores/auth";
 import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
 import ChatbotWidget from "./components/ChatbotWidget.vue";
+import NotificationToastPopup from "./components/common/NotificationToastPopup.vue";
 
 const route = useRoute();
 const authStore = useAuthStore();

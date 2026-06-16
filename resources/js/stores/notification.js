@@ -9,6 +9,7 @@ export const useNotificationStore = defineStore('notification', {
         loading: false,
         error: null,
         isListening: false,
+        activeToasts: [],
     }),
     
     actions: {
@@ -60,12 +61,18 @@ export const useNotificationStore = defineStore('notification', {
 
         addNotification(notification) {
             // Chuẩn hóa format từ pusher
+            const notifId = notification.id;
+            
+            // Tránh trùng lặp nếu bắt được từ nhiều event listener
+            if (this.notifications.some(n => n.id === notifId)) return;
+
             const newNotif = {
                 id: notification.id,
                 type: notification.type,
                 data: notification.data || notification,
                 read_at: null,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                toastId: Date.now() + Math.random(),
             };
             this.notifications.unshift(newNotif);
             this.unreadCount++;
@@ -74,6 +81,19 @@ export const useNotificationStore = defineStore('notification', {
             if (this.notifications.length > 15) {
                 this.notifications.pop();
             }
+
+            // Thêm vào danh sách popup góc phải
+            const toastInfo = { ...newNotif };
+            this.activeToasts.push(toastInfo);
+            
+            // Tự động ẩn sau 15 giây (tăng lên để người dùng kịp nhìn thấy khi alt tab)
+            setTimeout(() => {
+                this.removeToast(toastInfo.toastId);
+            }, 15000);
+        },
+
+        removeToast(toastId) {
+            this.activeToasts = this.activeToasts.filter(t => t.toastId !== toastId);
         },
 
         listenForNotifications() {
@@ -85,24 +105,21 @@ export const useNotificationStore = defineStore('notification', {
             const userId = authStore.user.id;
             
             if (window.Echo) {
-                window.Echo.private(`App.Models.User.${userId}`)
-                    .notification((notification) => {
+                const channel = window.Echo.private(`App.Models.User.${userId}`);
+                
+                // Mặc định của Echo (có thể bị lỗi format tên sự kiện do Reverb)
+                channel.notification((notification) => {
+                    this.addNotification(notification);
+                });
+
+                // Bắt trực tiếp event gốc bằng Pusher để khắc phục sự cố không tương thích tên namespace
+                const pusherClient = window.Echo.connector.pusher;
+                if (pusherClient) {
+                    pusherClient.bind('Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', (notification) => {
                         this.addNotification(notification);
-                        
-                        // Show toast
-                        if (window.toast) {
-                            window.toast.info(notification.data?.message || 'Bạn có thông báo mới!');
-                        } else if (window.Swal) {
-                            window.Swal.fire({
-                                toast: true,
-                                position: 'bottom-end',
-                                showConfirmButton: false,
-                                timer: 3000,
-                                icon: 'info',
-                                title: notification.data?.message || 'Bạn có thông báo mới!'
-                            });
-                        }
                     });
+                }
+
                 this.isListening = true;
             }
         },

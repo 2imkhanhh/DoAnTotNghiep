@@ -142,8 +142,8 @@ const handleClickOutside = (event) => {
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
     
-    // Gọi tải thông báo và listen khi component mount nếu đã đăng nhập
-    if (authStore.isLoggedIn) {
+    // Gọi tải thông báo và listen khi component mount nếu đã tải xong user
+    if (authStore.user) {
         notificationStore.fetchNotifications();
         notificationStore.listenForNotifications();
     }
@@ -153,9 +153,9 @@ onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
 
-// Watch sự thay đổi đăng nhập để fetch hoặc stop listen
-watch(() => authStore.isLoggedIn, (loggedIn) => {
-    if (loggedIn) {
+// Watch sự thay đổi user để fetch hoặc stop listen
+watch(() => authStore.user, (user) => {
+    if (user) {
         notificationStore.fetchNotifications();
         notificationStore.listenForNotifications();
     } else {
