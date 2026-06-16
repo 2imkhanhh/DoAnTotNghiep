@@ -189,7 +189,7 @@ class PostController extends Controller
             // Kiểm tra xem người dùng hiện tại đã đặt hàng sản phẩm này chưa
             ->withExists(['orders as is_ordered' => function ($query) {
                 $query->where('buyer_id', auth('api')->id())
-                      ->whereIn('status', ['pending', 'confirmed', 'shipping']);
+                    ->whereIn('status', ['pending', 'confirmed', 'shipping']);
             }])
             ->where('slug', $slug)
             ->first();
@@ -200,7 +200,7 @@ class PostController extends Controller
 
         // Phân quyền xem tin đăng theo trạng thái
         $userId = auth('api')->id();
-        
+
         if (in_array($post->status, ['sold', 'rejected', 'hidden']) && $post->user_id != $userId) {
             $statusMsg = $post->status == 'rejected' ? 'Sản phẩm đã bị từ chối duyệt' : 'Sản phẩm đã ẩn hoặc đã bán, bạn không có quyền xem';
             return response()->json(['success' => false, 'message' => $statusMsg], 403);
@@ -324,8 +324,8 @@ class PostController extends Controller
                 Notification::send($admins, new PostPendingApprovalNotification($post));
             }
 
-            $message = auth('api')->user()->isAdmin() 
-                ? 'Đăng tin thành công!' 
+            $message = auth('api')->user()->isAdmin()
+                ? 'Đăng tin thành công!'
                 : 'Đăng tin thành công! Tin của bạn đang chờ duyệt.';
 
             return response()->json([
@@ -443,8 +443,8 @@ class PostController extends Controller
                 Notification::send($admins, new PostPendingApprovalNotification($post));
             }
 
-            $message = auth('api')->user()->isAdmin() 
-                ? 'Cập nhật tin đăng thành công!' 
+            $message = auth('api')->user()->isAdmin()
+                ? 'Cập nhật tin đăng thành công!'
                 : 'Cập nhật tin đăng thành công! Tin của bạn đang chờ duyệt lại.';
 
             return response()->json([
@@ -484,24 +484,24 @@ class PostController extends Controller
             if ($post->user_id !== $user->id) {
                 return response()->json(['success' => false, 'message' => 'Bạn không có quyền cập nhật trạng thái tin này'], 403);
             }
-            
+
             // Không được tự ý duyệt tin (chuyển sang active từ pending/rejected)
             if ($request->status === 'active' && in_array($post->status, ['pending', 'rejected'])) {
                 return response()->json(['success' => false, 'message' => 'Không thể tự duyệt hiển thị tin đăng đang chờ duyệt hoặc bị từ chối'], 403);
             }
-            
+
             // User không được tự chuyển trạng thái về chờ duyệt hoặc từ chối
             if (in_array($request->status, ['pending', 'rejected'])) {
                 return response()->json(['success' => false, 'message' => 'Bạn không có quyền chuyển sang trạng thái này'], 403);
             }
-            
+
             // Không được hiện lại tin nếu đang có đơn hàng giao dịch
             if ($request->status === 'active' && $post->status === 'hidden') {
                 $hasActiveOrder = \App\Models\Order::where('post_id', $post->id)
-                    ->whereIn('status', ['pending', 'confirmed', 'shipping'])
+                    ->whereIn('status', ['pending', 'confirmed', 'shipping', 'awaiting_payment'])
                     ->exists();
                 if ($hasActiveOrder) {
-                    return response()->json(['success' => false, 'message' => 'Không thể hiển thị lại tin đăng do đang có đơn hàng đang được xử lý'], 403);
+                    return response()->json(['success' => false, 'message' => 'Không thể hiển lại tin do đơn hàng đang được xử lý'], 403);
                 }
             }
         }
@@ -559,4 +559,3 @@ class PostController extends Controller
         return response()->json(['success' => true, 'message' => 'Đã xóa tin đăng thành công!']);
     }
 }
-
