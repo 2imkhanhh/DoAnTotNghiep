@@ -24,9 +24,10 @@ class OrderController extends Controller
             'shipping_province_id' => 'required',
             'shipping_ward_id' => 'required',
             'shipping_note' => 'nullable|string',
+            'payment_method' => 'required|in:cod,vietqr',
         ]);
 
-        $post = Post::findOrFail($request->post_id);
+        $post = Post::with('user')->findOrFail($request->post_id);
 
         if ($post->user_id === Auth::id()) {
             return response()->json(['success' => false, 'message' => 'Bạn không thể tự mua bài đăng của chính mình.'], 403);
@@ -39,18 +40,24 @@ class OrderController extends Controller
         // Kiểm tra xem người dùng đã đặt đơn hàng này chưa (tránh spam)
         $existingOrder = Order::where('post_id', $post->id)
             ->where('buyer_id', Auth::id())
-            ->whereIn('status', ['pending', 'confirmed', 'shipping'])
+            ->whereIn('status', ['pending', 'confirmed', 'shipping', 'awaiting_payment'])
             ->exists();
 
         if ($existingOrder) {
             return response()->json(['success' => false, 'message' => 'Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.'], 400);
         }
 
+        if ($request->payment_method === 'vietqr') {
+            if (!$post->user || !$post->user->bank_name || !$post->user->bank_account_no) {
+                return response()->json(['success' => false, 'message' => 'Người bán chưa thiết lập thông tin nhận thanh toán QR.'], 400);
+            }
+        }
+
         $Order = Order::create([
             'post_id' => $post->id,
             'seller_id' => $post->user_id,
             'buyer_id' => Auth::id(),
-            'status' => 'pending',
+            'status' => $request->payment_method === 'vietqr' ? 'awaiting_payment' : 'pending',
             'shipping_name' => $request->shipping_name,
             'shipping_phone' => $request->shipping_phone,
             'shipping_address' => $request->shipping_address,
@@ -58,10 +65,18 @@ class OrderController extends Controller
             'shipping_ward_id' => $request->shipping_ward_id,
             'shipping_note' => $request->shipping_note,
             'total_price' => $post->price,
+            'payment_method' => $request->payment_method,
+            'payment_status' => 'unpaid',
         ]);
 
-        // Send notification to the seller
-        $post->user->notify(new NewOrderNotification($Order));
+        if ($request->payment_method === 'vietqr') {
+            $post->update(['status' => 'hidden']);
+        }
+
+        // Send notification to the seller ONLY IF COD
+        if ($request->payment_method === 'cod') {
+            $post->user->notify(new NewOrderNotification($Order));
+        }
 
         return response()->json(['success' => true, 'data' => $Order, 'message' => 'Đặt hàng thành công!']);
     }
@@ -201,17 +216,22 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => 'Không có quyền hủy giao dịch này.'], 403);
         }
 
-        if (!in_array($Order->status, ['pending', 'confirmed'])) {
+        if (!in_array($Order->status, ['pending', 'confirmed', 'awaiting_payment'])) {
             return response()->json(['success' => false, 'message' => 'Không thể hủy đơn hàng đang giao hoặc đã giao.'], 400);
         }
 
-        $wasConfirmed = $Order->status === 'confirmed';
+        $oldStatus = $Order->status;
+        $wasConfirmedOrAwaiting = in_array($oldStatus, ['confirmed', 'awaiting_payment']);
 
-        DB::transaction(function () use ($Order, $wasConfirmed) {
-            $Order->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($Order, $oldStatus, $wasConfirmedOrAwaiting) {
+            if ($oldStatus === 'awaiting_payment') {
+                $Order->delete();
+            } else {
+                $Order->update(['status' => 'cancelled']);
+            }
 
             // Khôi phục bài đăng về hiển thị nếu đã từng tạm ẩn
-            if ($wasConfirmed) {
+            if ($wasConfirmedOrAwaiting) {
                 $post = Post::find($Order->post_id);
                 if ($post && $post->status === 'hidden') {
                     $post->update(['status' => 'active']);
@@ -219,15 +239,41 @@ class OrderController extends Controller
             }
         });
 
-        // Gửi thông báo cho người còn lại
-        if ($userId === $Order->buyer_id) {
-            // Người mua huỷ -> gửi cho người bán
-            $Order->seller->notify(new OrderCancelledNotification($Order, 'buyer'));
-        } else {
-            // Người bán huỷ -> gửi cho người mua
-            $Order->buyer->notify(new OrderCancelledNotification($Order, 'seller'));
+        // Gửi thông báo cho người còn lại nếu không phải là awaiting_payment
+        if ($oldStatus !== 'awaiting_payment') {
+            if ($userId === $Order->buyer_id) {
+                // Người mua huỷ -> gửi cho người bán
+                $Order->seller->notify(new OrderCancelledNotification($Order, 'buyer'));
+            } else {
+                // Người bán huỷ -> gửi cho người mua
+                $Order->buyer->notify(new OrderCancelledNotification($Order, 'seller'));
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Đã hủy đơn hàng thành công.', 'data' => $Order]);
+    }
+
+    // Người mua báo cáo đã chuyển khoản
+    public function reportPayment(Request $request, $id)
+    {
+        $Order = Order::findOrFail($id);
+
+        if ($Order->buyer_id !== Auth::id()) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền.'], 403);
+        }
+
+        if ($Order->payment_method !== 'vietqr') {
+            return response()->json(['success' => false, 'message' => 'Đơn hàng này không dùng phương thức VietQR.'], 400);
+        }
+
+        // Cập nhật trạng thái thành pending để người bán thấy đơn hàng
+        if ($Order->status === 'awaiting_payment') {
+            $Order->update(['status' => 'pending']);
+        }
+
+        // Gửi thông báo cho người bán
+        $Order->seller->notify(new \App\Notifications\PaymentReportedNotification($Order));
+
+        return response()->json(['success' => true, 'message' => 'Đã gửi thông báo cho người bán.']);
     }
 }

@@ -30,6 +30,9 @@ class UpdateProfileRequest extends FormRequest
             'province_name' => 'sometimes|nullable|string|max:100',
             'ward_id' => 'sometimes|nullable|integer',
             'ward_name' => 'sometimes|nullable|string|max:100',
+            'bank_name' => 'sometimes|nullable|string|max:100',
+            'bank_account_no' => 'sometimes|nullable|string|max:50',
+            'bank_account_name' => 'sometimes|nullable|string|max:100',
             'avatar' => 'sometimes|nullable|image|max:2048',
         ];
     }

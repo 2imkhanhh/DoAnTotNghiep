@@ -24,3 +24,6 @@ Schedule::call(function () {
         $session->delete();
     }
 })->daily()->description('Dọn dẹp rác Chatbot từ khách vãng lai');
+
+// Lên lịch tự động hủy đơn chờ thanh toán QR quá 15 phút
+Schedule::command('orders:cancel-expired')->everyMinute();

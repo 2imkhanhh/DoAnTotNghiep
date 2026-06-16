@@ -64,6 +64,7 @@ class SellerController extends Controller
         $status = $request->query('status');
 
         $query = Order::where('seller_id', $userId)
+            ->where('status', '!=', 'awaiting_payment')
             ->with(['buyer', 'post.images']) // Load related info
             ->orderBy('created_at', 'desc');
 
@@ -76,7 +77,7 @@ class SellerController extends Controller
 
         // Calculate counts
         $counts = [
-            'all' => Order::where('seller_id', $userId)->count(),
+            'all' => Order::where('seller_id', $userId)->where('status', '!=', 'awaiting_payment')->count(),
             'pending' => Order::where('seller_id', $userId)->where('status', 'pending')->count(),
             'confirmed' => Order::where('seller_id', $userId)->where('status', 'confirmed')->count(),
             'shipping' => Order::where('seller_id', $userId)->where('status', 'shipping')->count(),

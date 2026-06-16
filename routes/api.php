@@ -82,6 +82,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::put('/orders/{id}/reject', [OrderController::class, 'rejectOrder']);
     Route::put('/orders/{id}/deliver', [OrderController::class, 'deliverOrder']);
     Route::put('/orders/{id}/cancel', [OrderController::class, 'cancelOrder']);
+    Route::post('/orders/{id}/report-payment', [OrderController::class, 'reportPayment']);
     Route::get('/user/orders/bought', [OrderController::class, 'buyerorders']);
 
     // Các routes Đánh giá (Review)

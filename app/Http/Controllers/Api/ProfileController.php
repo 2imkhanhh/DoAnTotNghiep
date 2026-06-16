@@ -41,7 +41,10 @@ class ProfileController extends Controller
             'province_id',
             'province_name',
             'ward_id',
-            'ward_name'
+            'ward_name',
+            'bank_name',
+            'bank_account_no',
+            'bank_account_name'
         ]);
 
         if ($request->hasFile('avatar')) {

@@ -98,6 +98,39 @@
                   class="w-full bg-surface-container border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                   placeholder="Ví dụ: Giao hàng giờ hành chính..."></textarea>
               </div>
+              <!-- Payment Method -->
+              <div class="space-y-4 sm:col-span-2 pt-4 border-t border-outline-variant">
+                <label class="text-sm font-bold text-on-surface-variant px-1">Phương thức thanh toán</label>
+                
+                <div class="space-y-3">
+                  <!-- COD -->
+                  <label class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all"
+                    :class="form.payment_method === 'cod' ? 'border-primary bg-primary/5' : 'border-outline-variant hover:bg-surface-container'">
+                    <input type="radio" v-model="form.payment_method" value="cod" class="w-5 h-5 text-primary focus:ring-primary border-gray-300">
+                    <div class="flex-1">
+                      <div class="font-bold text-on-surface text-sm">Thanh toán khi nhận hàng (COD)</div>
+                      <div class="text-xs text-on-surface-variant mt-0.5">Thanh toán bằng tiền mặt khi nhận hàng</div>
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant">payments</span>
+                  </label>
+
+                  <!-- VietQR -->
+                  <label class="flex items-center gap-3 p-4 border rounded-xl transition-all"
+                    :class="[
+                      form.payment_method === 'vietqr' ? 'border-primary bg-primary/5' : 'border-outline-variant hover:bg-surface-container',
+                      !hasBankInfo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    ]">
+                    <input type="radio" v-model="form.payment_method" value="vietqr" :disabled="!hasBankInfo" class="w-5 h-5 text-primary focus:ring-primary border-gray-300 disabled:opacity-50">
+                    <div class="flex-1">
+                      <div class="font-bold text-on-surface text-sm">Chuyển khoản mã QR (VietQR)</div>
+                      <div class="text-xs mt-0.5" :class="hasBankInfo ? 'text-on-surface-variant' : 'text-error font-medium'">
+                        {{ hasBankInfo ? 'Quét mã QR để chuyển tiền cho người bán' : 'Người bán chưa thiết lập thông tin nhận chuyển khoản' }}
+                      </div>
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant">qr_code_scanner</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <!-- Submit button on Mobile -->
@@ -156,12 +189,65 @@
       </div>
     </div>
   </div>
+
+    <!-- QR Code Modal -->
+    <div v-if="showQRModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-6 text-center">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-primary text-3xl">qr_code_scanner</span>
+          </div>
+          <h3 class="text-xl font-bold text-on-surface mb-2">Thanh toán đơn hàng</h3>
+          <p class="text-sm text-on-surface-variant mb-4">Vui lòng quét mã QR dưới đây để thanh toán.</p>
+          
+          <div class="mb-6 inline-flex items-center gap-2 bg-error-container text-error px-4 py-2 rounded-full font-bold shadow-sm">
+            <span class="material-symbols-outlined text-sm">schedule</span>
+            Thời gian còn lại: {{ formattedTime }}
+          </div>
+          
+          <div class="bg-white p-4 rounded-xl border border-outline-variant inline-block mb-6 shadow-sm">
+            <img :src="qrCodeUrl" alt="VietQR" class="w-48 h-48 mx-auto object-contain">
+          </div>
+
+          <div class="text-left bg-surface-container-low p-4 rounded-xl text-sm mb-6 border border-outline-variant">
+            <div class="flex justify-between mb-2">
+              <span class="text-on-surface-variant">Ngân hàng:</span>
+              <span class="font-bold">{{ post?.user?.bank_name }}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-on-surface-variant">Số tài khoản:</span>
+              <span class="font-bold">{{ post?.user?.bank_account_no }}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-on-surface-variant">Chủ tài khoản:</span>
+              <span class="font-bold">{{ post?.user?.bank_account_name || post?.user?.name }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-on-surface-variant">Số tiền:</span>
+              <span class="font-bold text-error">{{ formatPrice(post?.price) }}đ</span>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="cancelQR" class="flex-1 py-3 bg-surface-variant text-on-surface-variant font-bold rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+              Hủy
+            </button>
+            <button @click="confirmPayment" :disabled="confirmingPayment" class="flex-1 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex justify-center items-center gap-2">
+              <span v-if="confirmingPayment" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Hoàn tất
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
 </template>
 
 <script setup>
 import { toast, confirmDialog } from '../utils/alert';
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import axios from 'axios';
@@ -184,8 +270,103 @@ const form = ref({
   shipping_address: '',
   shipping_province_id: '',
   shipping_ward_id: '',
-  shipping_note: ''
+  shipping_note: '',
+  payment_method: 'cod'
 });
+
+const hasBankInfo = computed(() => {
+  return post.value?.user?.bank_name && post.value?.user?.bank_account_no;
+});
+
+const showQRModal = ref(false);
+const qrCodeUrl = ref('');
+const orderId = ref(null);
+const confirmingPayment = ref(false);
+
+const timeLeft = ref(900); // 15 phút
+const timerInterval = ref(null);
+
+const formattedTime = computed(() => {
+  const m = Math.floor(timeLeft.value / 60).toString().padStart(2, '0');
+  const s = (timeLeft.value % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+});
+
+const startTimer = () => {
+  timeLeft.value = 900;
+  if (timerInterval.value) clearInterval(timerInterval.value);
+  timerInterval.value = setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--;
+    } else {
+      clearInterval(timerInterval.value);
+      autoCancelQR();
+    }
+  }, 1000);
+};
+
+const stopTimer = () => {
+  if (timerInterval.value) {
+    clearInterval(timerInterval.value);
+    timerInterval.value = null;
+  }
+};
+
+const autoCancelQR = async () => {
+  if (!orderId.value) return;
+  
+  try {
+    await axios.put(`/api/orders/${orderId.value}/cancel`);
+    toast('Hết thời gian thanh toán. Đơn hàng đã tự động bị hủy.', 'warning');
+  } catch (error) {
+    console.error('Lỗi khi huỷ đơn tự động:', error);
+  } finally {
+    showQRModal.value = false;
+    orderId.value = null;
+    router.push('/my-orders');
+  }
+};
+
+const cancelQR = async () => {
+  stopTimer();
+  if (!orderId.value) {
+    showQRModal.value = false;
+    return;
+  }
+  
+  try {
+    await axios.put(`/api/orders/${orderId.value}/cancel`);
+    toast('Đã huỷ giao dịch mã QR. Bạn có thể chọn phương thức khác.', 'info');
+  } catch (error) {
+    console.error('Lỗi khi huỷ đơn:', error);
+  } finally {
+    showQRModal.value = false;
+    orderId.value = null; // Reset để có thể đặt lại
+  }
+};
+
+const confirmPayment = async () => {
+  if (!orderId.value) return;
+  
+  stopTimer();
+  confirmingPayment.value = true;
+  try {
+    const response = await axios.post(`/api/orders/${orderId.value}/report-payment`);
+    if (response.data.success) {
+      toast('Đặt hàng thành công!', 'success');
+      router.push('/my-orders');
+    }
+  } catch (error) {
+    console.error('Lỗi khi gửi thông báo:', error);
+    toast('Có lỗi xảy ra, vui lòng thử lại.', 'error');
+  } finally {
+    confirmingPayment.value = false;
+  }
+};
+
+const goToMyOrders = () => {
+  router.push('/my-orders');
+};
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN').format(price);
@@ -298,8 +479,24 @@ const submitOrder = async () => {
     });
 
     if (response.data.success) {
-      toast('Đặt hàng thành công!', 'success');
-      router.push('/my-orders');
+      if (form.value.payment_method === 'vietqr') {
+        orderId.value = response.data.data.id;
+        
+        // Xoá khoảng trắng trong tên ngân hàng (VD: "MB Bank" -> "MBBank")
+        const bankId = encodeURIComponent(post.value.user.bank_name.trim().replace(/\s+/g, ''));
+        const accountNo = encodeURIComponent(post.value.user.bank_account_no.trim().replace(/\s+/g, ''));
+        // Đảm bảo amount là số nguyên dương, không có dấu phẩy/chấm
+        const amount = Math.round(Number(post.value.price));
+        const orderInfo = `DH${orderId.value}`;
+        const accountName = post.value.user.bank_account_name || post.value.user.name;
+        
+        qrCodeUrl.value = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${orderInfo}&accountName=${encodeURIComponent(accountName)}`;
+        showQRModal.value = true;
+        startTimer();
+      } else {
+        toast('Đặt hàng thành công!', 'success');
+        router.push('/my-orders');
+      }
     }
   } catch (error) {
     console.error('Lỗi khi đặt hàng:', error);
@@ -316,6 +513,9 @@ onMounted(() => {
   }
   fetchProvinces();
   fetchPostDetail();
+});
+onUnmounted(() => {
+  stopTimer();
 });
 </script>
 

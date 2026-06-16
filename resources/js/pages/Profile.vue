@@ -172,6 +172,44 @@
                   </div>
                   <p v-if="errors.address" class="text-xs text-error mt-1 px-1">{{ errors.address[0] }}</p>
                 </div>
+                
+                <!-- Bank Info -->
+                <div class="space-y-2 sm:col-span-2 pt-4 border-t border-outline-variant">
+                  <h3 class="text-sm font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">account_balance</span>
+                    Thông tin tài khoản nhận tiền (Dành cho người bán nhận thanh toán QR)
+                  </h3>
+                </div>
+                
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Ngân hàng</label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">account_balance</span>
+                    <input v-model="profileData.bank_name" type="text"
+                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="VD: MBBank, Vietcombank...">
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Số tài khoản</label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">123</span>
+                    <input v-model="profileData.bank_account_no" type="text"
+                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="Nhập số tài khoản">
+                  </div>
+                </div>
+
+                <div class="space-y-2 sm:col-span-2">
+                  <label class="text-sm font-bold text-on-surface-variant px-1">Tên chủ tài khoản</label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">badge</span>
+                    <input v-model="profileData.bank_account_name" type="text"
+                      class="w-full bg-surface-container border border-outline-variant rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      placeholder="Tên in hoa không dấu (VD: NGUYEN VAN A)">
+                  </div>
+                </div>
                 <!-- Avatar (File Upload) -->
                 <div class="space-y-2 sm:col-span-2">
                   <label class="text-sm font-bold text-on-surface-variant px-1">Ảnh đại diện</label>
@@ -723,6 +761,9 @@ const profileData = ref({
   province_name: authStore.user?.province_name || '',
   ward_id: authStore.user?.ward_id || '',
   ward_name: authStore.user?.ward_name || '',
+  bank_name: authStore.user?.bank_name || '',
+  bank_account_no: authStore.user?.bank_account_no || '',
+  bank_account_name: authStore.user?.bank_account_name || '',
   avatar: authStore.user?.avatar || '',
   followers_count: authStore.user?.followers_count || 0,
   followings_count: authStore.user?.followings_count || 0
@@ -740,6 +781,9 @@ watch(() => authStore.user, (newUser) => {
       province_name: newUser.province_name || '',
       ward_id: newUser.ward_id || '',
       ward_name: newUser.ward_name || '',
+      bank_name: newUser.bank_name || '',
+      bank_account_no: newUser.bank_account_no || '',
+      bank_account_name: newUser.bank_account_name || '',
       avatar: newUser.avatar,
       followers_count: newUser.followers_count || 0,
       followings_count: newUser.followings_count || 0

@@ -47,10 +47,15 @@
                 </div>
               </div>
             </div>
-            <div
-              :class="['px-4 py-1.5 rounded-full text-xs font-bold border flex items-center gap-1.5 shadow-sm', getStatusBadgeClass(tx.status)]">
-              <span class="material-symbols-outlined text-[16px]">{{ getStatusIcon(tx.status) }}</span>
-              {{ getStatusText(tx.status) }}
+            <div class="flex gap-2 items-center">
+              <div class="px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200 text-slate-600 bg-slate-50 flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">{{ tx.payment_method === 'vietqr' ? 'qr_code_scanner' : 'local_shipping' }}</span>
+                {{ tx.payment_method === 'vietqr' ? 'QR' : 'COD' }}
+              </div>
+              <div :class="['px-4 py-1.5 rounded-full text-xs font-bold border flex items-center gap-1.5 shadow-sm', getStatusBadgeClass(tx.status)]">
+                <span class="material-symbols-outlined text-[16px]">{{ getStatusIcon(tx.status) }}</span>
+                {{ getStatusText(tx.status) }}
+              </div>
             </div>
           </div>
 

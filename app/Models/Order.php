@@ -21,6 +21,8 @@ class Order extends Model
         'shipping_note',
         'total_price',
         'status', // pending, shipping, delivered, cancelled, rejected
+        'payment_method',
+        'payment_status',
     ];
 
     public function post()

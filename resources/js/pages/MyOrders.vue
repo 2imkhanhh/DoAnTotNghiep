@@ -48,19 +48,25 @@
                   class="w-6 h-6 rounded-full object-cover">
                 <span class="font-bold text-sm text-on-surface">{{ order.seller?.name }}</span>
               </div>
-              <span class="text-xs font-bold px-3 py-1 rounded-full" :class="{
-                'bg-amber-100 text-amber-700': order.status === 'pending',
-                'bg-blue-100 text-blue-700': order.status === 'shipping',
-                'bg-green-100 text-green-700': order.status === 'delivered',
-                'bg-indigo-100 text-indigo-700': order.status === 'confirmed',
-                'bg-surface-container text-on-surface-variant': order.status === 'cancelled' || order.status === 'rejected'
-              }">
-                {{ order.status === 'pending' ? 'Chờ xác nhận' :
-                  order.status === 'confirmed' ? 'Đã xác nhận' :
-                    order.status === 'shipping' ? 'Đang giao hàng' :
-                      order.status === 'delivered' ? 'Đã giao hàng' :
-                        order.status === 'rejected' ? 'Người bán từ chối' : 'Đã hủy' }}
-              </span>
+              <div class="flex gap-2 items-center">
+                <span class="text-xs font-bold px-3 py-1 rounded-full border border-slate-200 text-slate-600 flex items-center gap-1 bg-slate-50">
+                  <span class="material-symbols-outlined text-[14px]">{{ order.payment_method === 'vietqr' ? 'qr_code_scanner' : 'local_shipping' }}</span>
+                  <span>{{ order.payment_method === 'vietqr' ? 'QR' : 'COD' }}</span>
+                </span>
+                <span class="text-xs font-bold px-3 py-1 rounded-full" :class="{
+                  'bg-amber-100 text-amber-700': order.status === 'pending',
+                  'bg-blue-100 text-blue-700': order.status === 'shipping',
+                  'bg-green-100 text-green-700': order.status === 'delivered',
+                  'bg-indigo-100 text-indigo-700': order.status === 'confirmed',
+                  'bg-surface-container text-on-surface-variant': order.status === 'cancelled' || order.status === 'rejected'
+                }">
+                  {{ order.status === 'pending' ? 'Chờ xác nhận' :
+                    order.status === 'confirmed' ? 'Đã xác nhận' :
+                      order.status === 'shipping' ? 'Đang giao hàng' :
+                        order.status === 'delivered' ? 'Đã giao hàng' :
+                          order.status === 'rejected' ? 'Người bán từ chối' : 'Đã hủy' }}
+                </span>
+              </div>
             </div>
 
             <div class="flex gap-4 mb-4">
@@ -137,6 +143,15 @@
         <!-- Status -->
         <div
           class="flex justify-between items-center bg-surface-container-lowest p-4 rounded-xl border border-slate-100">
+          <span class="font-bold text-on-surface">Phương thức thanh toán:</span>
+          <span class="text-sm font-bold px-4 py-1.5 rounded-full bg-slate-100 text-slate-700 flex items-center gap-2">
+             <span class="material-symbols-outlined text-[18px]">{{ selectedOrder.payment_method === 'vietqr' ? 'qr_code_scanner' : 'local_shipping' }}</span>
+             {{ selectedOrder.payment_method === 'vietqr' ? 'QR' : 'COD' }}
+          </span>
+        </div>
+
+        <div
+          class="flex justify-between items-center bg-surface-container-lowest p-4 rounded-xl border border-slate-100 mt-2">
           <span class="font-bold text-on-surface">Trạng thái:</span>
           <span class="text-sm font-bold px-4 py-1.5 rounded-full" :class="{
             'bg-amber-100 text-amber-700': selectedOrder.status === 'pending',
