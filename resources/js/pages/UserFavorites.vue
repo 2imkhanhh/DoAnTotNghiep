@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="flex items-center gap-4 shrink-0 ml-4 relative z-20">
-                  <button
+                  <button @click.prevent="startConversation(post)"
                     class="cursor-pointer px-5 py-1.5 rounded-full border border-[#00a859] text-[#00a859] text-[14px] hover:bg-[#00a859]/10 transition-colors">
                     Chat
                   </button>
@@ -127,6 +127,12 @@ import { toast, confirmDialog } from '../utils/alert';
 import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import LoadingState from '../components/common/LoadingState.vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
 
 const posts = ref([]);
 const loading = ref(true);
@@ -211,6 +217,32 @@ const removeFavorite = async (postId) => {
   } catch (error) {
     console.error('Lỗi khi bỏ yêu thích:', error);
     toast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
+  }
+};
+
+const startConversation = async (postItem) => {
+  if (!authStore.isLoggedIn) {
+    toast('Vui lòng đăng nhập để gửi tin nhắn cho người bán', 'info');
+    router.push({ name: 'Login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  try {
+    const response = await axios.post('/api/conversations', {
+      post_id: postItem.id
+    });
+    if (response.data.success) {
+      router.push({
+        path: '/chat',
+        query: {
+          conversation_id: response.data.conversation_id,
+          attach_post_id: postItem.id
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Lỗi khi tạo cuộc trò chuyện:', error);
+    toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   }
 };
 
