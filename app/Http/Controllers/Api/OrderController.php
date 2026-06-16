@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\Order;
 use App\Notifications\NewOrderNotification;
 use App\Notifications\OrderCancelledNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,12 @@ class OrderController extends Controller
 
         if ($existingOrder) {
             return response()->json(['success' => false, 'message' => 'Bạn đã đặt mua sản phẩm này rồi, vui lòng chờ người bán xử lý.'], 400);
+        }
+
+        // Kiểm tra số lần cố tình để quá hạn thanh toán QR (giam hàng)
+        $cacheKey = 'qr_timeout_' . Auth::id() . '_' . $post->id;
+        if (Cache::get($cacheKey, 0) >= 2) {
+            return response()->json(['success' => false, 'message' => 'Bạn đã để quá hạn thanh toán mã QR nhiều lần. Tài khoản của bạn bị cấm mua sản phẩm này trong 24 giờ.'], 403);
         }
 
         if ($request->payment_method === 'vietqr') {

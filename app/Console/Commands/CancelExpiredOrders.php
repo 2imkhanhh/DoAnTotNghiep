@@ -8,6 +8,7 @@ use App\Models\Post;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class CancelExpiredOrders extends Command
 {
@@ -23,15 +24,15 @@ class CancelExpiredOrders extends Command
      *
      * @var string
      */
-    protected $description = 'Hủy các đơn hàng chờ thanh toán QR quá 15 phút để mở khóa bài đăng';
+    protected $description = 'Hủy các đơn hàng chờ thanh toán QR quá 5 phút để mở khóa bài đăng';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        // Lấy thời điểm 15 phút trước
-        $threshold = Carbon::now()->subMinutes(15);
+        // Lấy thời điểm 5 phút trước
+        $threshold = Carbon::now()->subMinutes(5);
 
         // Tìm các đơn hàng awaiting_payment tạo trước mốc thời gian này
         $expiredOrders = Order::where('status', 'awaiting_payment')
@@ -42,6 +43,12 @@ class CancelExpiredOrders extends Command
 
         foreach ($expiredOrders as $order) {
             DB::transaction(function () use ($order, &$count) {
+                // Tăng biến đếm số lần quá hạn thanh toán của user cho sản phẩm này
+                $cacheKey = 'qr_timeout_' . $order->buyer_id . '_' . $order->post_id;
+                $timeouts = Cache::get($cacheKey, 0) + 1;
+                // Lưu lại số lần vi phạm trong 24 giờ
+                Cache::put($cacheKey, $timeouts, now()->addHours(24));
+
                 // Xóa đơn hàng hoàn toàn khỏi cơ sở dữ liệu
                 $order->delete();
 

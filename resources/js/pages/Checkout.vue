@@ -283,7 +283,7 @@ const qrCodeUrl = ref('');
 const orderId = ref(null);
 const confirmingPayment = ref(false);
 
-const timeLeft = ref(900); // 15 phút
+const timeLeft = ref(300); // 5 phút
 const timerInterval = ref(null);
 
 const formattedTime = computed(() => {
