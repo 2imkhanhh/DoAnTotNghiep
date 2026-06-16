@@ -515,7 +515,7 @@ class PostController extends Controller
 
         // Gửi thông báo cho người dùng
         if ($oldStatus !== $request->status) {
-            if ($request->status === 'active') {
+            if ($request->status === 'active' && $oldStatus === 'pending') {
                 $post->user->notify(new PostApprovedNotification($post));
             } elseif ($request->status === 'rejected') {
                 $post->user->notify(new PostRejectedNotification($post));
