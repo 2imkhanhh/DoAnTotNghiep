@@ -39,6 +39,10 @@
         <router-link to="/admin/purchases" class="nav-item">
           <span class="material-symbols-outlined">point_of_sale</span>
           <span class="nav-label">Duyệt mua gói</span>
+          <span v-if="sidebarStore.pendingPurchasesCount !== null && sidebarStore.pendingPurchasesCount > 0"
+            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{
+              sidebarStore.pendingPurchasesCount
+                > 99 ? '99+' : sidebarStore.pendingPurchasesCount }}</span>
         </router-link>
         <div class="nav-divider"></div>
         <router-link to="/admin/profile" class="nav-item">

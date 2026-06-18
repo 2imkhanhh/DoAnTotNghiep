@@ -66,6 +66,10 @@ class PackageController extends Controller
             'price_paid' => $package->price,
         ]);
 
+        // Gửi thông báo cho Admin
+        $admins = \App\Models\User::where('role', 1)->get();
+        \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PackagePurchasePendingNotification($purchase));
+
         // Lấy thông tin ngân hàng của Admin (role = 1)
         $admin = \App\Models\User::where('role', 1)->first();
         $adminBank = [

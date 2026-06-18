@@ -54,6 +54,9 @@
                                 <span class="material-symbols-outlined text-primary" v-if="notif.data.type === 'post_pending'">pending_actions</span>
                                 <span class="material-symbols-outlined text-success" v-else-if="notif.data.type === 'post_approved'">check_circle</span>
                                 <span class="material-symbols-outlined text-error" v-else-if="notif.data.type === 'post_rejected'">cancel</span>
+                                <span class="material-symbols-outlined text-primary" v-else-if="notif.data.type === 'package_pending'">shopping_cart_checkout</span>
+                                <span class="material-symbols-outlined text-success" v-else-if="notif.data.type === 'package_approved'">check_circle</span>
+                                <span class="material-symbols-outlined text-error" v-else-if="notif.data.type === 'package_rejected'">block</span>
                                 <span class="material-symbols-outlined text-tertiary" v-else-if="notif.data.type === 'new_review'">star_rate</span>
                                 <span class="material-symbols-outlined text-warning" v-else-if="notif.data.type === 'new_order'">shopping_bag</span>
                                 <span class="material-symbols-outlined text-error" v-else-if="notif.data.type === 'order_cancelled'">remove_shopping_cart</span>

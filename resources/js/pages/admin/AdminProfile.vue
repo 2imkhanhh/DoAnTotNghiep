@@ -2,12 +2,6 @@
   <AdminLayout title="Hồ sơ quản trị viên">
     <div class="max-w-4xl mx-auto py-2">
       
-      <!-- Toast Notification -->
-      <div v-if="toast.show" 
-        class="fixed top-24 right-4 z-50 bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-right-8 duration-300">
-        <span class="material-symbols-outlined text-primary-fixed">check_circle</span>
-        <span class="font-bold text-sm">{{ toast.message }}</span>
-      </div>
 
       <div class="flex gap-4 mb-6">
         <button @click="activeTab = 'info'"
@@ -105,7 +99,7 @@
                 <div class="space-y-2 md:col-span-2">
                   <label class="text-sm font-bold text-on-surface-variant">Tên chủ tài khoản</label>
                   <input v-model="profileData.bank_account_name" type="text"
-                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all uppercase"
+                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     placeholder="VD: NGUYEN VAN A">
                 </div>
               </div>
@@ -170,6 +164,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../../stores/auth';
+import { toast } from '../../utils/alert';
 import AdminLayout from '../../components/admin/AdminLayout.vue';
 
 const authStore = useAuthStore();
@@ -181,18 +176,6 @@ const passwordLoading = ref(false);
 const errors = ref({});
 const passwordErrors = ref({});
 
-const toast = ref({
-  show: false,
-  message: ''
-});
-
-const showToast = (message) => {
-  toast.value.message = message;
-  toast.value.show = true;
-  setTimeout(() => {
-    toast.value.show = false;
-  }, 3000);
-};
 
 const profileData = ref({
   name: authStore.user?.name || '',
@@ -279,7 +262,7 @@ const updateProfile = async () => {
     avatarFile.value = null;
 
     authStore.setUser(updatedUser);
-    showToast('Cập nhật hồ sơ thành công!');
+    toast('Cập nhật hồ sơ thành công!', 'success');
   } catch (error) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors;
@@ -306,7 +289,7 @@ const changePassword = async () => {
       new_password: '',
       new_password_confirmation: ''
     };
-    showToast('Đổi mật khẩu thành công!');
+    toast('Đổi mật khẩu thành công!', 'success');
   } catch (error) {
     if (error.response?.status === 422 || error.response?.status === 400) {
       passwordErrors.value = error.response.data.errors;

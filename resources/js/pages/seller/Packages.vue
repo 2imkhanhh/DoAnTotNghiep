@@ -245,7 +245,7 @@ const qrCodeUrl = ref('');
 const currentPurchase = ref(null);
 const currentAdminBank = ref(null);
 
-const timeLeft = ref(900);
+const timeLeft = ref(300);
 const timerInterval = ref(null);
 
 const formattedTime = computed(() => {
@@ -255,7 +255,7 @@ const formattedTime = computed(() => {
 });
 
 const startTimer = () => {
-  timeLeft.value = 900;
+  timeLeft.value = 300;
   if (timerInterval.value) clearInterval(timerInterval.value);
   timerInterval.value = setInterval(() => {
     if (timeLeft.value > 0) {

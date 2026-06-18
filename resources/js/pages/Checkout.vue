@@ -293,7 +293,7 @@ const formattedTime = computed(() => {
 });
 
 const startTimer = () => {
-  timeLeft.value = 900;
+  timeLeft.value = 300;
   if (timerInterval.value) clearInterval(timerInterval.value);
   timerInterval.value = setInterval(() => {
     if (timeLeft.value > 0) {

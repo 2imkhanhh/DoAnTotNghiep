@@ -5,6 +5,7 @@ export const useSidebarStore = defineStore('sidebar', {
     state: () => ({
         pendingPostsCount: null,
         pendingOrdersCount: null,
+        pendingPurchasesCount: null,
         isFetchingAdmin: false,
         isFetchingSeller: false,
     }),
@@ -18,6 +19,7 @@ export const useSidebarStore = defineStore('sidebar', {
                 const response = await axios.get('/api/admin/sidebar-stats');
                 if (response.data.success) {
                     this.pendingPostsCount = response.data.data.pending_posts;
+                    this.pendingPurchasesCount = response.data.data.pending_purchases;
                 }
             } catch (error) {
                 console.error('Lỗi khi lấy stats admin:', error);

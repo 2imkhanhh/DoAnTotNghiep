@@ -7,9 +7,6 @@
         <h2 class="text-xl font-bold text-slate-800">Danh sách gói dịch vụ</h2>
         
         <div class="flex gap-2">
-          <button @click="fetchPackages" class="flex items-center gap-1 px-4 py-2 text-sm font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer">
-            <span class="material-symbols-outlined text-[18px]">refresh</span> Làm mới
-          </button>
           <button @click="openCreateModal" class="flex items-center gap-1 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">add</span> Thêm gói mới
           </button>

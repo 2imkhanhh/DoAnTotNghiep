@@ -59,6 +59,8 @@ class AdminPurchaseController extends Controller
 
             DB::commit();
 
+            $user->notify(new \App\Notifications\PackagePurchaseApprovedNotification($purchase));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Duyệt yêu cầu thành công, đã cộng quyền lợi cho User.',
@@ -84,6 +86,8 @@ class AdminPurchaseController extends Controller
         }
 
         $purchase->update(['status' => 'rejected']);
+
+        $purchase->user->notify(new \App\Notifications\PackagePurchaseRejectedNotification($purchase));
 
         return response()->json([
             'success' => true,

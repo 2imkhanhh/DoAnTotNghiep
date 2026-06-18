@@ -224,7 +224,8 @@ class AdminDashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'pending_posts' => Post::where('status', 'pending')->count()
+                'pending_posts' => Post::where('status', 'pending')->count(),
+                'pending_purchases' => \App\Models\UserPurchase::where('status', 'pending')->count()
             ]
         ]);
     }
