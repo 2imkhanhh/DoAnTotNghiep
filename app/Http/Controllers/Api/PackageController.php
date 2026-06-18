@@ -42,9 +42,21 @@ class PackageController extends Controller
             'package_id' => 'required|exists:service_packages,id'
         ]);
 
-        $package = ServicePackage::where('id', $request->package_id)
-            ->where('is_active', true)
-            ->firstOrFail();
+        $package = ServicePackage::find($request->package_id);
+
+        if (!$package) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy gói dịch vụ.'
+            ], 404);
+        }
+
+        if (!$package->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gói dịch vụ này hiện đã ngừng bán.'
+            ], 400);
+        }
 
         // Tạo yêu cầu mua gói (trạng thái pending)
         $purchase = UserPurchase::create([
@@ -92,6 +104,86 @@ class PackageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Đã hủy yêu cầu mua gói dịch vụ.'
+        ]);
+    }
+
+    // --- ADMIN METHODS ---
+
+    public function adminIndex()
+    {
+        $packages = ServicePackage::all();
+        return response()->json([
+            'success' => true,
+            'data' => $packages
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:vip,post',
+            'price' => 'required|numeric|min:0',
+            'duration_days' => 'nullable|integer|min:1',
+            'post_quota' => 'nullable|integer|min:1',
+            'is_active' => 'boolean'
+        ]);
+
+        $package = ServicePackage::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã tạo gói dịch vụ thành công.',
+            'data' => $package
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:vip,post',
+            'price' => 'required|numeric|min:0',
+            'duration_days' => 'nullable|integer|min:1',
+            'post_quota' => 'nullable|integer|min:1',
+            'is_active' => 'boolean'
+        ]);
+
+        $package = ServicePackage::findOrFail($id);
+
+        $hasPurchases = UserPurchase::where('package_id', $id)->exists();
+
+        if ($hasPurchases) {
+            // Thay vì sửa trực tiếp làm ảnh hưởng đến người mua trước đó, 
+            // ta ẩn gói cũ đi và tạo ra một gói mới hoàn toàn với dữ liệu cập nhật
+            $package->update(['is_active' => false]);
+            
+            $newPackage = ServicePackage::create($request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gói dịch vụ đã có người mua nên hệ thống tự động tạo phiên bản mới (gói cũ được ẩn đi để bảo toàn lịch sử).',
+                'data' => $newPackage
+            ]);
+        }
+
+        $package->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật thông tin gói dịch vụ.',
+            'data' => $package
+        ]);
+    }
+
+    public function toggleActive($id)
+    {
+        $package = ServicePackage::findOrFail($id);
+        $package->update(['is_active' => !$package->is_active]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $package->is_active ? 'Đã hiện gói dịch vụ.' : 'Đã ẩn gói dịch vụ.'
         ]);
     }
 }

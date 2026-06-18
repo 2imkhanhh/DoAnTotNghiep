@@ -146,6 +146,12 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/admin/purchases', [AdminPurchaseController::class, 'index']);
     Route::put('/admin/purchases/{id}/approve', [AdminPurchaseController::class, 'approve']);
     Route::put('/admin/purchases/{id}/reject', [AdminPurchaseController::class, 'reject']);
+
+    // Admin Packages
+    Route::get('/admin/packages', [PackageController::class, 'adminIndex']);
+    Route::post('/admin/packages', [PackageController::class, 'store']);
+    Route::put('/admin/packages/{id}', [PackageController::class, 'update']);
+    Route::patch('/admin/packages/{id}/toggle-active', [PackageController::class, 'toggleActive']);
 });
 
 Route::delete('/posts/{id}', [PostController::class, 'destroy']);

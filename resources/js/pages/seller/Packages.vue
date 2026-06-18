@@ -1,5 +1,5 @@
 <template>
-  <SellerLayout title="Gói dịch vụ & Lượt đăng tin">
+  <SellerLayout title="Gói dịch vụ">
     <div class="packages-page max-w-7xl mx-auto space-y-8">
 
       <!-- Thông tin User -->
@@ -110,7 +110,7 @@
             Lịch sử mua gói
           </h2>
           <button @click="fetchPurchases(1)"
-            class="text-sm font-bold text-primary hover:underline flex items-center gap-1">
+            class="flex items-center gap-1 px-4 py-2 text-sm font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">refresh</span> Làm mới
           </button>
         </div>
@@ -128,17 +128,17 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
-                <th class="p-4 font-semibold">Mã GD</th>
+                <th class="p-4 font-semibold text-center">STT</th>
                 <th class="p-4 font-semibold">Tên gói</th>
                 <th class="p-4 font-semibold">Số tiền</th>
-                <th class="p-4 font-semibold">Ngày tạo</th>
+                <th class="p-4 font-semibold">Ngày mua</th>
                 <th class="p-4 font-semibold">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="pur in purchases" :key="pur.id"
+              <tr v-for="(pur, index) in purchases" :key="pur.id"
                 class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                <td class="p-4 font-mono text-xs text-slate-500">#{{ pur.id }}</td>
+                <td class="p-4 font-medium text-slate-800 text-center">{{ getIndex(index) }}</td>
                 <td class="p-4 font-medium text-slate-800">{{ pur.package?.name }}</td>
                 <td class="p-4 font-bold text-error">{{ formatPrice(pur.price_paid) }}đ</td>
                 <td class="p-4 text-sm text-slate-600">{{ formatDateTime(pur.created_at) }}</td>
@@ -352,6 +352,11 @@ const getStatusText = (status) => {
     case 'rejected': return 'Bị từ chối';
     default: return status;
   }
+};
+
+const getIndex = (index) => {
+  if (!pagination.value) return index + 1;
+  return (pagination.value.current_page - 1) * pagination.value.per_page + index + 1;
 };
 
 const fetchPackages = async () => {

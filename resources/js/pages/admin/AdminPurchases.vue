@@ -21,7 +21,7 @@
 
         <div class="flex gap-2">
           <button @click="fetchPurchases(1)"
-            class="flex items-center gap-1 px-4 py-2 text-sm font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors">
+            class="flex items-center gap-1 px-4 py-2 text-sm font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors cursor-pointer">
             <span class="material-symbols-outlined text-[18px]">refresh</span> Làm mới
           </button>
         </div>
@@ -32,11 +32,11 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Mã GD</th>
+              <th>STT</th>
               <th>Người dùng</th>
               <th>Gói dịch vụ</th>
               <th style="text-align: right">Số tiền</th>
-              <th>Thời gian tạo</th>
+              <th>Ngày mua</th>
               <th>Trạng thái</th>
               <th style="text-align: center">Thao tác</th>
             </tr>
@@ -53,8 +53,8 @@
                 <p>Không có dữ liệu yêu cầu mua gói</p>
               </td>
             </tr>
-            <tr v-else v-for="pur in purchases" :key="pur.id">
-              <td class="font-mono text-xs text-slate-500">#{{ pur.id }}</td>
+            <tr v-else v-for="(pur, index) in purchases" :key="pur.id">
+              <td class="text-sm font-bold text-slate-700 text-center">{{ getIndex(index) }}</td>
               <td>
                 <div class="user-cell">
                   <img
@@ -198,6 +198,11 @@ const getStatusText = (status) => {
     case 'rejected': return 'Bị từ chối';
     default: return status;
   }
+};
+
+const getIndex = (index) => {
+  if (!pagination.value) return index + 1;
+  return (pagination.value.current_page - 1) * pagination.value.per_page + index + 1;
 };
 
 const setFilter = (status) => {

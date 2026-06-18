@@ -20,8 +20,9 @@
           <span class="material-symbols-outlined">article</span>
           <span class="nav-label">Tin đăng</span>
           <span v-if="sidebarStore.pendingPostsCount !== null && sidebarStore.pendingPostsCount > 0"
-            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{ sidebarStore.pendingPostsCount
-              > 99 ? '99+' : sidebarStore.pendingPostsCount }}</span>
+            class="badge bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold ml-auto">{{
+              sidebarStore.pendingPostsCount
+                > 99 ? '99+' : sidebarStore.pendingPostsCount }}</span>
         </router-link>
         <router-link to="/admin/banners" class="nav-item">
           <span class="material-symbols-outlined">view_carousel</span>
@@ -30,6 +31,10 @@
         <router-link to="/admin/users" class="nav-item">
           <span class="material-symbols-outlined">group</span>
           <span class="nav-label">Người dùng</span>
+        </router-link>
+        <router-link to="/admin/packages" class="nav-item">
+          <span class="material-symbols-outlined">card_membership</span>
+          <span class="nav-label">Quản lý gói dịch vụ</span>
         </router-link>
         <router-link to="/admin/purchases" class="nav-item">
           <span class="material-symbols-outlined">point_of_sale</span>
