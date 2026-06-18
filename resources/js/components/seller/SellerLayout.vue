@@ -20,6 +20,10 @@
           <span class="material-symbols-outlined">add_circle</span>
           <span class="nav-label">Đăng tin mới</span>
         </router-link>
+        <router-link to="/seller-center/packages" class="nav-item">
+          <span class="material-symbols-outlined">stars</span>
+          <span class="nav-label">Gói dịch vụ</span>
+        </router-link>
         <router-link to="/seller-center/orders" class="nav-item">
           <span class="material-symbols-outlined">receipt_long</span>
           <span class="nav-label">Quản lý đơn hàng</span>

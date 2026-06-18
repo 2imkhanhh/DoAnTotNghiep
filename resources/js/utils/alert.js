@@ -63,6 +63,7 @@ export const confirmDialog = (title, text = '', confirmButtonText = 'Đồng ý'
         cancelButtonText: cancelButtonText,
         backdrop: 'rgba(0,0,0,0.5)',
         buttonsStyling: false,
+        reverseButtons: true,
         customClass: {
             popup: '!rounded-2xl !shadow-2xl !bg-surface-container-lowest !p-6 !max-w-sm animate-in fade-in zoom-in duration-200',
             title: '!text-lg !font-bold !text-on-surface !p-0 !mt-4 !mb-0',

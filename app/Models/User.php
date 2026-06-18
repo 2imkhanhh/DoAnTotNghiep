@@ -44,6 +44,8 @@ class User extends Authenticatable implements JWTSubject
         'role',
         'status',
         'rating',
+        'vip_expires_at',
+        'available_post_quota',
     ];
 
     /**
@@ -56,7 +58,12 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-    protected $appends = ['sold_count', 'reviews_count', 'average_rating'];
+    protected $appends = ['sold_count', 'reviews_count', 'average_rating', 'is_vip'];
+
+    public function getIsVipAttribute(): bool
+    {
+        return $this->isVip();
+    }
 
     public function posts()
     {
@@ -150,6 +157,16 @@ class User extends Authenticatable implements JWTSubject
     public function sellerConversations()
     {
         return $this->hasMany(Conversation::class, 'seller_id');
+    }
+
+    public function userPurchases()
+    {
+        return $this->hasMany(UserPurchase::class, 'user_id');
+    }
+
+    public function isVip(): bool
+    {
+        return $this->vip_expires_at && $this->vip_expires_at > now();
     }
 
     public function getJWTIdentifier()

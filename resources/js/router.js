@@ -110,6 +110,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/seller-center/packages',
+        name: 'SellerPackages',
+        component: () => import('./pages/seller/Packages.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/admin/dashboard',
         name: 'AdminDashboard',
         component: () => import('./pages/admin/AdminDashboard.vue'),
@@ -143,6 +149,12 @@ const routes = [
         path: '/admin/users',
         name: 'AdminUsers',
         component: () => import('./pages/admin/AdminUsers.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/purchases',
+        name: 'AdminPurchases',
+        component: () => import('./pages/admin/AdminPurchases.vue'),
         meta: { requiresAuth: true, requiresAdmin: true }
     },
     {

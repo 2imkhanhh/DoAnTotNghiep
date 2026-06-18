@@ -270,16 +270,30 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request)
     {
+        $user = auth('api')->user();
+
+        // Kiểm tra quyền đăng tin
+        if (!$user->isAdmin() && !$user->isVip()) {
+            if ($user->available_post_quota > 0) {
+                $user->decrement('available_post_quota');
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn đã sử dụng hết lượt đăng tin. Vui lòng mua thêm gói lượt đăng tin hoặc nâng cấp VIP để tiếp tục.'
+                ], 403);
+            }
+        }
+
         // 1. Bật khiên bảo vệ Database (Order)
         DB::beginTransaction();
 
         try {
             $data = $request->validated();
-            $data['user_id'] = auth('api')->id(); // Lấy ID người đang đăng nhập
+            $data['user_id'] = $user->id; // Lấy ID người đang đăng nhập
             $data['slug'] = Str::slug($request->title) . '-' . time(); // Thêm time() để đảm bảo slug không bao giờ trùng
 
             // Nếu là admin thì duyệt luôn (status = 1), ngược lại là chờ duyệt (status = 0)
-            if (auth('api')->user()->isAdmin()) {
+            if ($user->isAdmin()) {
                 $data['status'] = 'active';
             } else {
                 $data['status'] = 'pending';
@@ -477,8 +491,14 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
         }
 
-        // Bổ sung phân quyền cho User thường (không phải admin)
         $user = auth('api')->user();
+
+        // Admin không được hiển thị lại tin đăng đã tạm ẩn
+        if ($user->isAdmin() && $request->status === 'active' && $post->status === 'hidden') {
+            return response()->json(['success' => false, 'message' => 'Admin không được phép hiển thị lại tin đăng đang tạm ẩn'], 403);
+        }
+
+        // Bổ sung phân quyền cho User thường (không phải admin)
         if (!$user->isAdmin()) {
             // Chỉ được sửa tin của chính mình
             if ($post->user_id !== $user->id) {
@@ -515,9 +535,13 @@ class PostController extends Controller
 
         // Gửi thông báo cho người dùng
         if ($oldStatus !== $request->status) {
-            if ($request->status === 'active' && $oldStatus === 'pending') {
+            if ($request->status === 'active' && in_array($oldStatus, ['pending', 'rejected'])) {
                 $post->user->notify(new PostApprovedNotification($post));
             } elseif ($request->status === 'rejected') {
+                // Hoàn lại lượt đăng nếu bị từ chối (và không phải VIP/Admin)
+                if ($oldStatus === 'pending' && !$post->user->isAdmin() && !$post->user->isVip()) {
+                    $post->user->increment('available_post_quota');
+                }
                 $post->user->notify(new PostRejectedNotification($post));
             }
         }
@@ -540,7 +564,7 @@ class PostController extends Controller
     // Xóa tin đăng
     public function destroy($id)
     {
-        $post = Post::find($id);
+        $post = Post::with('user')->find($id);
         if (!$post) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy tin đăng'], 404);
         }
@@ -549,12 +573,20 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => 'Không thể xóa tin đăng đã bán để bảo lưu lịch sử giao dịch'], 403);
         }
 
+        $oldStatus = $post->status;
+        $postUser = $post->user;
+
         // Xóa ảnh liên quan trong storage
         foreach ($post->images as $image) {
             Storage::disk('public')->delete(str_replace('/storage/', '', $image->image_path));
         }
 
         $post->delete();
+
+        // Hoàn lại lượt nếu xóa tin đang chờ duyệt (và không phải VIP/Admin)
+        if ($oldStatus === 'pending' && $postUser && !$postUser->isAdmin() && !$postUser->isVip()) {
+            $postUser->increment('available_post_quota');
+        }
 
         return response()->json(['success' => true, 'message' => 'Đã xóa tin đăng thành công!']);
     }

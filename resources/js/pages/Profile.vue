@@ -22,7 +22,10 @@
                 <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="handleFileUpload">
               </div>
               <div class="overflow-hidden">
-                <h2 class="font-bold text-on-surface truncate">{{ profileData.name || 'Người dùng' }}</h2>
+                <h2 class="font-bold text-on-surface truncate flex items-center gap-1">
+                  {{ profileData.name || 'Người dùng' }}
+                  <span v-if="authStore.user?.is_vip" class="material-symbols-outlined text-blue-500 text-[18px]" title="Thành viên VIP">verified</span>
+                </h2>
                 <p class="text-xs text-on-surface-variant truncate">{{ profileData.email }}</p>
               </div>
             </div>

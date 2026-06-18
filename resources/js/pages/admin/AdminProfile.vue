@@ -80,7 +80,38 @@
               </div>
             </div>
 
-            <div class="pt-6 border-t border-outline-variant flex justify-end">
+            <!-- Bank Info -->
+            <div class="space-y-4 pt-6 border-t border-outline-variant">
+              <h3 class="text-sm font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">account_balance</span>
+                Cấu hình tài khoản nhận tiền (Dành cho chức năng Nạp gói VIP)
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant">Ngân hàng</label>
+                  <input v-model="profileData.bank_name" type="text"
+                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    placeholder="VD: MBBank, Vietcombank...">
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-sm font-bold text-on-surface-variant">Số tài khoản</label>
+                  <input v-model="profileData.bank_account_no" type="text"
+                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    placeholder="VD: 0123456789">
+                </div>
+                
+                <div class="space-y-2 md:col-span-2">
+                  <label class="text-sm font-bold text-on-surface-variant">Tên chủ tài khoản</label>
+                  <input v-model="profileData.bank_account_name" type="text"
+                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all uppercase"
+                    placeholder="VD: NGUYEN VAN A">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-6 flex justify-end">
               <button type="submit" :disabled="loading"
                 class="px-8 py-2.5 bg-primary text-on-primary font-bold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer">
                 <span v-if="loading" class="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
@@ -168,6 +199,9 @@ const profileData = ref({
   email: authStore.user?.email || '',
   phone: authStore.user?.phone || '',
   avatar: authStore.user?.avatar || '',
+  bank_name: authStore.user?.bank_name || '',
+  bank_account_no: authStore.user?.bank_account_no || '',
+  bank_account_name: authStore.user?.bank_account_name || ''
 });
 
 const fetchProfile = async () => {
@@ -179,6 +213,9 @@ const fetchProfile = async () => {
       email: userData.email,
       phone: userData.phone,
       avatar: userData.avatar,
+      bank_name: userData.bank_name,
+      bank_account_no: userData.bank_account_no,
+      bank_account_name: userData.bank_account_name
     };
     authStore.setUser(userData);
   } catch (error) {
@@ -215,6 +252,9 @@ const updateProfile = async () => {
       formData.append('_method', 'PUT');
       if (profileData.value.name) formData.append('name', profileData.value.name);
       if (profileData.value.phone) formData.append('phone', profileData.value.phone);
+      if (profileData.value.bank_name) formData.append('bank_name', profileData.value.bank_name);
+      if (profileData.value.bank_account_no) formData.append('bank_account_no', profileData.value.bank_account_no);
+      if (profileData.value.bank_account_name) formData.append('bank_account_name', profileData.value.bank_account_name);
       if (avatarFile.value) {
         formData.append('avatar', avatarFile.value);
       }
@@ -233,6 +273,9 @@ const updateProfile = async () => {
     profileData.value.name = updatedUser.name;
     profileData.value.phone = updatedUser.phone;
     profileData.value.avatar = updatedUser.avatar;
+    profileData.value.bank_name = updatedUser.bank_name;
+    profileData.value.bank_account_no = updatedUser.bank_account_no;
+    profileData.value.bank_account_name = updatedUser.bank_account_name;
     avatarFile.value = null;
 
     authStore.setUser(updatedUser);

@@ -25,7 +25,10 @@
               </button>
             </div>
 
-            <h2 class="font-bold text-xl text-on-surface truncate">{{ seller.name || 'Người bán' }}</h2>
+            <h2 class="font-bold text-xl text-on-surface truncate flex justify-center items-center gap-1">
+              {{ seller.name || 'Người bán' }}
+              <span v-if="seller.is_vip" class="material-symbols-outlined text-blue-500 text-[20px]" title="Thành viên VIP">verified</span>
+            </h2>
             <div class="flex items-center justify-center gap-1 mt-1" :class="seller.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
               <span class="material-symbols-outlined font-variation-fill text-[18px]">star</span>
               <span class="text-[14px] font-bold text-on-surface" v-if="seller.reviews_count > 0">{{ parseFloat(seller.average_rating).toFixed(1) }}</span>

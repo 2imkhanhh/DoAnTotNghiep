@@ -131,7 +131,10 @@
                     alt="Avatar">
                 </div>
                 <div class="seller-meta">
-                  <h4 class="seller-name">{{ post.user?.name }}</h4>
+                  <h4 class="seller-name flex items-center gap-1">
+                    {{ post.user?.name }}
+                    <span v-if="post.user?.is_vip" class="material-symbols-outlined text-blue-500 text-lg" title="Thành viên VIP">verified</span>
+                  </h4>
                   <div class="seller-rating"
                     :class="post.user?.reviews_count > 0 ? 'text-amber-500' : 'text-outline-variant'">
                     <span class="material-symbols-outlined filled"

@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\SellerController;
 use App\Http\Controllers\Api\ChatLabelController;
 
+use App\Http\Controllers\Api\PackageController;
+use App\Http\Controllers\Api\AdminPurchaseController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\BannerController;
@@ -98,6 +100,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+    // Các routes mua Gói dịch vụ
+    Route::get('/packages', [PackageController::class, 'index']);
+    Route::post('/packages/buy', [PackageController::class, 'buy']);
+    Route::delete('/packages/purchases/{id}/cancel', [PackageController::class, 'cancel']);
+    Route::get('/user/purchases', [PackageController::class, 'myPurchases']);
 });
 
 // Nhóm route quản trị (Admin)
@@ -133,6 +141,11 @@ Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::get('/admin/users', [AdminUserController::class, 'index']);
     Route::patch('/admin/users/{id}/toggle-role', [AdminUserController::class, 'toggleRole']);
     Route::patch('/admin/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
+
+    // Admin Purchases
+    Route::get('/admin/purchases', [AdminPurchaseController::class, 'index']);
+    Route::put('/admin/purchases/{id}/approve', [AdminPurchaseController::class, 'approve']);
+    Route::put('/admin/purchases/{id}/reject', [AdminPurchaseController::class, 'reject']);
 });
 
 Route::delete('/posts/{id}', [PostController::class, 'destroy']);

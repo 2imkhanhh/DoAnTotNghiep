@@ -77,7 +77,7 @@
               <td class="text-secondary">{{ formatDate(post.created_at) }}</td>
               <td>
                 <div class="action-btns">
-                  <button v-if="post.status !== 'active'" class="btn-icon approve" @click="updateStatus(post, 'active')"
+                  <button v-if="post.status !== 'active' && post.status !== 'hidden'" class="btn-icon approve" @click="updateStatus(post, 'active')"
                     title="Duyệt hiển thị">
                     <span class="material-symbols-outlined">check_circle</span>
                   </button>
@@ -200,7 +200,7 @@
           </div>
 
           <div class="modal-footer">
-            <button v-if="selectedPost?.status !== 'active'" class="btn-approve" @click="updateStatus(selectedPost, 'active')">
+            <button v-if="selectedPost?.status !== 'active' && selectedPost?.status !== 'hidden'" class="btn-approve" @click="updateStatus(selectedPost, 'active')">
               <span class="material-symbols-outlined">check_circle</span> Duyệt tin
             </button>
             <button v-if="selectedPost?.status !== 'rejected'" class="btn-reject" @click="openRejectModal(selectedPost)">

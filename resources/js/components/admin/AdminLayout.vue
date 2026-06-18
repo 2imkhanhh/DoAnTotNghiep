@@ -31,6 +31,10 @@
           <span class="material-symbols-outlined">group</span>
           <span class="nav-label">Người dùng</span>
         </router-link>
+        <router-link to="/admin/purchases" class="nav-item">
+          <span class="material-symbols-outlined">point_of_sale</span>
+          <span class="nav-label">Duyệt mua gói</span>
+        </router-link>
         <div class="nav-divider"></div>
         <router-link to="/admin/profile" class="nav-item">
           <span class="material-symbols-outlined">manage_accounts</span>
