@@ -243,7 +243,7 @@
 
           <!-- Left Side Image -->
           <router-link :to="`/post/${post.slug}`"
-            class="relative w-[120px] h-[120px] shrink-0 rounded-lg overflow-hidden block bg-slate-100">
+            class="relative w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] shrink-0 rounded-lg overflow-hidden block bg-slate-100">
             <img :src="getPrimaryImage(post)" :alt="post.title"
               class="w-full h-full object-cover">
             <span v-if="post.status === 'sold'"
@@ -256,10 +256,10 @@
           <div class="flex flex-col grow justify-between">
             <div>
               <router-link :to="`/post/${post.slug}`"
-                class="text-[16px] text-slate-800 line-clamp-2 transition-colors group-hover:text-primary font-medium">
+                class="text-[14px] sm:text-[16px] text-slate-800 line-clamp-2 transition-colors group-hover:text-primary font-medium">
                 {{ post.title }}
               </router-link>
-              <p class="text-[#d0021b] font-bold text-[16px] mt-1">{{ formatPrice(post.price) }} đ</p>
+              <p class="text-[#d0021b] font-bold text-[15px] sm:text-[16px] mt-1">{{ formatPrice(post.price) }} đ</p>
             </div>
 
             <div class="flex items-end justify-between mt-2">

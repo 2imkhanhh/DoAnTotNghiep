@@ -1,9 +1,9 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+  <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end font-sans">
 
     <!-- Chat Window -->
     <div v-if="isOpen"
-      class="bg-surface-container-lowest w-[300px] sm:w-[340px] h-[480px] max-h-[80vh] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden border border-outline-variant transition-all duration-300 transform origin-bottom-right">
+      class="bg-surface-container-lowest w-[calc(100vw-32px)] sm:w-[340px] h-[500px] max-h-[calc(100vh-120px)] sm:max-h-[80vh] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex flex-col overflow-hidden border border-outline-variant transition-all duration-300 transform origin-bottom-right">
 
       <!-- Header -->
       <div class="bg-primary text-on-primary p-3 flex justify-between items-center shadow-md z-10">

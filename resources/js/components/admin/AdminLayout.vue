@@ -1,5 +1,7 @@
 <template>
   <div class="admin-container">
+    <!-- Mobile Backdrop -->
+    <div v-if="isSidebarCollapsed" @click="isSidebarCollapsed = false" class="sidebar-backdrop"></div>
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'collapsed': isSidebarCollapsed }">
       <div class="sidebar-header">
@@ -341,6 +343,21 @@ const handleLogout = () => {
   .sidebar.collapsed {
     left: 0;
     width: 280px;
+  }
+  
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 90;
+  }
+}
+@media (min-width: 769px) {
+  .sidebar-backdrop {
+    display: none;
   }
 }
 </style>

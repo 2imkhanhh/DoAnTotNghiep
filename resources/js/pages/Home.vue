@@ -76,7 +76,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3">
                 <router-link v-for="cat in categories" :key="cat.id" :to="`/category/${cat.slug}`"
                     class="category-item">
                     <div class="icon-wrapper">
@@ -94,11 +94,11 @@
                 <h2 class="text-2xl font-bold text-on-surface">Tin đăng mới nhất</h2>
             </div>
 
-            <div v-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div v-if="posts.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
                 <div v-for="post in posts" :key="post.id" @click="router.push(`/post/${post.slug}`)"
                     class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col group cursor-pointer">
                     <router-link :to="`/post/${post.slug}`" @click.stop
-                        class="relative h-48 w-full overflow-hidden block">
+                        class="relative h-36 sm:h-48 w-full overflow-hidden block">
                         <img :src="getPrimaryImage(post)" :alt="post.title"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
 
@@ -124,12 +124,12 @@
                             Đã bán
                         </span>
                     </router-link>
-                    <div class="p-4 flex flex-col grow">
+                    <div class="p-3 sm:p-4 flex flex-col grow">
                         <router-link :to="`/post/${post.slug}`" @click.stop
-                            class="font-bold text-on-surface line-clamp-2 mb-2 hover:text-primary transition-colors h-12">
+                            class="font-bold text-on-surface line-clamp-2 mb-2 hover:text-primary transition-colors h-10 sm:h-12 text-sm sm:text-base">
                             {{ post.title }}
                         </router-link>
-                        <p class="text-error font-bold text-lg mb-4">{{ formatPrice(post.price) }} đ</p>
+                        <p class="text-error font-bold text-base sm:text-lg mb-2 sm:mb-4">{{ formatPrice(post.price) }} đ</p>
                         <div class="mt-auto flex items-center justify-between text-[11px] text-on-surface-variant">
                             <span class="flex items-center gap-1">
                                 <span class="material-symbols-outlined text-sm">schedule</span>

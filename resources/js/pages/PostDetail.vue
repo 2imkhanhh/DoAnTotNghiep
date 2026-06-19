@@ -495,6 +495,13 @@ onMounted(() => {
   gap: 2rem;
 }
 
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
 .card {
   background: white;
   border-radius: 1.25rem;
