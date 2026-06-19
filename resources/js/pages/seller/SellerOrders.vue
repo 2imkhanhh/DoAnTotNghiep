@@ -28,7 +28,8 @@
 
       <div v-else-if="orders.length > 0" class="space-y-6">
         <div v-for="(tx, index) in orders" :key="tx.id"
-          class="order-card bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group"
+          @click="viewOrderDetails(tx)"
+          class="order-card cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 group"
           :style="{ animationDelay: `${index * 0.05}s` }">
 
           <!-- Header -->
@@ -71,10 +72,10 @@
 
             <div class="flex-1 flex flex-col justify-between">
               <div>
-                <router-link :to="`/post/${tx.post?.slug}`"
-                  class="font-bold text-lg text-slate-800 hover:text-primary transition-colors block mb-1 line-clamp-2 leading-tight">
+                <div
+                  class="font-bold text-lg text-slate-800 group-hover:text-primary transition-colors block mb-1 line-clamp-2 leading-tight">
                   {{ tx.post?.title || 'Sản phẩm không xác định' }}
-                </router-link>
+                </div>
                 <p class="text-error font-black text-xl mb-4">{{ formatPrice(tx.post?.price) }} <span
                     class="text-sm font-bold text-slate-400">VNĐ</span></p>
               </div>
@@ -105,25 +106,25 @@
             <!-- Actions -->
             <div
               class="flex md:flex-col justify-center gap-2.5 shrink-0 md:w-36 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
-              <button v-if="tx.status === 'pending'" @click="acceptOrder(tx.id)"
+              <button v-if="tx.status === 'pending'" @click.stop="acceptOrder(tx.id)"
                 class="action-btn w-full py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30 transition-all flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">check_circle</span> Duyệt đơn
               </button>
-              <button v-if="tx.status === 'pending'" @click="cancelOrder(tx.id)"
+              <button v-if="tx.status === 'pending'" @click.stop="cancelOrder(tx.id)"
                 class="action-btn w-full py-2.5 bg-red-50 text-red-600 rounded-xl font-bold text-sm hover:bg-red-600 hover:text-white transition-all border border-red-200 hover:border-red-600 flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">cancel</span> Từ chối
               </button>
 
-              <button v-if="tx.status === 'confirmed'" @click="startShipping(tx.id)"
+              <button v-if="tx.status === 'confirmed'" @click.stop="startShipping(tx.id)"
                 class="action-btn w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">local_shipping</span> Giao hàng
               </button>
-              <button v-if="tx.status === 'confirmed'" @click="cancelOrder(tx.id)"
+              <button v-if="tx.status === 'confirmed'" @click.stop="cancelOrder(tx.id)"
                 class="action-btn w-full py-2.5 bg-red-50 text-red-600 rounded-xl font-bold text-sm hover:bg-red-600 hover:text-white transition-all border border-red-200 hover:border-red-600 flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">cancel</span> Hủy đơn
               </button>
 
-              <button v-if="tx.status === 'shipping'" @click="deliverOrder(tx.id)"
+              <button v-if="tx.status === 'shipping'" @click.stop="deliverOrder(tx.id)"
                 class="action-btn w-full py-2.5 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 hover:shadow-lg hover:shadow-green-600/30 transition-all flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px]">check_circle</span> Đã giao
               </button>
@@ -172,6 +173,98 @@
         <h2 class="text-lg font-bold text-slate-800">Chưa có đơn hàng nào</h2>
         <p class="text-slate-500 mt-1">Không tìm thấy giao dịch nào ở trạng thái này.</p>
       </div>
+
+      <!-- Order Details Modal -->
+      <div v-if="selectedOrder" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeOrderDetails"></div>
+        <div
+          class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 relative z-10">
+          <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">receipt_long</span>
+              Chi tiết đơn hàng #{{ selectedOrder.id }}
+            </h3>
+            <button @click="closeOrderDetails"
+              class="text-slate-500 hover:text-error transition-colors p-2 rounded-full cursor-pointer">
+              <span class="material-symbols-outlined block">close</span>
+            </button>
+          </div>
+
+          <div class="p-6 overflow-y-auto grow custom-scrollbar space-y-6">
+            <!-- Status -->
+            <div
+              class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span class="font-bold text-slate-700">Phương thức thanh toán:</span>
+              <span class="text-sm font-bold px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">{{ selectedOrder.payment_method === 'vietqr' ?
+                  'qr_code_scanner' : 'local_shipping' }}</span>
+                {{ selectedOrder.payment_method === 'vietqr' ? 'QR' : 'COD' }}
+              </span>
+            </div>
+
+            <div
+              class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100 mt-2">
+              <span class="font-bold text-slate-700">Trạng thái:</span>
+              <span :class="['text-sm font-bold px-4 py-1.5 rounded-full border shadow-sm', getStatusBadgeClass(selectedOrder.status)]">
+                {{ getStatusText(selectedOrder.status) }}
+              </span>
+            </div>
+
+            <!-- Product Info -->
+            <div>
+              <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">inventory_2</span>
+                Sản phẩm
+              </h4>
+              <div class="flex gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30">
+                <img :src="getPrimaryImage(selectedOrder.post)"
+                  class="w-24 h-24 rounded-lg object-cover border border-slate-200 shrink-0">
+                <div class="flex-1">
+                  <div class="font-bold text-slate-800 line-clamp-2 mb-2">{{ selectedOrder.post?.title || 'Sản phẩm không xác định' }}</div>
+                  <div class="text-error font-extrabold text-lg">{{ formatPrice(selectedOrder.post?.price) }}đ</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Buyer & Shipping Info -->
+            <div>
+              <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">local_shipping</span>
+                Thông tin giao hàng
+              </h4>
+              <div class="bg-slate-50/30 p-5 rounded-xl border border-slate-100 space-y-3 text-sm">
+                <div class="flex justify-between border-b border-slate-100 pb-2">
+                  <span class="text-slate-500">Khách hàng:</span>
+                  <span class="font-bold text-slate-800">{{ selectedOrder.buyer?.name || selectedOrder.shipping_name || 'Khách hàng' }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 pb-2">
+                  <span class="text-slate-500">Người nhận:</span>
+                  <span class="font-bold text-slate-800">{{ selectedOrder.shipping_name }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 pb-2">
+                  <span class="text-slate-500">Số điện thoại:</span>
+                  <span class="font-medium text-slate-800">{{ selectedOrder.shipping_phone }}</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 pb-2">
+                  <span class="text-slate-500">Địa chỉ cụ thể:</span>
+                  <span class="font-medium text-slate-800 text-right max-w-[60%]">{{ selectedOrder.shipping_address }}, {{ getLocationString(selectedOrder) }}</span>
+                </div>
+                <div class="flex justify-between" v-if="selectedOrder.shipping_note">
+                  <span class="text-slate-500">Ghi chú:</span>
+                  <span class="font-medium text-amber-700 text-right max-w-[60%]">{{ selectedOrder.shipping_note }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
+            <button @click="closeOrderDetails"
+              class="px-6 py-2.5 border border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors cursor-pointer">
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </SellerLayout>
 </template>
@@ -187,6 +280,16 @@ import LoadingState from '../../components/common/LoadingState.vue';
 const loading = ref(true);
 const orders = ref([]);
 const currentTab = ref('');
+const selectedOrder = ref(null);
+
+const viewOrderDetails = (order) => {
+  selectedOrder.value = order;
+};
+
+const closeOrderDetails = () => {
+  selectedOrder.value = null;
+};
+
 const pagination = ref({
   current_page: 1,
   last_page: 1,
