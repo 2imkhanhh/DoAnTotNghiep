@@ -40,6 +40,7 @@ class ChatbotController extends Controller
             // Nếu session thuộc về một user khác, từ chối dùng chung session này
             if ($session && $session->user_id !== null && $session->user_id !== $userId) {
                 $session = null;
+                $sessionIdInput = null; // Xóa ID cũ đi để lúc sau tạo ID mới (tránh lỗi Duplicate Entry)
             }
 
             // Cập nhật user_id nếu trước đó là khách vãng lai, giờ họ đã đăng nhập
