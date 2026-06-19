@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\UserPurchase;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,10 +34,10 @@ class AdminDashboardController extends Controller
         $ordersYesterday = Order::where('status', 'delivered')->whereDate('created_at', $yesterday)->count();
         $ordersPercentChange = $ordersYesterday > 0 ? round((($ordersToday - $ordersYesterday) / $ordersYesterday) * 100, 1) : ($ordersToday > 0 ? 100 : 0);
 
-        // Tính % Tin đăng đã bán (Hôm nay so với hôm qua)
-        $soldPostsToday = Post::where('status', 'sold')->whereDate('updated_at', $now)->count();
-        $soldPostsYesterday = Post::where('status', 'sold')->whereDate('updated_at', $yesterday)->count();
-        $soldPostsPercentChange = $soldPostsYesterday > 0 ? round((($soldPostsToday - $soldPostsYesterday) / $soldPostsYesterday) * 100, 1) : ($soldPostsToday > 0 ? 100 : 0);
+        // Tính % Doanh thu (Hôm nay so với hôm qua)
+        $revenueToday = UserPurchase::where('status', 'active')->whereDate('updated_at', $now)->sum('price_paid');
+        $revenueYesterday = UserPurchase::where('status', 'active')->whereDate('updated_at', $yesterday)->sum('price_paid');
+        $revenuePercentChange = $revenueYesterday > 0 ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100, 1) : ($revenueToday > 0 ? 100 : 0);
 
         // Thống kê cơ bản
         $stats = [
@@ -46,26 +47,64 @@ class AdminDashboardController extends Controller
             'posts_percent' => $postsPercentChange,
             'completed_orders' => Order::where('status', 'delivered')->count(),
             'orders_percent' => $ordersPercentChange,
-            'sold_posts' => Post::where('status', 'sold')->count(),
-            'sold_posts_percent' => $soldPostsPercentChange
+            'revenue' => UserPurchase::where('status', 'active')->sum('price_paid'),
+            'revenue_percent' => $revenuePercentChange
         ];
 
-        // Tin đăng chờ duyệt
-        $recentPosts = Post::with('user')
-            ->where('status', 'pending')
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(function ($post) {
-                return [
-                    'id' => $post->id,
-                    'user_name' => $post->user ? $post->user->name : 'N/A',
-                    'user_avatar' => $post->user ? $post->user->avatar : null,
-                    'title' => $post->title,
-                    'price' => $post->price,
-                    'created_at' => $post->created_at,
-                ];
-            });
+        // ================= CHART DATA =================
+        $trendPeriod = $request->query('trend_period', '7days');
+        $categoryPeriod = $request->query('category_period', '7days');
+        $orderPeriod = $request->query('order_period', '7days');
+        $revenuePeriod = $request->query('revenue_period', '7days');
+
+        [$trendStart, $trendEnd, $trendGroup] = $this->getTimeBounds($trendPeriod);
+        [$catStart, $catEnd, $catGroup] = $this->getTimeBounds($categoryPeriod);
+        [$orderStart, $orderEnd, $orderGroup] = $this->getTimeBounds($orderPeriod);
+        [$revStart, $revEnd, $revGroup] = $this->getTimeBounds($revenuePeriod);
+
+        // Biểu đồ doanh thu
+        $revenueData = [
+            'labels' => [],
+            'data' => []
+        ];
+
+        if ($revGroup === 'day') {
+            $currentDate = clone $revStart;
+            $daysList = [];
+            while ($currentDate <= Carbon::today()) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $daysList[$dateStr] = ['label' => $currentDate->format('d/m')];
+                $currentDate->addDay();
+            }
+
+            $revenueRaw = UserPurchase::where('status', 'active')
+                ->whereBetween('updated_at', [$revStart, $revEnd])
+                ->select(DB::raw('DATE(updated_at) as date'), DB::raw('sum(price_paid) as sum'))
+                ->groupBy('date')->pluck('sum', 'date')->toArray();
+
+            foreach ($daysList as $dateStr => $data) {
+                $revenueData['labels'][] = $data['label'];
+                $revenueData['data'][] = $revenueRaw[$dateStr] ?? 0;
+            }
+        } else {
+            $currentMonth = clone $revStart;
+            $monthsList = [];
+            while ($currentMonth <= Carbon::today()) {
+                $monthStr = $currentMonth->format('Y-m');
+                $monthsList[$monthStr] = ['label' => 'Tháng ' . $currentMonth->format('n')];
+                $currentMonth->addMonth();
+            }
+
+            $revenueRaw = UserPurchase::where('status', 'active')
+                ->whereBetween('updated_at', [$revStart, $revEnd])
+                ->select(DB::raw('DATE_FORMAT(updated_at, "%Y-%m") as month'), DB::raw('sum(price_paid) as sum'))
+                ->groupBy('month')->pluck('sum', 'month')->toArray();
+
+            foreach ($monthsList as $monthStr => $data) {
+                $revenueData['labels'][] = $data['label'];
+                $revenueData['data'][] = $revenueRaw[$monthStr] ?? 0;
+            }
+        }
 
         // Top người dùng tích cực (nhiều bài đăng)
         $topUsers = User::withCount('posts')
@@ -83,14 +122,7 @@ class AdminDashboardController extends Controller
                 ];
             });
 
-        // ================= CHART DATA =================
-        $trendPeriod = $request->query('trend_period', '7days');
-        $categoryPeriod = $request->query('category_period', '7days');
-        $orderPeriod = $request->query('order_period', '7days');
-
-        [$trendStart, $trendEnd, $trendGroup] = $this->getTimeBounds($trendPeriod);
-        [$catStart, $catEnd, $catGroup] = $this->getTimeBounds($categoryPeriod);
-        [$orderStart, $orderEnd, $orderGroup] = $this->getTimeBounds($orderPeriod);
+        // 1. Dữ liệu xu hướng (Line Chart)
 
         // 1. Dữ liệu xu hướng (Line Chart)
 
@@ -190,9 +222,9 @@ class AdminDashboardController extends Controller
             'success' => true,
             'data' => [
                 'stats' => $stats,
-                'recentPosts' => $recentPosts,
                 'topUsers' => $topUsers,
                 'charts' => [
+                    'revenue' => $revenueData,
                     'trend' => $trendData,
                     'category' => $categoryData,
                     'orderStatus' => $orderStatusData

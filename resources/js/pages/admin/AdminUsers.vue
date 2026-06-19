@@ -80,7 +80,7 @@
               class="border-b border-outline-variant/30 hover:bg-surface-container/50 transition-colors">
               <td class="py-4 px-4">
                 <div class="flex items-center gap-3">
-                  <img :src="user.avatar || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=100'"
+                  <img :src="user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random'"
                     alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-outline-variant/50">
                   <div>
                     <button @click="openUserModal(user)"
@@ -151,18 +151,18 @@
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="mt-6 flex justify-center gap-1">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-sm">chevron_left</span>
         </button>
 
         <button v-for="page in totalPages" :key="page" @click="changePage(page)"
-          class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors border"
+          class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors border cursor-pointer"
           :class="currentPage === page ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant hover:bg-surface-container text-on-surface-variant'">
           {{ page }}
         </button>
 
         <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-          class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
           <span class="material-symbols-outlined text-sm">chevron_right</span>
         </button>
       </div>

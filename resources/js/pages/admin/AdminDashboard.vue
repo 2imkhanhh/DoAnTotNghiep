@@ -42,13 +42,13 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon sold">
-          <span class="material-symbols-outlined">shopping_cart_checkout</span>
+          <span class="material-symbols-outlined">account_balance_wallet</span>
         </div>
         <div class="stat-details">
-          <h3>Tin đã bán</h3>
-          <p class="stat-value">{{ stats.sold_posts }}</p>
-          <p class="stat-change" :class="stats.sold_posts_percent >= 0 ? 'positive' : 'negative'">
-            {{ stats.sold_posts_percent > 0 ? '+' : '' }}{{ stats.sold_posts_percent }}% hôm nay
+          <h3>Doanh thu</h3>
+          <p class="stat-value">{{ formatPrice(stats.revenue || 0) }}đ</p>
+          <p class="stat-change" :class="stats.revenue_percent >= 0 ? 'positive' : 'negative'">
+            {{ stats.revenue_percent > 0 ? '+' : '' }}{{ stats.revenue_percent }}% hôm nay
           </p>
         </div>
       </div>
@@ -56,51 +56,29 @@
 
     <!-- Recent Activity Sections -->
     <div class="dashboard-grid mb-8">
-      <!-- Pending Posts -->
-      <section class="dashboard-section posts-pending">
-        <div class="section-header">
-          <h2 class="section-title">Tin đăng chờ duyệt</h2>
-          <router-link to="/admin/posts" class="view-all">Xem tất cả</router-link>
+      <!-- Revenue Chart -->
+      <section class="dashboard-section">
+        <div class="section-header flex justify-between items-center">
+          <h2 class="section-title m-0">Biểu đồ doanh thu</h2>
+          <div class="relative min-w-[120px] custom-dropdown-revenue">
+            <div @click="isRevenueDropdownOpen = !isRevenueDropdownOpen; isTrendDropdownOpen = false; isCategoryDropdownOpen = false; isOrderDropdownOpen = false"
+              class="bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer flex items-center justify-between hover:border-primary hover:bg-surface-container-high transition-colors shadow-sm select-none gap-2">
+              <span class="text-on-surface">{{ selectedRevenueLabel }}</span>
+              <span class="material-symbols-outlined text-on-surface-variant text-[16px] transition-transform duration-300"
+                :class="{ 'rotate-180': isRevenueDropdownOpen }">expand_more</span>
+            </div>
+            <div v-if="isRevenueDropdownOpen"
+              class="absolute z-20 right-0 w-max min-w-[130px] mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div v-for="option in periodOptions" :key="option.value" @click="selectRevenue(option.value)"
+                class="px-3 py-2 text-xs font-medium hover:bg-surface-container cursor-pointer transition-colors flex items-center"
+                :class="{ 'text-primary bg-primary/5 font-bold border-l-2 border-primary': revenuePeriod === option.value, 'border-l-2 border-transparent text-on-surface-variant': revenuePeriod !== option.value }">
+                {{ option.label }}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="table-container">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Người đăng</th>
-                <th>Tiêu đề</th>
-                <th>Giá</th>
-                <th>Ngày đăng</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="recentPosts.length === 0">
-                <td colspan="5" class="empty-state">Không có tin đăng nào chờ duyệt</td>
-              </tr>
-              <tr v-else v-for="post in recentPosts" :key="post.id">
-                <td>
-                  <div class="user-cell">
-                    <img :src="post.user_avatar || `https://ui-avatars.com/api/?name=${post.user_name}`" alt="">
-                    <span>{{ post.user_name }}</span>
-                  </div>
-                </td>
-                <td class="post-title">{{ post.title }}</td>
-                <td class="price">{{ formatPrice(post.price) }}đ</td>
-                <td class="date">{{ formatDate(post.created_at) }}</td>
-                <td>
-                  <div class="action-btns">
-                    <button class="btn-approve" title="Duyệt">
-                      <span class="material-symbols-outlined">check_circle</span>
-                    </button>
-                    <button class="btn-reject" title="Từ chối">
-                      <span class="material-symbols-outlined">cancel</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <!-- Trạng thái trống đã được chuyển lên trên để dùng với v-else-if -->
-            </tbody>
-          </table>
+        <div class="chart-wrapper h-80">
+          <Line v-if="chartDataLoaded" :data="revenueChartData" :options="revenueChartOptions" />
         </div>
       </section>
 
@@ -258,19 +236,21 @@ const stats = ref({
   posts_percent: 0,
   completed_orders: 0,
   orders_percent: 0,
-  reports: 0
+  revenue: 0,
+  revenue_percent: 0
 });
 
-const recentPosts = ref([]);
 const topUsers = ref([]);
 
 const trendPeriod = ref('7days');
 const categoryPeriod = ref('7days');
 const orderPeriod = ref('7days');
+const revenuePeriod = ref('7days');
 
 const isTrendDropdownOpen = ref(false);
 const isCategoryDropdownOpen = ref(false);
 const isOrderDropdownOpen = ref(false);
+const isRevenueDropdownOpen = ref(false);
 
 const periodOptions = [
   { label: '7 ngày qua', value: '7days' },
@@ -282,6 +262,7 @@ const periodOptions = [
 const selectedTrendLabel = computed(() => periodOptions.find(o => o.value === trendPeriod.value)?.label || '7 ngày qua');
 const selectedCategoryLabel = computed(() => periodOptions.find(o => o.value === categoryPeriod.value)?.label || '7 ngày qua');
 const selectedOrderLabel = computed(() => periodOptions.find(o => o.value === orderPeriod.value)?.label || '7 ngày qua');
+const selectedRevenueLabel = computed(() => periodOptions.find(o => o.value === revenuePeriod.value)?.label || '7 ngày qua');
 
 const selectTrend = (val) => {
   trendPeriod.value = val;
@@ -301,10 +282,17 @@ const selectOrder = (val) => {
   fetchDashboardData();
 };
 
+const selectRevenue = (val) => {
+  revenuePeriod.value = val;
+  isRevenueDropdownOpen.value = false;
+  fetchDashboardData();
+};
+
 const chartDataLoaded = ref(false);
 const trendChartData = ref({ labels: [], datasets: [] });
 const categoryChartData = ref({ labels: [], datasets: [] });
 const orderStatusChartData = ref({ labels: [], datasets: [] });
+const revenueChartData = ref({ labels: [], datasets: [] });
 
 // Chart Options
 const trendChartOptions = {
@@ -315,6 +303,42 @@ const trendChartOptions = {
   },
   scales: { 
     y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { stepSize: 1 } }, 
+    x: { grid: { display: false } } 
+  },
+  interaction: { mode: 'index', intersect: false }
+};
+
+const revenueChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { 
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: function(context) {
+          let label = context.dataset.label || '';
+          if (label) label += ': ';
+          if (context.parsed.y !== null) {
+            label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + 'đ';
+          }
+          return label;
+        }
+      }
+    }
+  },
+  scales: { 
+    y: { 
+      beginAtZero: true, 
+      grid: { borderDash: [2, 4], color: '#f1f5f9' },
+      ticks: {
+        callback: function(value) {
+          if (value === 0) return 0;
+          if (value >= 1000000) return (value / 1000000) + 'M';
+          if (value >= 1000) return (value / 1000) + 'k';
+          return value;
+        }
+      }
+    }, 
     x: { grid: { display: false } } 
   },
   interaction: { mode: 'index', intersect: false }
@@ -351,16 +375,31 @@ const fetchDashboardData = async () => {
       params: { 
         trend_period: trendPeriod.value,
         category_period: categoryPeriod.value,
-        order_period: orderPeriod.value
+        order_period: orderPeriod.value,
+        revenue_period: revenuePeriod.value
       }
     });
     if (response.data.success) {
       const data = response.data.data;
       stats.value = data.stats;
-      recentPosts.value = data.recentPosts;
       topUsers.value = data.topUsers;
 
       if (data.charts) {
+        // Revenue chart
+        revenueChartData.value = {
+          labels: data.charts.revenue.labels,
+          datasets: [
+            {
+              label: 'Doanh thu',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)', // Blue
+              borderColor: '#3b82f6',
+              data: data.charts.revenue.data,
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        };
+
         // Trend chart
         trendChartData.value = {
           labels: data.charts.trend.labels,
@@ -450,6 +489,9 @@ const closeDropdowns = (e) => {
   }
   if (!e.target.closest('.custom-dropdown-order')) {
     isOrderDropdownOpen.value = false;
+  }
+  if (!e.target.closest('.custom-dropdown-revenue')) {
+    isRevenueDropdownOpen.value = false;
   }
 };
 
