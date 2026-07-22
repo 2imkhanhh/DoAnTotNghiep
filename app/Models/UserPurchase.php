@@ -14,6 +14,9 @@ class UserPurchase extends Model
         'package_id',
         'status', // pending, active, rejected
         'price_paid',
+        'payment_method',
+        'payos_order_code',
+        'checkout_url',
     ];
 
     public function user()

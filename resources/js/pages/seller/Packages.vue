@@ -211,9 +211,54 @@
               class="flex-1 py-3 bg-surface-variant text-on-surface-variant font-bold rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
               Hủy
             </button>
-            <button @click="confirmPayment"
+            <button v-if="currentPurchase?.payment_method !== 'payos'" @click="confirmPayment"
               class="flex-1 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer flex justify-center items-center gap-2">
               Hoàn tất
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Method Modal -->
+    <div v-if="showPaymentMethodModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showPaymentMethodModal = false"></div>
+      <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-md w-full overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-200">
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-on-surface mb-4">Chọn phương thức thanh toán</h3>
+          <p class="text-sm text-on-surface-variant mb-6">Gói <span class="font-bold text-primary">{{ selectedPackage?.name }}</span> - Giá: <span class="font-bold text-error">{{ formatPrice(selectedPackage?.price) }}đ</span></p>
+          
+          <div class="space-y-3">
+            <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all hover:bg-slate-50"
+                  :class="selectedPaymentMethod === 'payos' ? 'border-primary bg-primary/5' : 'border-slate-200'">
+              <input type="radio" name="payment_method" value="payos" v-model="selectedPaymentMethod" class="mt-1">
+              <div>
+                <p class="font-bold text-slate-800 flex items-center gap-2">
+                  Thanh toán qua PayOS (VietQR)
+                  <span class="px-2 py-0.5 text-[10px] font-bold bg-green-100 text-green-700 rounded-full uppercase tracking-wider">Tự động duyệt</span>
+                </p>
+                <p class="text-sm text-slate-500 mt-1">Quét mã QR và hệ thống sẽ tự động duyệt gói ngay lập tức.</p>
+              </div>
+            </label>
+            
+            <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-all hover:bg-slate-50"
+                  :class="selectedPaymentMethod === 'manual' ? 'border-primary bg-primary/5' : 'border-slate-200'">
+              <input type="radio" name="payment_method" value="manual" v-model="selectedPaymentMethod" class="mt-1">
+              <div>
+                <p class="font-bold text-slate-800">Chuyển khoản thủ công</p>
+                <p class="text-sm text-slate-500 mt-1">Chuyển khoản và chờ Admin kiểm tra, duyệt thủ công.</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="flex gap-3 mt-8">
+            <button @click="showPaymentMethodModal = false"
+              class="flex-1 py-3 bg-surface-variant text-on-surface-variant font-bold rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+              Hủy
+            </button>
+            <button @click="proceedBuy"
+              class="flex-1 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer">
+              Tiếp tục
             </button>
           </div>
         </div>
@@ -241,6 +286,11 @@ const loadingPurchases = ref(true);
 const buyingId = ref(null);
 
 const showQRModal = ref(false);
+const showPaymentMethodModal = ref(false);
+const showPayosIframeModal = ref(false);
+const selectedPaymentMethod = ref('payos');
+const selectedPackage = ref(null);
+
 const qrCodeUrl = ref('');
 const currentPurchase = ref(null);
 const currentAdminBank = ref(null);
@@ -260,11 +310,39 @@ const startTimer = () => {
   timerInterval.value = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value--;
+      
+      // Cứ mỗi 3 giây sẽ tự động gọi API kiểm tra trạng thái đơn hàng (Polling)
+      // Dành riêng cho PayOS (vì Webhook tự động cập nhật Database)
+      if (timeLeft.value % 3 === 0 && currentPurchase.value?.payment_method === 'payos') {
+        checkPaymentStatus();
+      }
     } else {
       clearInterval(timerInterval.value);
       cancelQR();
     }
   }, 1000);
+};
+
+const checkPaymentStatus = async () => {
+  if (!currentPurchase.value) return;
+  try {
+    const response = await axios.get('/api/user/purchases?page=1');
+    if (response.data.success) {
+      const purchasesList = response.data.data.data;
+      const updated = purchasesList.find(p => p.id === currentPurchase.value.id);
+      
+      // Nếu Webhook đã cập nhật status thành 'active'
+      if (updated && updated.status === 'active') {
+        stopTimer();
+        showQRModal.value = false;
+        toast('Thanh toán tự động thành công! Gói dịch vụ đã được kích hoạt.', 'success');
+        fetchPurchases(1);
+        authStore.fetchUser(); // Cập nhật VIP
+      }
+    }
+  } catch (e) {
+    // Bỏ qua lỗi mạng chập chờn
+  }
 };
 
 const stopTimer = () => {
@@ -291,13 +369,6 @@ const cancelQR = async () => {
     currentPurchase.value = null;
     fetchPurchases(1);
   }
-};
-
-const confirmPayment = () => {
-  stopTimer();
-  showQRModal.value = false;
-  toast('Đã xác nhận thanh toán. Vui lòng chờ Admin duyệt!', 'success');
-  fetchPurchases(1);
 };
 
 const formatPrice = (price) => {
@@ -389,48 +460,78 @@ const fetchPurchases = async (page = 1) => {
 };
 
 const confirmBuy = (pkg) => {
-  confirmDialog(
-    'Xác nhận mua gói',
-    `Bạn có chắc chắn muốn mua ${pkg.name} với giá ${formatPrice(pkg.price)}đ không? Vui lòng chuyển khoản cho Admin để mua gói.`,
-    'Xác nhận mua',
-    'Hủy'
-  ).then((isConfirmed) => {
-    if (isConfirmed) {
-      buyPackage(pkg.id);
-    }
-  });
+  selectedPackage.value = pkg;
+  showPaymentMethodModal.value = true;
 };
 
-const buyPackage = async (packageId) => {
+const proceedBuy = () => {
+  showPaymentMethodModal.value = false;
+  buyPackage(selectedPackage.value.id, selectedPaymentMethod.value);
+};
+
+const buyPackage = async (packageId, paymentMethod) => {
   buyingId.value = packageId;
   try {
-    const response = await axios.post('/api/packages/buy', { package_id: packageId });
+    const response = await axios.post('/api/packages/buy', { 
+      package_id: packageId,
+      payment_method: paymentMethod
+    });
+    
     if (response.data.success) {
-      toast('Tạo yêu cầu mua thành công!', 'success');
-
       const purchase = response.data.data.purchase;
-      const adminBank = response.data.data.admin_bank;
+      currentPurchase.value = purchase;
 
+      if (paymentMethod === 'payos' && response.data.data.payos_data) {
+        // Lấy dữ liệu PayOS trả về để tạo mã VietQR
+        const payosData = response.data.data.payos_data;
+        const bin = payosData.bin;
+        const accountNo = payosData.accountNumber;
+        const amount = payosData.amount;
+        const description = payosData.description;
+        const accountName = payosData.accountName;
+
+        qrCodeUrl.value = `https://img.vietqr.io/image/${bin}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
+        
+        currentAdminBank.value = {
+          bank_name: 'Ngân hàng thụ hưởng (PayOS)',
+          bank_account_no: accountNo,
+          bank_account_name: accountName
+        };
+
+        showQRModal.value = true;
+        startTimer();
+        fetchPurchases(1);
+        return;
+      }
+
+      // --- Luồng Manual ---
+      toast('Tạo yêu cầu mua thành công!', 'success');
+      const adminBank = response.data.data.admin_bank;
       const amount = purchase.price_paid;
       const orderInfo = `MUA GOI ${purchase.id}`;
-      // Lấy short name cho mã VietQR, bỏ khoảng trắng dư thừa
       const bankId = adminBank.bank_name.split(' ')[0] || 'MB';
 
-      const qrUrl = `https://img.vietqr.io/image/${bankId}-${adminBank.bank_account_no}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(orderInfo)}&accountName=${encodeURIComponent(adminBank.bank_account_name)}`;
-
-      currentPurchase.value = purchase;
+      qrCodeUrl.value = `https://img.vietqr.io/image/${bankId}-${adminBank.bank_account_no}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(orderInfo)}&accountName=${encodeURIComponent(adminBank.bank_account_name)}`;
+      
       currentAdminBank.value = adminBank;
-      qrCodeUrl.value = qrUrl;
       showQRModal.value = true;
       startTimer();
-
-      // Refresh list
       fetchPurchases(1);
     }
   } catch (error) {
     toast(error.response?.data?.message || 'Có lỗi xảy ra', 'error');
   } finally {
     buyingId.value = null;
+  }
+};
+
+const confirmPayment = async () => {
+  stopTimer();
+  showQRModal.value = false;
+  
+  if (currentPurchase.value?.payment_method !== 'payos') {
+    toast('Đã xác nhận thanh toán. Vui lòng chờ Admin duyệt!', 'success');
+    fetchPurchases(1);
   }
 };
 

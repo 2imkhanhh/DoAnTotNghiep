@@ -42,6 +42,10 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 
+// PayOS Webhook
+Route::post('/payos/webhook', [PackageController::class, 'payosWebhook']);
+
+
 // Các route yêu cầu đăng nhập nhưng không nằm trong prefix 'auth'
 Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/user/posts', [PostController::class, 'userPosts']);
@@ -104,6 +108,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Các routes mua Gói dịch vụ
     Route::get('/packages', [PackageController::class, 'index']);
     Route::post('/packages/buy', [PackageController::class, 'buy']);
+    Route::post('/packages/payos-verify', [PackageController::class, 'verifyPayosOrder']);
     Route::delete('/packages/purchases/{id}/cancel', [PackageController::class, 'cancel']);
     Route::get('/user/purchases', [PackageController::class, 'myPurchases']);
 });
